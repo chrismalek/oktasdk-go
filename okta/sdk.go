@@ -276,6 +276,20 @@ func CheckResponse(r *http.Response) error {
 	if c := r.StatusCode; 200 <= c && c <= 299 {
 		return nil
 	}
+
+	errorResponse := &ErrorResponse{Response: r}
+	data, err := ioutil.ReadAll(r.Body)
+	if err == nil && data != nil {
+		json.Unmarshal(data, &errorResponse.ErrorDetail)
+	}
+	return errorResponse
+	// switch {
+
+	// case r.StatusCode == http.StatusNotFound:
+
+	// case r.StatusCode == http.StatusUnauthorized:
+
+	// }
 	// errorResponse := &ErrorResponse{Response: r}
 	// data, err := ioutil.ReadAll(r.Body)
 	// if err == nil && data != nil {
@@ -304,6 +318,16 @@ type APIError struct {
 	ErrorCauses  []struct {
 		ErrorSummary string `json:"errorSummary"`
 	} `json:"errorCauses"`
+}
+
+type ErrorResponse struct {
+	Response    *http.Response //
+	ErrorDetail APIError
+}
+
+func (r *ErrorResponse) Error() string {
+	return fmt.Sprintf("HTTP Method: %v - URL: %v: - HTTP Status Code: %d, OKTA Error Code: %v, OKTA Error Summary: %v",
+		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.ErrorDetail.ErrorCode, r.ErrorDetail.ErrorSummary)
 }
 
 // Stringify attempts to create a reasonable string representation of types in
@@ -404,7 +428,7 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	}
 
 	req.Header.Set(headerAuthorization, fmt.Sprintf(headerAuthorizationFormat, c.apiKey))
-	fmt.Printf("Authorization Header\n \t %v: %v\n", headerAuthorization, req.Header.Get(headerAuthorization))
+
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
