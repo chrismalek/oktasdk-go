@@ -99,8 +99,8 @@ func (u User) String() string {
 	return Stringify(u)
 }
 
-func (s *UsersService) GetByID(id int) (*User, *Response, error) {
-	u := fmt.Sprintf("user/%d", id)
+func (s *UsersService) GetByID(id string) (*User, *Response, error) {
+	u := fmt.Sprintf("user/%v", id)
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
