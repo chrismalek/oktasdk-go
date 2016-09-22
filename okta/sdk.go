@@ -70,14 +70,14 @@ func NewClient(httpClient *http.Client, orgName string, apiToken string, isProdu
 	if isProduction {
 		baseURL, _ = url.Parse(fmt.Sprintf(productionURLFormat, orgName))
 	} else {
-		baseURL, _ = url.Parse(fmt.Sprintf(productionURLFormat, orgName))
+		baseURL, _ = url.Parse(fmt.Sprintf(previewProductionURLFormat, orgName))
 
 	}
 
 	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
 
 	c.authorizationHeaderValue = fmt.Sprintf(headerAuthorizationFormat, apiToken)
-
+	c.apiKey = apiToken
 	c.common.client = c
 
 	c.Users = (*UsersService)(&c.common)
@@ -208,10 +208,10 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 
 	response := newResponse(resp)
 
-	c.rateMu.Lock()
+	// c.rateMu.Lock()
 	// c.rateLimits[rateLimitCategory] = response.Rate
 	// c.mostRecent = rateLimitCategory
-	c.rateMu.Unlock()
+	// c.rateMu.Unlock()
 
 	err = CheckResponse(resp)
 	if err != nil {
@@ -397,12 +397,14 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 			return nil, err
 		}
 	}
-
+	// fmt.Printf("SDK.GO - USER URL: %v\n\n", u.String())
 	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {
 		return nil, err
 	}
 
+	req.Header.Set(headerAuthorization, fmt.Sprintf(headerAuthorizationFormat, c.apiKey))
+	fmt.Printf("Authorization Header\n \t %v: %v\n", headerAuthorization, req.Header.Get(headerAuthorization))
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
