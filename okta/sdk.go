@@ -27,6 +27,7 @@ const (
 	headerAuthorization        = "Authorization"
 	headerAuthorizationFormat  = "SSWS %v"
 	mediaTypeJSON              = "application/json"
+	defaultLimit               = 50
 )
 
 // A Client manages communication with the API.
@@ -43,9 +44,9 @@ type Client struct {
 
 	apiKey                   string
 	authorizationHeaderValue string
-
-	rateMu sync.Mutex
-	// rateLimits [categories]Rate // Rate limits for the client as determined by the most recent API calls.
+	PauseOnRateLimit         bool
+	rateMu                   sync.Mutex
+	Limit                    int8
 	// mostRecent rateLimitCategory
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
@@ -75,9 +76,10 @@ func NewClient(httpClient *http.Client, orgName string, apiToken string, isProdu
 	}
 
 	c := &Client{client: httpClient, BaseURL: baseURL, UserAgent: userAgent}
-
+	c.PauseOnRateLimit = true // If rate limit found it will block until that time. If false then Error will be returned
 	c.authorizationHeaderValue = fmt.Sprintf(headerAuthorizationFormat, apiToken)
 	c.apiKey = apiToken
+	c.Limit = defaultLimit
 	c.common.client = c
 
 	c.Users = (*UsersService)(&c.common)
