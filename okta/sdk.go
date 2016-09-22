@@ -21,9 +21,10 @@ const (
 	userAgent                  = "oktasdk-go/" + libraryVersion
 	productionURLFormat        = "https://%s.okta.com/api/v1/"
 	previewProductionURLFormat = "https://%s.oktapreview.com/api/v1/"
-	headerRateLimit            = "X-RateLimit-Limit"
-	headerRateRemaining        = "X-RateLimit-Remaining"
-	headerRateReset            = "X-RateLimit-Reset"
+	headerRateLimit            = "X-Rate-Limit-Limit"
+	headerRateRemaining        = "X-Rate-Limit-Remaining"
+	headerRateReset            = "X-Rate-Limit-Reset"
+	headerOKTARequestID        = "X-Okta-Request-Id"
 	headerAuthorization        = "Authorization"
 	headerAuthorizationFormat  = "SSWS %v"
 	mediaTypeJSON              = "application/json"
@@ -96,7 +97,7 @@ type Rate struct {
 	Remaining int
 
 	// The time at which the current rate limit will reset.
-	Reset time.Time
+	ResetTime time.Time
 }
 
 type Response struct {
@@ -105,16 +106,19 @@ type Response struct {
 	// These fields provide the page values for paginating through a set of
 	// results.
 
-	NextURL *url.URL
-	PrevURL *url.URL
-	SelfURL *url.URL
-
+	NextURL       *url.URL
+	PrevURL       *url.URL
+	SelfURL       *url.URL
+	OKTARequestID string
 	Rate
 }
 
 // newResponse creates a new Response for the provided http.Response.
 func newResponse(r *http.Response) *Response {
 	response := &Response{Response: r}
+
+	response.OKTARequestID = r.Header.Get(headerOKTARequestID)
+
 	// response.populatePageValues()
 	response.Rate = parseRate(r)
 	return response
@@ -170,6 +174,9 @@ func (r *Response) populatePageValues() {
 // parseRate parses the rate related headers.
 func parseRate(r *http.Response) Rate {
 	var rate Rate
+
+	fmt.Printf("***\nstarting parseRate\n\n\n")
+
 	if limit := r.Header.Get(headerRateLimit); limit != "" {
 		rate.Limit, _ = strconv.Atoi(limit)
 	}
@@ -178,7 +185,7 @@ func parseRate(r *http.Response) Rate {
 	}
 	if reset := r.Header.Get(headerRateReset); reset != "" {
 		if v, _ := strconv.ParseInt(reset, 10, 64); v != 0 {
-			// rate.Reset = Timestamp{time.Unix(v, 0)}
+			rate.ResetTime = time.Unix(v, 0)
 		}
 	}
 	return rate
@@ -211,8 +218,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 	response := newResponse(resp)
 
 	// c.rateMu.Lock()
-	// c.rateLimits[rateLimitCategory] = response.Rate
-	// c.mostRecent = rateLimitCategory
+
 	// c.rateMu.Unlock()
 
 	err = CheckResponse(resp)
@@ -423,7 +429,7 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 			return nil, err
 		}
 	}
-	// fmt.Printf("SDK.GO - USER URL: %v\n\n", u.String())
+
 	req, err := http.NewRequest(method, u.String(), buf)
 	if err != nil {
 		return nil, err
@@ -432,7 +438,7 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 	req.Header.Set(headerAuthorization, fmt.Sprintf(headerAuthorizationFormat, c.apiKey))
 
 	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("Content-Type", mediaTypeJSON)
 	}
 
 	if c.UserAgent != "" {
