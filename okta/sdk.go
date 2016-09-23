@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/go-querystring/query"
+
 	"reflect"
 )
 
@@ -29,6 +31,10 @@ const (
 	headerAuthorizationFormat  = "SSWS %v"
 	mediaTypeJSON              = "application/json"
 	defaultLimit               = 50
+	filterEqualOperator        = "eq"
+	filterStartsWithOperator   = "sw"
+	filterGreaterThanOperator  = "gt"
+	filterLessThanOperator     = "lt"
 )
 
 // A Client manages communication with the API.
@@ -445,4 +451,26 @@ func (c *Client) NewRequest(method, urlStr string, body interface{}) (*http.Requ
 		req.Header.Set("User-Agent", c.UserAgent)
 	}
 	return req, nil
+}
+
+// addOptions adds the parameters in opt as URL query parameters to s.  opt
+// must be a struct whose fields may contain "url" tags.
+func addOptions(s string, opt interface{}) (string, error) {
+	v := reflect.ValueOf(opt)
+	if v.Kind() == reflect.Ptr && v.IsNil() {
+		return s, nil
+	}
+
+	u, err := url.Parse(s)
+	if err != nil {
+		return s, err
+	}
+
+	qs, err := query.Values(opt)
+	if err != nil {
+		return s, err
+	}
+
+	u.RawQuery = qs.Encode()
+	return u.String(), nil
 }
