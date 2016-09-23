@@ -11,6 +11,8 @@ Much credits has to be given to the [go-github](https://github.com/google/go-git
 * This is not a complete SDK. It has been developed based on my own needs.
 * Use At your own risk!
 * Not all features of the OKTA API are implemented.
+* There are a long list of TODOS.
+* The current version of the API is focused more around retrieving data from OKTA not actually updating. 
 
 
 ## Design

@@ -125,7 +125,7 @@ func newResponse(r *http.Response) *Response {
 
 	response.OKTARequestID = r.Header.Get(headerOKTARequestID)
 
-	response.populatePageValues()
+	response.populatePaginationURLS()
 	response.Rate = parseRate(r)
 	return response
 }
@@ -137,7 +137,7 @@ func newResponse(r *http.Response) *Response {
 // 		Link: <https://yoursubdomain.okta.com/api/v1/users?after=00ubfjQEMYBLRUWIEDKK>; rel="next",
 // 			<https://yoursubdomain.okta.com/api/v1/users?after=00ub4tTFYKXCCZJSGFKM>; rel="self"
 
-func (r *Response) populatePageValues() {
+func (r *Response) populatePaginationURLS() {
 
 	for k, v := range r.Header {
 

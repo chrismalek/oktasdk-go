@@ -70,6 +70,7 @@ type User struct {
 	} `json:"_links"`
 
 	factors []UserMFAFactor
+	groups  []Group
 }
 
 type UserMFAFactor struct {
