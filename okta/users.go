@@ -13,6 +13,7 @@ const (
 	profileIDFilter           = "id"
 	profileFirstNameFilter    = "profile.firstName"
 	profileLastNameFilter     = "profile.lastName"
+	profileLastUpdatedFilter  = "lastUpdated"
 	UserStatusActive          = "ACTIVE"
 	UserStatusStaged          = "STAGED"
 	UserStatusProvisioned     = "PROVISIONED"
@@ -21,6 +22,9 @@ const (
 	UserStatusPasswordExpired = "PASSWORD_EXPIRED"
 	UserStatusSuspended       = "SUSPENDED"
 	UserStatusDeprovisioned   = "DEPROVISIONED"
+	// format8601TimeFormat      = "2006-01-02T15:04:05-0700"
+
+	oktaFilterTimeFormat = "2006-01-02T15:05:05.000Z"
 )
 
 type UsersService service
@@ -221,6 +225,16 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]*User, *Res
 		// if opt.LastNameStartsWith != "" {
 		// 	opt.FilterString = appendToFilterString(opt.FilterString, profileLastNameFilter, filterStartsWithOperator, opt.LastNameStartsWith)
 		// }
+
+		if !opt.LastUpdatedGreaterThan.IsZero() {
+			opt.FilterString = appendToFilterString(opt.FilterString, profileLastUpdatedFilter, filterGreaterThanOperator, opt.LastUpdatedGreaterThan.UTC().Format(oktaFilterTimeFormat))
+		}
+
+		if !opt.LastUpdatedLessThan.IsZero() {
+			fmt.Printf("-------LastUpdatedLessThan in 8601: %v \n", opt.LastUpdatedLessThan.UTC().Format(oktaFilterTimeFormat))
+
+			opt.FilterString = appendToFilterString(opt.FilterString, profileLastUpdatedFilter, filterLessThanOperator, opt.LastUpdatedLessThan.UTC().Format(oktaFilterTimeFormat))
+		}
 
 		if opt.Limit == 0 {
 			opt.Limit = defaultLimit
