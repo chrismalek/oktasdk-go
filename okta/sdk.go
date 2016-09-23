@@ -181,8 +181,6 @@ func (r *Response) populatePageValues() {
 func parseRate(r *http.Response) Rate {
 	var rate Rate
 
-	fmt.Printf("***\nstarting parseRate\n\n\n")
-
 	if limit := r.Header.Get(headerRateLimit); limit != "" {
 		rate.Limit, _ = strconv.Atoi(limit)
 	}
