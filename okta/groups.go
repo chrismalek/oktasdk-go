@@ -1,6 +1,9 @@
 package okta
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Group struct {
 	ID                    string    `json:"id"`
@@ -30,4 +33,9 @@ type Group struct {
 			Href string `json:"href"`
 		} `json:"apps"`
 	} `json:"_links"`
+}
+
+func (g Group) String() string {
+	// return Stringify(g)
+	return fmt.Sprintf("ID: {%v} - Type: {%v} - Group Name: {%v}\n", g.ID, g.Type, g.Profile.Name)
 }

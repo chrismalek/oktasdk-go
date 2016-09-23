@@ -22,7 +22,6 @@ const (
 	UserStatusPasswordExpired = "PASSWORD_EXPIRED"
 	UserStatusSuspended       = "SUSPENDED"
 	UserStatusDeprovisioned   = "DEPROVISIONED"
-	// format8601TimeFormat      = "2006-01-02T15:04:05-0700"
 
 	oktaFilterTimeFormat = "2006-01-02T15:05:05.000Z"
 )
@@ -73,8 +72,8 @@ type User struct {
 		} `json:"resetPassword"`
 	} `json:"_links"`
 
-	factors []UserMFAFactor
-	groups  []Group
+	MFAFactors []UserMFAFactor
+	Groups     []Group
 }
 
 type UserMFAFactor struct {
@@ -120,6 +119,7 @@ type profile struct {
 
 func (u User) String() string {
 	return Stringify(u)
+	// return fmt.Sprintf("ID: %v \tLogin: %v", u.ID, u.Profile.Login)
 }
 
 func (s *UsersService) GetByID(id string) (*User, *Response, error) {
@@ -162,6 +162,22 @@ type UserListFilterOptions struct {
 	// This will be built by internal - may not need to export
 	FilterString string   `url:"filter,omitempty"`
 	NextURL      *url.URL `url:"-"`
+}
+
+func (s *UsersService) PopulateGroups(user *User) (*Response, error) {
+	u := fmt.Sprintf("users/%v/groups", user.ID)
+	req, err := s.client.NewRequest("GET", u, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(req, &user.Groups)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
 }
 
 // List users with status of LOCKED_OUT
