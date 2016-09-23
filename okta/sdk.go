@@ -8,8 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -112,8 +112,8 @@ type Response struct {
 	// These fields provide the page values for paginating through a set of
 	// results.
 
-	NextURL       *url.URL
-	PrevURL       *url.URL
+	NextURL *url.URL
+	// PrevURL       *url.URL
 	SelfURL       *url.URL
 	OKTARequestID string
 	Rate
@@ -125,7 +125,7 @@ func newResponse(r *http.Response) *Response {
 
 	response.OKTARequestID = r.Header.Get(headerOKTARequestID)
 
-	// response.populatePageValues()
+	response.populatePageValues()
 	response.Rate = parseRate(r)
 	return response
 }
@@ -138,43 +138,31 @@ func newResponse(r *http.Response) *Response {
 // 			<https://yoursubdomain.okta.com/api/v1/users?after=00ub4tTFYKXCCZJSGFKM>; rel="self"
 
 func (r *Response) populatePageValues() {
-	if links, ok := r.Response.Header["Link"]; ok && len(links) > 0 {
-		for _, link := range strings.Split(links[0], ",") {
-			segments := strings.Split(strings.TrimSpace(link), ";")
 
-			// link must at least have href and rel
-			if len(segments) < 2 {
-				continue
-			}
+	for k, v := range r.Header {
 
-			// ensure href is properly formatted
-			if !strings.HasPrefix(segments[0], "<") || !strings.HasSuffix(segments[0], ">") {
-				continue
-			}
+		if k == "Link" {
+			nextRegex := regexp.MustCompile(`<(.*?)>; rel="next"`)
+			// prevRegex := regexp.MustCompile(`<(.*?)>; rel="prev"`)
+			selfRegex := regexp.MustCompile(`<(.*?)>; rel="self"`)
 
-			// try to pull out page parameter
-			url, err := url.Parse(segments[0][1 : len(segments[0])-1])
-			if err != nil {
-				continue
-			}
-			page := url.Query().Get("page")
-			if page == "" {
-				continue
-			}
-			// TODO: Tweak these for OKTA
-			for _, segment := range segments[1:] {
-				switch strings.TrimSpace(segment) {
-				case `rel="next"`:
-					r.NextURL, _ = url.Parse(page)
-				case `rel="prev"`:
-					r.PrevURL, _ = url.Parse(page)
-				case `rel="self"`:
-					r.SelfURL, _ = url.Parse(page)
+			for _, linkValue := range v {
+				nextLinkMatch := nextRegex.FindStringSubmatch(linkValue)
+				if len(nextLinkMatch) != 0 {
+					r.NextURL, _ = url.Parse(nextLinkMatch[1])
 				}
-
+				selfLinkMatch := selfRegex.FindStringSubmatch(linkValue)
+				if len(selfLinkMatch) != 0 {
+					r.SelfURL, _ = url.Parse(selfLinkMatch[1])
+				}
+				// prevLinkMatch := prevRegex.FindStringSubmatch(linkValue)
+				// if len(prevLinkMatch) != 0 {
+				// 	r.PrevURL, _ = url.Parse(prevLinkMatch[1])
+				// }
 			}
 		}
 	}
+
 }
 
 // parseRate parses the rate related headers.

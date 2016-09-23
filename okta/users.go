@@ -2,7 +2,25 @@ package okta
 
 import (
 	"fmt"
+	"net/url"
 	"time"
+)
+
+const (
+	profileEmailFilter        = "profile.email"
+	profileLoginFilter        = "profile.login"
+	profileStatusFilter       = "status"
+	profileIDFilter           = "id"
+	profileFirstNameFilter    = "profile.firstName"
+	profileLastNameFilter     = "profile.lastName"
+	UserStatusActive          = "ACTIVE"
+	UserStatusStaged          = "STAGED"
+	UserStatusProvisioned     = "PROVISIONED"
+	UserStatusRecovery        = "RECOVERY"
+	UserStatusLockedOut       = "LOCKED_OUT"
+	UserStatusPasswordExpired = "PASSWORD_EXPIRED"
+	UserStatusSuspended       = "SUSPENDED"
+	UserStatusDeprovisioned   = "DEPROVISIONED"
 )
 
 type UsersService service
@@ -133,8 +151,9 @@ type UserListFilterOptions struct {
 
 	LastUpdatedGreaterThan time.Time `url:"-"`
 	LastUpdatedLessThan    time.Time `url:"-"`
-	FilterString           string    `url:"filter,omitempty"` // This will be built by internal - may not need to export
-
+	// This will be built by internal - may not need to export
+	FilterString string   `url:"filter,omitempty"`
+	NextURL      *url.URL `url:"-"`
 }
 
 // List users with status of LOCKED_OUT
@@ -159,46 +178,44 @@ func appendToFilterString(currFilterString string, appendFilterKey string, appen
 	return rs
 }
 
-const (
-	profileEmailFilter     = "profile.email"
-	profileLoginFilter     = "profile.login"
-	profileStatusFilter    = "status"
-	profileIDFilter        = "id"
-	profileFirstNameFilter = "profile.firstName"
-	profileLastNameFilter  = "profile.lastName"
-)
-
 func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]*User, *Response, error) {
+	var u string
+	var err error
 
-	if opt.EmailEqualTo != "" {
-		opt.FilterString = appendToFilterString(opt.FilterString, profileEmailFilter, filterEqualOperator, opt.EmailEqualTo)
-	}
-	if opt.LoginEqualTo != "" {
-		opt.FilterString = appendToFilterString(opt.FilterString, profileLoginFilter, filterEqualOperator, opt.LoginEqualTo)
-	}
+	if opt.NextURL != nil {
+		u = opt.NextURL.String()
+		fmt.Printf("ListWithFilter NextURL: %v\n", u)
+	} else {
+		if opt.EmailEqualTo != "" {
+			opt.FilterString = appendToFilterString(opt.FilterString, profileEmailFilter, filterEqualOperator, opt.EmailEqualTo)
+		}
+		if opt.LoginEqualTo != "" {
+			opt.FilterString = appendToFilterString(opt.FilterString, profileLoginFilter, filterEqualOperator, opt.LoginEqualTo)
+		}
 
-	if opt.StatusEqualTo != "" {
-		opt.FilterString = appendToFilterString(opt.FilterString, profileStatusFilter, filterEqualOperator, opt.StatusEqualTo)
-	}
+		if opt.StatusEqualTo != "" {
+			opt.FilterString = appendToFilterString(opt.FilterString, profileStatusFilter, filterEqualOperator, opt.StatusEqualTo)
+		}
 
-	if opt.IDEqualTo != "" {
-		opt.FilterString = appendToFilterString(opt.FilterString, profileIDFilter, filterEqualOperator, opt.IDEqualTo)
-	}
+		if opt.IDEqualTo != "" {
+			opt.FilterString = appendToFilterString(opt.FilterString, profileIDFilter, filterEqualOperator, opt.IDEqualTo)
+		}
 
-	if opt.FirstNameEqualTo != "" {
-		opt.FilterString = appendToFilterString(opt.FilterString, profileFirstNameFilter, filterEqualOperator, opt.FirstNameEqualTo)
-	}
+		if opt.FirstNameEqualTo != "" {
+			opt.FilterString = appendToFilterString(opt.FilterString, profileFirstNameFilter, filterEqualOperator, opt.FirstNameEqualTo)
+		}
 
-	if opt.LastNameEqualTo != "" {
-		opt.FilterString = appendToFilterString(opt.FilterString, profileLastNameFilter, filterEqualOperator, opt.LastNameEqualTo)
+		if opt.LastNameEqualTo != "" {
+			opt.FilterString = appendToFilterString(opt.FilterString, profileLastNameFilter, filterEqualOperator, opt.LastNameEqualTo)
+		}
+
+		if opt.Limit == 0 {
+			opt.Limit = defaultLimit
+		}
+
+		u, err = addOptions("users", opt)
+
 	}
-	// if opt.FilterString != "" {
-	// 	opt.FilterString = url.QueryEscape(opt.FilterString)
-	// }
-	if opt.Limit == 0 {
-		opt.Limit = defaultLimit
-	}
-	u, err := addOptions("users", opt)
 
 	if err != nil {
 		return nil, nil, err
