@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+type GroupsService service
 type Group struct {
 	ID                    string    `json:"id"`
 	Created               time.Time `json:"created"`
@@ -37,5 +38,25 @@ type Group struct {
 
 func (g Group) String() string {
 	// return Stringify(g)
-	return fmt.Sprintf("ID: {%v} - Type: {%v} - Group Name: {%v}\n", g.ID, g.Type, g.Profile.Name)
+	return fmt.Sprintf("Group:(ID: {%v} - Type: {%v} - Group Name: {%v})\n", g.ID, g.Type, g.Profile.Name)
+}
+
+func (g *GroupsService) GetByID(groupID string) (*Group, *Response, error) {
+
+	u := fmt.Sprintf("groups/%v", groupID)
+	req, err := g.client.NewRequest("GET", u, nil)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	group := new(Group)
+
+	resp, err := g.client.Do(req, group)
+
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return group, resp, err
 }
