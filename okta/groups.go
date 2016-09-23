@@ -2,6 +2,7 @@ package okta
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 )
 
@@ -59,4 +60,40 @@ func (g *GroupsService) GetByID(groupID string) (*Group, *Response, error) {
 	}
 
 	return group, resp, err
+}
+
+func (g *GroupsService) GetUsers(groupID string, opt *GroupFilterOptions) (users []User, resp *Response, err error) {
+
+	var u string
+	if opt.NextURL != nil {
+		u = opt.NextURL.String()
+	} else {
+		u = fmt.Sprintf("groups/%v/users", groupID)
+
+		if opt.Limit == 0 {
+			opt.Limit = defaultLimit
+		}
+
+		u, _ = addOptions(u, opt)
+
+	}
+
+	req, err := g.client.NewRequest("GET", u, nil)
+
+	if err != nil {
+		return nil, nil, err
+	}
+	// users := new([]User)
+	resp, err = g.client.Do(req, &users)
+
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return users, resp, err
+}
+
+type GroupFilterOptions struct {
+	Limit   int      `url:"limit,omitempty"`
+	NextURL *url.URL `url:"-"`
 }
