@@ -148,7 +148,10 @@ type UserListFilterOptions struct {
 
 	FirstNameEqualTo string `url:"-"`
 	LastNameEqualTo  string `url:"-"`
+	//  API documenation says you can search with "starts with" but these don't work
 
+	// FirstNameStartsWith    string    `url:"-"`
+	// LastNameStartsWith     string    `url:"-"`
 	LastUpdatedGreaterThan time.Time `url:"-"`
 	LastUpdatedLessThan    time.Time `url:"-"`
 	// This will be built by internal - may not need to export
@@ -208,6 +211,15 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]*User, *Res
 		if opt.LastNameEqualTo != "" {
 			opt.FilterString = appendToFilterString(opt.FilterString, profileLastNameFilter, filterEqualOperator, opt.LastNameEqualTo)
 		}
+
+		//  API documenation says you can search with "starts with" but these don't work
+		// if opt.FirstNameStartsWith != "" {
+		// 	opt.FilterString = appendToFilterString(opt.FilterString, profileFirstNameFilter, filterStartsWithOperator, opt.FirstNameStartsWith)
+		// }
+
+		// if opt.LastNameStartsWith != "" {
+		// 	opt.FilterString = appendToFilterString(opt.FilterString, profileLastNameFilter, filterStartsWithOperator, opt.LastNameStartsWith)
+		// }
 
 		if opt.Limit == 0 {
 			opt.Limit = defaultLimit
