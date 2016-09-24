@@ -13,6 +13,11 @@ API Parameters & Design
 * limit
 * Pagination
 
+## Testing
+
+* Good testing Article: https://willnorris.com/2013/08/testing-in-go-github
+
+
 ## Models
 
 * User
