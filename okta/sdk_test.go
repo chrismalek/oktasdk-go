@@ -61,3 +61,21 @@ func TestVerifyProdClientSetup(t *testing.T) {
 	}
 
 }
+
+func testAuthHeader(t *testing.T, r *http.Request) {
+	want := fmt.Sprintf("SSWS %v", TEST_TOKEN)
+	if value := r.Header.Get("Authorization"); want != value {
+		t.Errorf("Authorization Header %s, want: %s", value, want)
+	}
+}
+
+func teardown() {
+	server.Close()
+
+}
+
+func testMethod(t *testing.T, r *http.Request, want string) {
+	if got := r.Method; got != want {
+		t.Errorf("Request method: %v, want %v", got, want)
+	}
+}
