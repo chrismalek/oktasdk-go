@@ -43,7 +43,8 @@ type Client struct {
 	client   *http.Client // HTTP client used to communicate with the API.
 
 	// Base URL for API requests.
-
+	//  This will be built automatically based on inputs to NewClient
+	//  If needed you can override this if needed (your URL is not *.okta.com or *.oktapreview.com)
 	BaseURL *url.URL
 
 	// User agent used when communicating with the GitHub API.
@@ -244,6 +245,8 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 // from Client.Do, and if so, returns it so that Client.Do can skip making a network API call unnecessarily.
 // Otherwise it returns nil, and Client.Do should proceed normally.
 func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
+
+	// TODO:
 	// c.rateMu.Lock()
 	// // rate := c.rateLimits[rateLimitCategory]
 	// c.rateMu.Unlock()
@@ -335,8 +338,9 @@ func (r *ErrorResponse) Error() string {
 		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.ErrorDetail.ErrorCode, r.ErrorDetail.ErrorSummary)
 }
 
+// Code stolen from Github api libary
 // Stringify attempts to create a reasonable string representation of types in
-// the GitHub library.  It does things like resolve pointers to their values
+// the library.  It does things like resolve pointers to their values
 // and omits struct fields with nil values.
 func Stringify(message interface{}) string {
 	var buf bytes.Buffer
