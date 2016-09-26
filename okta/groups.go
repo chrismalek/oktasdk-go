@@ -6,7 +6,11 @@ import (
 	"time"
 )
 
+// GroupsService handles communication with the Groups data related
+// methods of the OKTA API.
 type GroupsService service
+
+// Group represents the Group Object from the OKTA API
 type Group struct {
 	ID                    string    `json:"id"`
 	Created               time.Time `json:"created"`
@@ -42,6 +46,7 @@ func (g Group) String() string {
 	return fmt.Sprintf("Group:(ID: {%v} - Type: {%v} - Group Name: {%v})\n", g.ID, g.Type, g.Profile.Name)
 }
 
+// GetByID gets a group from OKTA by the Gropu ID. An error is returned if the group is not found
 func (g *GroupsService) GetByID(groupID string) (*Group, *Response, error) {
 
 	u := fmt.Sprintf("groups/%v", groupID)
@@ -62,6 +67,9 @@ func (g *GroupsService) GetByID(groupID string) (*Group, *Response, error) {
 	return group, resp, err
 }
 
+// GetUsers returns the members in a group
+//   Pass in an optional GroupFilterOptions struct to filter the results
+//   The Users in the group are returned
 func (g *GroupsService) GetUsers(groupID string, opt *GroupFilterOptions) (users []User, resp *Response, err error) {
 
 	var u string
@@ -93,6 +101,8 @@ func (g *GroupsService) GetUsers(groupID string, opt *GroupFilterOptions) (users
 	return users, resp, err
 }
 
+// GroupFilterOptions is a struct that you populate which will limit or control group fetches and searches
+//  The values here will coorelate to the search filtering allowed in the OKTA API. These values are turned into Query Parameters
 type GroupFilterOptions struct {
 	Limit   int      `url:"limit,omitempty"`
 	NextURL *url.URL `url:"-"`
