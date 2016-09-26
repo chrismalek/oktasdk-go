@@ -71,9 +71,8 @@ type service struct {
 	client *Client
 }
 
-// NewClient returns a new  API client.  If a nil httpClient is
+// NewClient returns a new OKTA API client.  If a nil httpClient is
 // provided, http.DefaultClient will be used.
-
 func NewClient(httpClient *http.Client, orgName string, apiToken string, isProduction bool) *Client {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
@@ -112,6 +111,9 @@ type Rate struct {
 	ResetTime time.Time
 }
 
+// Response is a OKTA API response.  This wraps the standard http.Response
+// returned from OKTA and provides convenient access to things like
+// pagination links.
 type Response struct {
 	*http.Response
 
@@ -277,7 +279,6 @@ func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 //
 // The error type will be *RateLimitError for rate limit exceeded errors,
 // and *TwoFactorAuthError for two-factor authentication errors.
-
 // TODO - check rate limit
 // TODO - check un-authorized
 func CheckResponse(r *http.Response) error {
@@ -285,12 +286,12 @@ func CheckResponse(r *http.Response) error {
 		return nil
 	}
 
-	errorResponse := &ErrorResponse{Response: r}
+	errorResp := &errorResponse{Response: r}
 	data, err := ioutil.ReadAll(r.Body)
 	if err == nil && data != nil {
-		json.Unmarshal(data, &errorResponse.ErrorDetail)
+		json.Unmarshal(data, &errorResp.ErrorDetail)
 	}
-	return errorResponse
+	return errorResp
 	// switch {
 
 	// case r.StatusCode == http.StatusNotFound:
@@ -315,10 +316,10 @@ func CheckResponse(r *http.Response) error {
 	// default:
 	// 	return errorResponse
 	// }
-	return nil
+
 }
 
-type APIError struct {
+type apiError struct {
 	ErrorCode    string `json:"errorCode"`
 	ErrorSummary string `json:"errorSummary"`
 	ErrorLink    string `json:"errorLink"`
@@ -328,12 +329,12 @@ type APIError struct {
 	} `json:"errorCauses"`
 }
 
-type ErrorResponse struct {
+type errorResponse struct {
 	Response    *http.Response //
-	ErrorDetail APIError
+	ErrorDetail apiError
 }
 
-func (r *ErrorResponse) Error() string {
+func (r *errorResponse) Error() string {
 	return fmt.Sprintf("HTTP Method: %v - URL: %v: - HTTP Status Code: %d, OKTA Error Code: %v, OKTA Error Summary: %v",
 		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.ErrorDetail.ErrorCode, r.ErrorDetail.ErrorSummary)
 }
@@ -342,7 +343,7 @@ func (r *ErrorResponse) Error() string {
 // Stringify attempts to create a reasonable string representation of types in
 // the library.  It does things like resolve pointers to their values
 // and omits struct fields with nil values.
-func Stringify(message interface{}) string {
+func stringify(message interface{}) string {
 	var buf bytes.Buffer
 	v := reflect.ValueOf(message)
 	stringifyValue(&buf, v)

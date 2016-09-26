@@ -136,7 +136,7 @@ type userMFAFactor struct {
 }
 
 func (u User) String() string {
-	return Stringify(u)
+	return stringify(u)
 	// return fmt.Sprintf("ID: %v \tLogin: %v", u.ID, u.Profile.Login)
 }
 
