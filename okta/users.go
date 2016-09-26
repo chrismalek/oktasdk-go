@@ -28,68 +28,22 @@ const (
 
 type UsersService service
 
-type User struct {
-	Activated   string `json:"activated"`
-	Created     string `json:"created"`
-	Credentials struct {
-		Password struct{} `json:"password"`
-		Provider struct {
-			Name string `json:"name"`
-			Type string `json:"type"`
-		} `json:"provider"`
-		RecoveryQuestion struct {
-			Question string `json:"question"`
-		} `json:"recovery_question"`
-	} `json:"credentials"`
-	ID              string  `json:"id"`
-	LastLogin       string  `json:"lastLogin"`
-	LastUpdated     string  `json:"lastUpdated"`
-	PasswordChanged string  `json:"passwordChanged"`
-	Profile         profile `json:"profile"`
-	Status          string  `json:"status"`
-	StatusChanged   string  `json:"statusChanged"`
-	Links           struct {
-		ChangePassword struct {
-			Href string `json:"href"`
-		} `json:"changePassword"`
-		ChangeRecoveryQuestion struct {
-			Href string `json:"href"`
-		} `json:"changeRecoveryQuestion"`
-		Deactivate struct {
-			Href string `json:"href"`
-		} `json:"deactivate"`
-		ExpirePassword struct {
-			Href string `json:"href"`
-		} `json:"expirePassword"`
-		ForgotPassword struct {
-			Href string `json:"href"`
-		} `json:"forgotPassword"`
-		ResetFactors struct {
-			Href string `json:"href"`
-		} `json:"resetFactors"`
-		ResetPassword struct {
-			Href string `json:"href"`
-		} `json:"resetPassword"`
-	} `json:"_links"`
-
-	MFAFactors []UserMFAFactor
-	Groups     []Group
+type provider struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
 }
 
-type UserMFAFactor struct {
-	ID          string    `json:"id"`
-	FactorType  string    `json:"factorType"`
-	Provider    string    `json:"provider"`
-	VendorName  string    `json:"vendorName"`
-	Status      string    `json:"status"`
-	Created     time.Time `json:"created"`
-	LastUpdated time.Time `json:"lastUpdated"`
-	Profile     struct {
-		CredentialID string `json:"credentialId"`
-	} `json:"profile"`
+type RecoveryQuestion struct {
+	Question string `json:"question"`
 }
 
-type profile struct {
+type Credentials struct {
+	Password         struct{}         `json:"password"`
+	Provider         provider         `json:"provider"`
+	RecoveryQuestion RecoveryQuestion `json:"recovery_question"`
+}
+
+type UserProfile struct {
 	Email       string `json:"email"`
 	FirstName   string `json:"firstName"`
 	LastName    string `json:"lastName"`
@@ -115,6 +69,59 @@ type profile struct {
 	State             string `json:"state"`
 	ZipCode           string `json:"zipCode"`
 	CountryCode       string `json:"countryCode"`
+}
+
+type userLinks struct {
+	ChangePassword struct {
+		Href string `json:"href"`
+	} `json:"changePassword"`
+	ChangeRecoveryQuestion struct {
+		Href string `json:"href"`
+	} `json:"changeRecoveryQuestion"`
+	Deactivate struct {
+		Href string `json:"href"`
+	} `json:"deactivate"`
+	ExpirePassword struct {
+		Href string `json:"href"`
+	} `json:"expirePassword"`
+	ForgotPassword struct {
+		Href string `json:"href"`
+	} `json:"forgotPassword"`
+	ResetFactors struct {
+		Href string `json:"href"`
+	} `json:"resetFactors"`
+	ResetPassword struct {
+		Href string `json:"href"`
+	} `json:"resetPassword"`
+}
+
+type User struct {
+	Activated       string      `json:"activated"`
+	Created         string      `json:"created"`
+	Credentials     Credentials `json:"credentials"`
+	ID              string      `json:"id"`
+	LastLogin       string      `json:"lastLogin"`
+	LastUpdated     string      `json:"lastUpdated"`
+	PasswordChanged string      `json:"passwordChanged"`
+	Profile         UserProfile `json:"profile"`
+	Status          string      `json:"status"`
+	StatusChanged   string      `json:"statusChanged"`
+	Links           userLinks   `json:"_links"`
+	MFAFactors      []UserMFAFactor
+	Groups          []Group
+}
+
+type UserMFAFactor struct {
+	ID          string    `json:"id"`
+	FactorType  string    `json:"factorType"`
+	Provider    string    `json:"provider"`
+	VendorName  string    `json:"vendorName"`
+	Status      string    `json:"status"`
+	Created     time.Time `json:"created"`
+	LastUpdated time.Time `json:"lastUpdated"`
+	Profile     struct {
+		CredentialID string `json:"credentialId"`
+	} `json:"profile"`
 }
 
 func (u User) String() string {

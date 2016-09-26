@@ -38,7 +38,7 @@ func setup() {
 
 	//  client configured to use test server
 	// non-production server
-	client = NewClient(nil, orgName, token, false)
+	client = NewClient(nil, TEST_SERVER_ORG, TEST_TOKEN, false)
 
 	client.BaseURL, _ = url.Parse(server.URL)
 

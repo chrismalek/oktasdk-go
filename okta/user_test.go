@@ -3,7 +3,9 @@ package okta
 import (
 	"fmt"
 	"net/http"
+	"reflect"
 	"testing"
+	// "github.com/kr/pretty"
 )
 
 var userTestJSONString = `
@@ -25,9 +27,7 @@ var userTestJSONString = `
     "displayName": "Isaac Brock",
     "email": "isaac.brock@example.com",
     "secondEmail": "isaac@example.org",
-    "profileUrl": "http://www.example.com/profile",
     "preferredLanguage": "en-US",
-    "userType": "Employee",
     "organization": "Okta",
     "title": "Director",
     "division": "R&D",
@@ -81,8 +81,8 @@ var userTestJSONString = `
 var testuser *User
 
 func setupTestUsers() {
-	testuser := &User{
 
+	testuser = &User{
 		ID:              "00ub0oNGTSWTBKOLGLNR",
 		Status:          "ACTIVE",
 		Created:         "2013-06-24T16:39:18.000Z",
@@ -91,38 +91,48 @@ func setupTestUsers() {
 		LastLogin:       "2013-06-24T17:39:19.000Z",
 		LastUpdated:     "2013-06-27T16:35:28.000Z",
 		PasswordChanged: "2013-06-24T16:39:19.000Z",
-		Profile: profile{Login: "isaac.brock@example.com",
-			FirstName:   "Isaac",
-			LastName:    "Brock",
-			NickName:    "issac",
-			DisplayName: "Isaac Brock",
-			Email:       "isaac.brock@example.com",
-			SecondEmail: "isaac@example.org",
-			// ProfileUrl:        "http://www.example.com/profile",
+		Profile: UserProfile{Login: "isaac.brock@example.com",
+			FirstName:         "Isaac",
+			LastName:          "Brock",
+			NickName:          "issac",
+			DisplayName:       "Isaac Brock",
+			Email:             "isaac.brock@example.com",
+			SecondEmail:       "isaac@example.org",
 			PreferredLanguage: "en-US",
-			// EserType:          "Employee",
-			Organization:   "Okta",
-			Title:          "Director",
-			Division:       "R&D",
-			Department:     "Engineering",
-			CostCenter:     "10",
-			EmployeeNumber: "187",
-			MobilePhone:    "+1-555-415-1337",
-			PrimaryPhone:   "+1-555-514-1337",
-			StreetAddress:  "301 Brannan St.",
-			City:           "San Francisco",
-			State:          "CA",
-			ZipCode:        "94107",
-			CountryCode:    "US"},
-		Credentials: {Recovery_question: {Question: "Who's a major player in the cowboy scene?"},
-			Provider: {Type: "OKTA",
-				Name: "OKTA"}}}
+			Organization:      "Okta",
+			Title:             "Director",
+			Division:          "R&D",
+			Department:        "Engineering",
+			CostCenter:        "10",
+			EmployeeNumber:    "187",
+			MobilePhone:       "+1-555-415-1337",
+			PrimaryPhone:      "+1-555-514-1337",
+			StreetAddress:     "301 Brannan St.",
+			City:              "San Francisco",
+			State:             "CA",
+			ZipCode:           "94107",
+			CountryCode:       "US"},
+		Credentials: Credentials{
+			RecoveryQuestion: RecoveryQuestion{Question: "Who's a major player in the cowboy scene?"},
+			Provider: provider{Type: "OKTA",
+				Name: "OKTA"},
+		},
+	}
+
+	testuser.Links.ChangePassword.Href = "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/credentials/change_password"
+	testuser.Links.ResetFactors.Href = "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/lifecycle/reset_factors"
+	testuser.Links.ChangeRecoveryQuestion.Href = "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/credentials/change_recovery_question"
+	testuser.Links.Deactivate.Href = "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/lifecycle/deactivate"
+	testuser.Links.ExpirePassword.Href = "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/lifecycle/expire_password"
+	testuser.Links.ForgotPassword.Href = "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/credentials/forgot_password"
+	testuser.Links.ResetPassword.Href = "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/lifecycle/reset_password"
 }
 
 func TestUserGet(t *testing.T) {
 
 	setup()
 	defer teardown()
+	setupTestUsers()
 
 	mux.HandleFunc("/users/00ub0oNGTSWTBKOLGLNR", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "GET")
@@ -133,5 +143,9 @@ func TestUserGet(t *testing.T) {
 	user, _, err := client.Users.GetByID("00ub0oNGTSWTBKOLGLNR")
 	if err != nil {
 		t.Errorf("Users.Get returned error: %v", err)
+	}
+	if !reflect.DeepEqual(user, testuser) {
+		// fmt.Printf("pretty---\n%v\n---\n", pretty.Diff(user, testuser))
+		t.Errorf("client.Users.GetByID returned \n\t%+v, want \n\t%+v\n", user, testuser)
 	}
 }
