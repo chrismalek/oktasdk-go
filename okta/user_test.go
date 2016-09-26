@@ -91,7 +91,7 @@ func setupTestUsers() {
 		LastLogin:       "2013-06-24T17:39:19.000Z",
 		LastUpdated:     "2013-06-27T16:35:28.000Z",
 		PasswordChanged: "2013-06-24T16:39:19.000Z",
-		Profile: UserProfile{Login: "isaac.brock@example.com",
+		Profile: userProfile{Login: "isaac.brock@example.com",
 			FirstName:         "Isaac",
 			LastName:          "Brock",
 			NickName:          "issac",
@@ -112,8 +112,8 @@ func setupTestUsers() {
 			State:             "CA",
 			ZipCode:           "94107",
 			CountryCode:       "US"},
-		Credentials: Credentials{
-			RecoveryQuestion: RecoveryQuestion{Question: "Who's a major player in the cowboy scene?"},
+		Credentials: credentials{
+			RecoveryQuestion: recoveryQuestion{Question: "Who's a major player in the cowboy scene?"},
 			Provider: provider{Type: "OKTA",
 				Name: "OKTA"},
 		},
@@ -149,3 +149,7 @@ func TestUserGet(t *testing.T) {
 		t.Errorf("client.Users.GetByID returned \n\t%+v, want \n\t%+v\n", user, testuser)
 	}
 }
+
+//  Test User Search Query Parameter Generation
+// Test Pagination
+//

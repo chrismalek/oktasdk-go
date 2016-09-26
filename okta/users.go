@@ -7,25 +7,35 @@ import (
 )
 
 const (
-	profileEmailFilter        = "profile.email"
-	profileLoginFilter        = "profile.login"
-	profileStatusFilter       = "status"
-	profileIDFilter           = "id"
-	profileFirstNameFilter    = "profile.firstName"
-	profileLastNameFilter     = "profile.lastName"
-	profileLastUpdatedFilter  = "lastUpdated"
-	UserStatusActive          = "ACTIVE"
-	UserStatusStaged          = "STAGED"
-	UserStatusProvisioned     = "PROVISIONED"
-	UserStatusRecovery        = "RECOVERY"
-	UserStatusLockedOut       = "LOCKED_OUT"
+	profileEmailFilter       = "profile.email"
+	profileLoginFilter       = "profile.login"
+	profileStatusFilter      = "status"
+	profileIDFilter          = "id"
+	profileFirstNameFilter   = "profile.firstName"
+	profileLastNameFilter    = "profile.lastName"
+	profileLastUpdatedFilter = "lastUpdated"
+	// UserStatusActive is a  constant to represent OKTA User State returned by the API
+	UserStatusActive = "ACTIVE"
+	// UserStatusStaged is a  constant to represent OKTA User State returned by the API
+	UserStatusStaged = "STAGED"
+	// UserStatusProvisioned is a  constant to represent OKTA User State returned by the API
+	UserStatusProvisioned = "PROVISIONED"
+	// UserStatusRecovery is a  constant to represent OKTA User State returned by the API
+	UserStatusRecovery = "RECOVERY"
+	// UserStatusLockedOut is a  constant to represent OKTA User State returned by the API
+	UserStatusLockedOut = "LOCKED_OUT"
+	// UserStatusPasswordExpired is a  constant to represent OKTA User State returned by the API
 	UserStatusPasswordExpired = "PASSWORD_EXPIRED"
-	UserStatusSuspended       = "SUSPENDED"
-	UserStatusDeprovisioned   = "DEPROVISIONED"
+	// UserStatusSuspended is a  constant to represent OKTA User State returned by the API
+	UserStatusSuspended = "SUSPENDED"
+	// UserStatusDeprovisioned is a  constant to represent OKTA User State returned by the API
+	UserStatusDeprovisioned = "DEPROVISIONED"
 
 	oktaFilterTimeFormat = "2006-01-02T15:05:05.000Z"
 )
 
+// UsersService handles communication with the User data related
+// methods of the OKTA API.
 type UsersService service
 
 type provider struct {
@@ -33,17 +43,17 @@ type provider struct {
 	Type string `json:"type"`
 }
 
-type RecoveryQuestion struct {
+type recoveryQuestion struct {
 	Question string `json:"question"`
 }
 
-type Credentials struct {
+type credentials struct {
 	Password         struct{}         `json:"password"`
 	Provider         provider         `json:"provider"`
-	RecoveryQuestion RecoveryQuestion `json:"recovery_question"`
+	RecoveryQuestion recoveryQuestion `json:"recovery_question"`
 }
 
-type UserProfile struct {
+type userProfile struct {
 	Email       string `json:"email"`
 	FirstName   string `json:"firstName"`
 	LastName    string `json:"lastName"`
@@ -95,23 +105,24 @@ type userLinks struct {
 	} `json:"resetPassword"`
 }
 
+// User is a struct that represents a user object from OKTA.
 type User struct {
 	Activated       string      `json:"activated"`
 	Created         string      `json:"created"`
-	Credentials     Credentials `json:"credentials"`
+	Credentials     credentials `json:"credentials"`
 	ID              string      `json:"id"`
 	LastLogin       string      `json:"lastLogin"`
 	LastUpdated     string      `json:"lastUpdated"`
 	PasswordChanged string      `json:"passwordChanged"`
-	Profile         UserProfile `json:"profile"`
+	Profile         userProfile `json:"profile"`
 	Status          string      `json:"status"`
 	StatusChanged   string      `json:"statusChanged"`
 	Links           userLinks   `json:"_links"`
-	MFAFactors      []UserMFAFactor
+	MFAFactors      []userMFAFactor
 	Groups          []Group
 }
 
-type UserMFAFactor struct {
+type userMFAFactor struct {
 	ID          string    `json:"id"`
 	FactorType  string    `json:"factorType"`
 	Provider    string    `json:"provider"`
@@ -129,6 +140,8 @@ func (u User) String() string {
 	// return fmt.Sprintf("ID: %v \tLogin: %v", u.ID, u.Profile.Login)
 }
 
+// GetByID returns a user object for a specific OKTA ID.
+// Generally the id input string is the cryptic OKTA key value from User.ID. However, the OKTA API may accept other values like "me", or login shortname
 func (s *UsersService) GetByID(id string) (*User, *Response, error) {
 	u := fmt.Sprintf("users/%v", id)
 	req, err := s.client.NewRequest("GET", u, nil)
@@ -145,12 +158,13 @@ func (s *UsersService) GetByID(id string) (*User, *Response, error) {
 	return user, resp, err
 }
 
-// Struct for listing and searching  for users
+// UserListFilterOptions is a struct that you can populate which will "filter" user searches
+// the exported struct fields should allow you to do different filters based on what is allowed in the OKTA API.
+//  The filter OKTA API is limited in the fields it can search
+//  NOTE: In the current form you can't add parenthesis and ordering
 // OKTA API Supports only a limited number of properties:
 // status, lastUpdated, id, profile.login, profile.email, profile.firstName, and profile.lastName.
 // http://developer.okta.com/docs/api/resources/users.html#list-users-with-a-filter
-
-// TODO: Trying to mimic the github api but it is  a bit different
 type UserListFilterOptions struct {
 	Limit         int    `url:"limit,omitempty"`
 	EmailEqualTo  string `url:"-"`
@@ -171,6 +185,7 @@ type UserListFilterOptions struct {
 	NextURL      *url.URL `url:"-"`
 }
 
+// PopulateGroups will populate the groups a user is a member of. You pass in a pointer to an existing users
 func (s *UsersService) PopulateGroups(user *User) (*Response, error) {
 	u := fmt.Sprintf("users/%v/groups", user.ID)
 	req, err := s.client.NewRequest("GET", u, nil)
@@ -209,6 +224,7 @@ func appendToFilterString(currFilterString string, appendFilterKey string, appen
 	return rs
 }
 
+// ListWithFilter will use the input UserListFilterOptions to find users and return a paged result set
 func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]*User, *Response, error) {
 	var u string
 	var err error
