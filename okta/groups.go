@@ -10,6 +10,8 @@ import (
 // methods of the OKTA API.
 type GroupsService service
 
+// TODO: GroupSearch
+
 // Group represents the Group Object from the OKTA API
 type Group struct {
 	ID                    string    `json:"id"`

@@ -181,8 +181,10 @@ type UserListFilterOptions struct {
 	LastUpdatedGreaterThan time.Time `url:"-"`
 	LastUpdatedLessThan    time.Time `url:"-"`
 	// This will be built by internal - may not need to export
-	FilterString string   `url:"filter,omitempty"`
-	NextURL      *url.URL `url:"-"`
+	FilterString  string   `url:"filter,omitempty"`
+	NextURL       *url.URL `url:"-"`
+	GetAllPages   bool     `url:"-"`
+	NumberOfPages int      `url:"-"`
 }
 
 // PopulateGroups will populate the groups a user is a member of. You pass in a pointer to an existing users
@@ -193,7 +195,7 @@ func (s *UsersService) PopulateGroups(user *User) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	// TODO: If user has more than 200 groups this will only return those first 200
 	resp, err := s.client.Do(req, &user.Groups)
 	if err != nil {
 		return resp, err
@@ -225,9 +227,11 @@ func appendToFilterString(currFilterString string, appendFilterKey string, appen
 }
 
 // ListWithFilter will use the input UserListFilterOptions to find users and return a paged result set
-func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]*User, *Response, error) {
+func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Response, error) {
 	var u string
 	var err error
+
+	pagesRetreived := 0
 
 	if opt.NextURL != nil {
 		u = opt.NextURL.String()
@@ -291,12 +295,39 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]*User, *Res
 	if err != nil {
 		return nil, nil, err
 	}
-
-	users := new([]*User)
-	resp, err := s.client.Do(req, users)
+	users := make([]User, 1)
+	resp, err := s.client.Do(req, &users)
 	if err != nil {
 		return nil, resp, err
 	}
 
-	return *users, resp, err
+	pagesRetreived++
+
+	if (opt.NumberOfPages > 0 && pagesRetreived < opt.NumberOfPages) || opt.GetAllPages {
+
+		for {
+
+			if pagesRetreived == opt.NumberOfPages {
+				break
+			}
+			if resp.NextURL != nil {
+				var userPage []User
+				pageOption := new(UserListFilterOptions)
+				pageOption.NextURL = resp.NextURL
+				pageOption.NumberOfPages = 1
+				pageOption.Limit = opt.Limit
+
+				userPage, resp, err = s.ListWithFilter(pageOption)
+				if err != nil {
+					return users, resp, err
+				} else {
+					users = append(users, userPage...)
+					pagesRetreived++
+				}
+			} else {
+				break
+			}
+		}
+	}
+	return users, resp, err
 }
