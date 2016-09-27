@@ -31,10 +31,10 @@ const (
 	headerAuthorizationFormat  = "SSWS %v"
 	mediaTypeJSON              = "application/json"
 	defaultLimit               = 50
-	filterEqualOperator        = "eq"
-	filterStartsWithOperator   = "sw"
-	filterGreaterThanOperator  = "gt"
-	filterLessThanOperator     = "lt"
+	FilterEqualOperator        = "eq"
+	FilterStartsWithOperator   = "sw"
+	FilterGreaterThanOperator  = "gt"
+	FilterLessThanOperator     = "lt"
 )
 
 // A Client manages communication with the API.

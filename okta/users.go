@@ -235,29 +235,29 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 
 	if opt.NextURL != nil {
 		u = opt.NextURL.String()
-		fmt.Printf("ListWithFilter NextURL: %v\n", u)
 	} else {
 		if opt.EmailEqualTo != "" {
-			opt.FilterString = appendToFilterString(opt.FilterString, profileEmailFilter, filterEqualOperator, opt.EmailEqualTo)
+
+			opt.FilterString = appendToFilterString(opt.FilterString, profileEmailFilter, FilterEqualOperator, opt.EmailEqualTo)
 		}
 		if opt.LoginEqualTo != "" {
-			opt.FilterString = appendToFilterString(opt.FilterString, profileLoginFilter, filterEqualOperator, opt.LoginEqualTo)
+			opt.FilterString = appendToFilterString(opt.FilterString, profileLoginFilter, FilterEqualOperator, opt.LoginEqualTo)
 		}
 
 		if opt.StatusEqualTo != "" {
-			opt.FilterString = appendToFilterString(opt.FilterString, profileStatusFilter, filterEqualOperator, opt.StatusEqualTo)
+			opt.FilterString = appendToFilterString(opt.FilterString, profileStatusFilter, FilterEqualOperator, opt.StatusEqualTo)
 		}
 
 		if opt.IDEqualTo != "" {
-			opt.FilterString = appendToFilterString(opt.FilterString, profileIDFilter, filterEqualOperator, opt.IDEqualTo)
+			opt.FilterString = appendToFilterString(opt.FilterString, profileIDFilter, FilterEqualOperator, opt.IDEqualTo)
 		}
 
 		if opt.FirstNameEqualTo != "" {
-			opt.FilterString = appendToFilterString(opt.FilterString, profileFirstNameFilter, filterEqualOperator, opt.FirstNameEqualTo)
+			opt.FilterString = appendToFilterString(opt.FilterString, profileFirstNameFilter, FilterEqualOperator, opt.FirstNameEqualTo)
 		}
 
 		if opt.LastNameEqualTo != "" {
-			opt.FilterString = appendToFilterString(opt.FilterString, profileLastNameFilter, filterEqualOperator, opt.LastNameEqualTo)
+			opt.FilterString = appendToFilterString(opt.FilterString, profileLastNameFilter, FilterEqualOperator, opt.LastNameEqualTo)
 		}
 
 		//  API documenation says you can search with "starts with" but these don't work
@@ -270,13 +270,13 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 		// }
 
 		if !opt.LastUpdatedGreaterThan.IsZero() {
-			opt.FilterString = appendToFilterString(opt.FilterString, profileLastUpdatedFilter, filterGreaterThanOperator, opt.LastUpdatedGreaterThan.UTC().Format(oktaFilterTimeFormat))
+			opt.FilterString = appendToFilterString(opt.FilterString, profileLastUpdatedFilter, FilterGreaterThanOperator, opt.LastUpdatedGreaterThan.UTC().Format(oktaFilterTimeFormat))
 		}
 
 		if !opt.LastUpdatedLessThan.IsZero() {
 			fmt.Printf("-------LastUpdatedLessThan in 8601: %v \n", opt.LastUpdatedLessThan.UTC().Format(oktaFilterTimeFormat))
 
-			opt.FilterString = appendToFilterString(opt.FilterString, profileLastUpdatedFilter, filterLessThanOperator, opt.LastUpdatedLessThan.UTC().Format(oktaFilterTimeFormat))
+			opt.FilterString = appendToFilterString(opt.FilterString, profileLastUpdatedFilter, FilterLessThanOperator, opt.LastUpdatedLessThan.UTC().Format(oktaFilterTimeFormat))
 		}
 
 		if opt.Limit == 0 {
