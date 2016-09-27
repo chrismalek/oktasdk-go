@@ -2,28 +2,10 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"time"
 
 	"github.com/chrismalek/oktasdk-go/okta"
 )
-
-var orgName = os.Getenv("OKTA_API_TEST_ORG")
-var apiToken = os.Getenv("OKTA_API_TEST_TOKEN")
-
-func main() {
-
-	nameSearchExample()
-	getActiveUsersExampleOnePageAtATime()
-	getActiveUsersExampleAllPages()
-}
-
-func printUserArray(users []okta.User) {
-	for _, user := range users {
-		fmt.Printf("Found User: %v\n", user.Profile.Login)
-
-	}
-
-}
 
 func nameSearchExample() {
 	defer printEnd(printStart("nameSearchExample"))
@@ -107,11 +89,27 @@ func getActiveUsersExampleAllPages() {
 
 }
 
-func printStart(fName string) string {
-	fmt.Printf("** Begin %v ***\n", fName)
-	return fName
-}
-func printEnd(fName string) {
-	fmt.Printf("** End %v ***\n", fName)
+// In this example, we will get all active users who are updated in the last month
+func getActiveUserUpdatedInLastMonthAllPages() {
+	defer printEnd(printStart("getActiveUserUpdatedInLastMonthAllPages"))
+
+	client := okta.NewClient(nil, orgName, apiToken, false)
+
+	fmt.Printf("Client Base URL: %v\n\n", client.BaseURL)
+
+	userFilter := &okta.UserListFilterOptions{}
+	userFilter.GetAllPages = true
+	userFilter.StatusEqualTo = okta.UserStatusActive
+	userFilter.LastUpdated.Value = time.Now().AddDate(0, -1, 0)
+	userFilter.LastUpdated.Operator = okta.FilterGreaterThanOperator
+
+	allUsers, response, err := client.Users.ListWithFilter(userFilter)
+
+	if err != nil {
+		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
+	}
+
+	fmt.Printf("len(all_users) = %v\n", len(allUsers))
+	printUserArray(allUsers)
 
 }
