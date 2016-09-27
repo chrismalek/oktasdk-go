@@ -178,13 +178,13 @@ type UserListFilterOptions struct {
 
 	// FirstNameStartsWith    string    `url:"-"`
 	// LastNameStartsWith     string    `url:"-"`
-	LastUpdatedGreaterThan time.Time `url:"-"`
-	LastUpdatedLessThan    time.Time `url:"-"`
+
 	// This will be built by internal - may not need to export
-	FilterString  string   `url:"filter,omitempty"`
-	NextURL       *url.URL `url:"-"`
-	GetAllPages   bool     `url:"-"`
-	NumberOfPages int      `url:"-"`
+	FilterString  string     `url:"filter,omitempty"`
+	NextURL       *url.URL   `url:"-"`
+	GetAllPages   bool       `url:"-"`
+	NumberOfPages int        `url:"-"`
+	LastUpdated   dateFilter `url:"-"`
 }
 
 // PopulateGroups will populate the groups a user is a member of. You pass in a pointer to an existing users
@@ -237,7 +237,6 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 		u = opt.NextURL.String()
 	} else {
 		if opt.EmailEqualTo != "" {
-
 			opt.FilterString = appendToFilterString(opt.FilterString, profileEmailFilter, FilterEqualOperator, opt.EmailEqualTo)
 		}
 		if opt.LoginEqualTo != "" {
@@ -269,14 +268,8 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 		// 	opt.FilterString = appendToFilterString(opt.FilterString, profileLastNameFilter, filterStartsWithOperator, opt.LastNameStartsWith)
 		// }
 
-		if !opt.LastUpdatedGreaterThan.IsZero() {
-			opt.FilterString = appendToFilterString(opt.FilterString, profileLastUpdatedFilter, FilterGreaterThanOperator, opt.LastUpdatedGreaterThan.UTC().Format(oktaFilterTimeFormat))
-		}
-
-		if !opt.LastUpdatedLessThan.IsZero() {
-			fmt.Printf("-------LastUpdatedLessThan in 8601: %v \n", opt.LastUpdatedLessThan.UTC().Format(oktaFilterTimeFormat))
-
-			opt.FilterString = appendToFilterString(opt.FilterString, profileLastUpdatedFilter, FilterLessThanOperator, opt.LastUpdatedLessThan.UTC().Format(oktaFilterTimeFormat))
+		if !opt.LastUpdated.Value.IsZero() {
+			opt.FilterString = appendToFilterString(opt.FilterString, profileLastUpdatedFilter, opt.LastUpdated.Operator, opt.LastUpdated.Value.UTC().Format(oktaFilterTimeFormat))
 		}
 
 		if opt.Limit == 0 {

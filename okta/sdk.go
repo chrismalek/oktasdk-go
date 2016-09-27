@@ -31,10 +31,14 @@ const (
 	headerAuthorizationFormat  = "SSWS %v"
 	mediaTypeJSON              = "application/json"
 	defaultLimit               = 50
-	FilterEqualOperator        = "eq"
-	FilterStartsWithOperator   = "sw"
-	FilterGreaterThanOperator  = "gt"
-	FilterLessThanOperator     = "lt"
+	// FilterEqualOperator Filter Operatorid for "equal"
+	FilterEqualOperator = "eq"
+	// FilterStartsWithOperator - filter operator for "starts with"
+	FilterStartsWithOperator = "sw"
+	// FilterGreaterThanOperator - filter operator for "greater than"
+	FilterGreaterThanOperator = "gt"
+	// FilterLessThanOperator - filter operator for "less than"
+	FilterLessThanOperator = "lt"
 )
 
 // A Client manages communication with the API.
@@ -469,4 +473,9 @@ func addOptions(s string, opt interface{}) (string, error) {
 
 	u.RawQuery = qs.Encode()
 	return u.String(), nil
+}
+
+type dateFilter struct {
+	Value    time.Time
+	Operator string
 }

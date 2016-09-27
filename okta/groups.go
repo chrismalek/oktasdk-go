@@ -72,16 +72,13 @@ type GroupFilterOptions struct {
 	LastMembershipUpdated dateFilter `url:"-"`
 }
 
-type dateFilter struct {
-	Value    time.Time
-	Operator string
-}
-
 func (g Group) String() string {
 	// return Stringify(g)
 	return fmt.Sprintf("Group:(ID: {%v} - Type: {%v} - Group Name: {%v})\n", g.ID, g.Type, g.Profile.Name)
 }
 
+// ListWithFilter - Method to list groups with different filter options.
+//  Pass in a GroupFilterOptions to specify filters. Values in that struct will turn into Query parameters
 func (g *GroupsService) ListWithFilter(opt *GroupFilterOptions) ([]Group, *Response, error) {
 
 	var u string
