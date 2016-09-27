@@ -71,7 +71,7 @@ func (g *GroupsService) GetByID(groupID string) (*Group, *Response, error) {
 //   Pass in an optional GroupFilterOptions struct to filter the results
 //   The Users in the group are returned
 func (g *GroupsService) GetUsers(groupID string, opt *GroupFilterOptions) (users []User, resp *Response, err error) {
-
+	pagesRetreived := 0
 	var u string
 	if opt.NextURL != nil {
 		u = opt.NextURL.String()
@@ -83,7 +83,6 @@ func (g *GroupsService) GetUsers(groupID string, opt *GroupFilterOptions) (users
 		}
 
 		u, _ = addOptions(u, opt)
-
 	}
 
 	req, err := g.client.NewRequest("GET", u, nil)
@@ -91,11 +90,40 @@ func (g *GroupsService) GetUsers(groupID string, opt *GroupFilterOptions) (users
 	if err != nil {
 		return nil, nil, err
 	}
-	// users := new([]User)
 	resp, err = g.client.Do(req, &users)
 
 	if err != nil {
 		return nil, resp, err
+	}
+
+	pagesRetreived++
+	if (opt.NumberOfPages > 0 && pagesRetreived < opt.NumberOfPages) || opt.GetAllPages {
+
+		for {
+
+			if pagesRetreived == opt.NumberOfPages {
+				break
+			}
+			if resp.NextURL != nil {
+
+				var userPage []User
+				pageOpts := new(GroupFilterOptions)
+				pageOpts.NextURL = resp.NextURL
+				pageOpts.Limit = opt.Limit
+				pageOpts.NumberOfPages = 1
+
+				userPage, resp, err = g.GetUsers(groupID, pageOpts)
+				if err != nil {
+					return users, resp, err
+				} else {
+					users = append(users, userPage...)
+					pagesRetreived++
+				}
+			} else {
+				break
+			}
+
+		}
 	}
 
 	return users, resp, err
@@ -104,6 +132,8 @@ func (g *GroupsService) GetUsers(groupID string, opt *GroupFilterOptions) (users
 // GroupFilterOptions is a struct that you populate which will limit or control group fetches and searches
 //  The values here will coorelate to the search filtering allowed in the OKTA API. These values are turned into Query Parameters
 type GroupFilterOptions struct {
-	Limit   int      `url:"limit,omitempty"`
-	NextURL *url.URL `url:"-"`
+	Limit         int      `url:"limit,omitempty"`
+	NextURL       *url.URL `url:"-"`
+	GetAllPages   bool     `url:"-"`
+	NumberOfPages int      `url:"-"`
 }
