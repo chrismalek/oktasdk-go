@@ -4,35 +4,12 @@
 
 # Design Notes
 
-http://developer.okta.com/docs/api/getting_started/design_principles.html
 
 
-
-API Parameters & Design
-
-* limit
-* Pagination
 
 ## Testing
 
 * Good testing Article: https://willnorris.com/2013/08/testing-in-go-github
-
-
-## Models
-
-* User
-  * profile
-  * credentials
-      * provider
-      * password
-      * recovery_question
-  * links
-* Role Model
-    - used to list types of admin user is
-* Groups
-* Factors
-* Apps
-* Events
 
 
 

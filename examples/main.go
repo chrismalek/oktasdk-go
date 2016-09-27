@@ -9,6 +9,7 @@ import (
 
 var orgName = os.Getenv("OKTA_API_TEST_ORG")
 var apiToken = os.Getenv("OKTA_API_TEST_TOKEN")
+var isProductionOKTAORG = false
 
 func main() {
 	fmt.Printf("\n\n%%%%%% User Examples\n\n\n")
@@ -16,24 +17,37 @@ func main() {
 	getActiveUsersExampleOnePageAtATime()
 	getActiveUsersExampleAllPages()
 	getActiveUserUpdatedInLastMonthAllPages()
+	getFirstActiveUserRoles()
+
 	fmt.Printf("\n\n%%%%%% Group Examples\n\n\n")
 
 	searchForGroupByName()
 	getFirst3PageOfOKTAGroupsUpdatedRecently()
+	getGroupByID()
+	getRandomOKTAGroupUser()
+
 }
 
 func printUserArray(users []okta.User) {
 	for _, user := range users {
-		fmt.Printf("Found User: %v\n", user.Profile.Login)
+		printUser(user)
 
 	}
 }
 
+func printUser(user okta.User) {
+	fmt.Printf("\tFound User: %v\n", user.Profile.Login)
+
+}
 func printGroupArray(groups []okta.Group) {
 	for _, group := range groups {
-		fmt.Printf("Found Group: %v\n", group.Profile.Name)
+		printGroup(group)
 	}
 
+}
+
+func printGroup(group okta.Group) {
+	fmt.Printf("\tFound Group: ID: %v, Name: %v\n", group.ID, group.Profile.Name)
 }
 
 func printStart(fName string) string {

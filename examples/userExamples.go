@@ -10,7 +10,7 @@ import (
 func nameSearchExample() {
 	defer printEnd(printStart("nameSearchExample"))
 
-	client := okta.NewClient(nil, orgName, apiToken, false)
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
 
 	fmt.Printf("Client Base URL: %v\n\n", client.BaseURL)
 
@@ -32,7 +32,7 @@ func nameSearchExample() {
 // One page at a time.
 func getActiveUsersExampleOnePageAtATime() {
 	defer printEnd(printStart("getActiveUsersExampleOnePageAtATime"))
-	client := okta.NewClient(nil, orgName, apiToken, false)
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
 	fmt.Printf("Client Base URL: %v\n\n", client.BaseURL)
 
 	userFilter := &okta.UserListFilterOptions{}
@@ -53,7 +53,7 @@ func getActiveUsersExampleOnePageAtATime() {
 
 			allUsers = append(allUsers, userPage...)
 
-			fmt.Printf("Page return %d users\n", len(userPage))
+			fmt.Printf("\tPage return %d users\n", len(userPage))
 
 			if response.NextURL == nil {
 				break
@@ -70,7 +70,7 @@ func getActiveUsersExampleOnePageAtATime() {
 func getActiveUsersExampleAllPages() {
 	defer printEnd(printStart("getActiveUsersExampleAllPages"))
 
-	client := okta.NewClient(nil, orgName, apiToken, false)
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
 
 	fmt.Printf("Client Base URL: %v\n\n", client.BaseURL)
 
@@ -93,7 +93,7 @@ func getActiveUsersExampleAllPages() {
 func getActiveUserUpdatedInLastMonthAllPages() {
 	defer printEnd(printStart("getActiveUserUpdatedInLastMonthAllPages"))
 
-	client := okta.NewClient(nil, orgName, apiToken, false)
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
 
 	fmt.Printf("Client Base URL: %v\n\n", client.BaseURL)
 
@@ -111,5 +111,34 @@ func getActiveUserUpdatedInLastMonthAllPages() {
 
 	fmt.Printf("len(all_users) = %v\n", len(allUsers))
 	printUserArray(allUsers)
+
+}
+
+func getFirstActiveUserRoles() {
+	defer printEnd(printStart("getFirstActiveUserRoles"))
+
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
+
+	fmt.Printf("Client Base URL: %v\n\n", client.BaseURL)
+
+	userFilter := &okta.UserListFilterOptions{}
+	userFilter.Limit = 1
+	userFilter.StatusEqualTo = okta.UserStatusActive
+
+	randomActiveUsers, response, err := client.Users.ListWithFilter(userFilter)
+
+	if err != nil {
+		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
+	}
+
+	fmt.Printf("len(all_users) = %v\n", len(randomActiveUsers))
+	printUserArray(randomActiveUsers)
+	if len(randomActiveUsers) > 0 {
+		response, err := client.Users.PopulateGroups(&randomActiveUsers[0])
+		if err != nil {
+			fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
+		}
+		printGroupArray(randomActiveUsers[0].Groups)
+	}
 
 }
