@@ -1,6 +1,7 @@
 package okta
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"time"
@@ -235,6 +236,59 @@ func (g *GroupsService) GetUsers(groupID string, opt *GroupUserFilterOptions) (u
 	return users, resp, err
 }
 
+// Add - Adds an OKTA Mastered Group with name and description. GroupName is required.
+func (g *GroupsService) Add(groupName string, groupDescription string) (*Group, *Response, error) {
+
+	if groupName == "" {
+		return nil, nil, errors.New("groupName parameter is required for ADD")
+	}
+
+	newGroup := newGroup{}
+	newGroup.Profile.Name = groupName
+	newGroup.Profile.Description = groupDescription
+
+	u := fmt.Sprintf("groups")
+
+	req, err := g.client.NewRequest("POST", u, newGroup)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	group := new(Group)
+
+	resp, err := g.client.Do(req, group)
+
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return group, resp, err
+}
+
+// Delete - Delets an OKTA Mastered Group with ID
+func (g *GroupsService) Delete(groupID string) (*Response, error) {
+
+	if groupID == "" {
+		return nil, errors.New("groupID parameter is required for Delete")
+	}
+	u := fmt.Sprintf("groups/%v", groupID)
+
+	req, err := g.client.NewRequest("DELETE", u, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := g.client.Do(req, nil)
+
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
 // GroupUserFilterOptions is a struct that you populate which will limit or control group fetches and searches
 //  The values here will coorelate to the search filtering allowed in the OKTA API. These values are turned into Query Parameters
 type GroupUserFilterOptions struct {
@@ -242,4 +296,11 @@ type GroupUserFilterOptions struct {
 	NextURL       *url.URL `url:"-"`
 	GetAllPages   bool     `url:"-"`
 	NumberOfPages int      `url:"-"`
+}
+
+type newGroup struct {
+	Profile struct {
+		Name        string `json:"name"`
+		Description string `json:"description"`
+	} `json:"profile"`
 }

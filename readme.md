@@ -51,9 +51,9 @@ The current state of the this SDK is in development. There is still much work to
 
 * Roles (Admin Roles) (NOT Implemented)
 * Groups (okta.Groups)
-    - Get Group (Implemented with Groups.GetByID)
-    - List Groups (Implemented with Groups.ListWithFilter)
-    - Add Group (NOT Implemented)
+    - Get Group (Implemented with Groups.GetByID) &#9786;
+    - List Groups (Implemented with Groups.ListWithFilter) &#9786;
+    - Add Group (Implemented) &#9786;
     - Update Group (NOT Implemented)
     - Remove Group (NOT Implemented)
     - Group Members (Implemented with Groups.GetUsers)

@@ -25,6 +25,7 @@ func main() {
 	getFirst3PageOfOKTAGroupsUpdatedRecently()
 	getGroupByID()
 	getRandomOKTAGroupUser()
+	groupAddAndDelete()
 
 }
 

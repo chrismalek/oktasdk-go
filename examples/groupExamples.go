@@ -106,3 +106,25 @@ func getRandomOKTAGroupUser() {
 	}
 
 }
+func groupAddAndDelete() {
+	defer printEnd(printStart("groupAdd"))
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
+
+	groupName := "OKTASDK-GO-" + time.Now().String()
+	groupDescription := "Created by OKTASDK-GO @ " + time.Now().String()
+
+	newGroup, response, err := client.Groups.Add(groupName, groupDescription)
+	if err != nil {
+		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
+		return
+	}
+	fmt.Printf("Created New Group\n")
+	printGroup(*newGroup)
+
+	fmt.Printf("Deleting New Group ID: %v\n", newGroup.ID)
+	response, err = client.Groups.Delete(newGroup.ID)
+	if err != nil {
+		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
+		return
+	}
+}
