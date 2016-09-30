@@ -39,7 +39,9 @@ const (
 	FilterGreaterThanOperator = "gt"
 	// FilterLessThanOperator - filter operator for "less than"
 	FilterLessThanOperator = "lt"
-	rateBottomThreshold    = 30
+	// If the API returns a "X-Rate-Limit-Remaining" header less than this the SDK will either pause
+	//  Or throw  RateLimitError depending on the client.PauseOnRateLimit value
+	rateBottomThreshold = 30
 )
 
 // A Client manages communication with the API.
@@ -287,7 +289,6 @@ func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 //
 // The error type will be *RateLimitError for rate limit exceeded errors,
 // and *TwoFactorAuthError for two-factor authentication errors.
-// TODO - check rate limit
 // TODO - check un-authorized
 func CheckResponse(r *http.Response) error {
 	if c := r.StatusCode; 200 <= c && c <= 299 {
