@@ -24,7 +24,7 @@ The current state of the this SDK is in development. There is still much work to
 ## Operations
 
 * User
-  * Create User (NOT Implemented)
+  * Create User (NOT Implemented) &#9785;
       * Various ways to create users
   * Get user
       * Me (Implemented using Users.GetByID pass "me" as parameter)
@@ -33,40 +33,39 @@ The current state of the this SDK is in development. There is still much work to
       * List User by various filters (Implemented via Users.ListWithFilter)
           * status, lastupdated, id, profile.login, profile.email, profile.firstName, profile.lastName
 	  * [List User with Search (Early Access)](http://developer.okta.com/docs/api/resources/users.html#list-users-with-search)   (NOT Implemented)
-  * update User (NOT Implemented)
-      - password
-      - user object
+  * update User (NOT Implemented) &#9785;
+      - password &#9785;
+      - user object &#9785;
   * Groups - get user groups (Implemented with Users.PopulateGroups)
-  * activate (NOT Implemented)
-  * deactivate (NOT Implemented)
-  * suspend (NOT Implemented)
-  * unsuspend (NOT Implemented)
-  * unlock (NOT Implemented)
-  * reset_password (NOT Implemented)
-  * expire_password (NOT Implemented)
-  * reset_factors (NOT Implemented)
-  * forgotpasswords (NOT Implemented)
-  * Changepassword (NOT Implemented)
-  * change_recovery_question (NOT Implemented)
-
-* Roles (Admin Roles) (NOT Implemented)
+  * activate (NOT Implemented) &#9785;
+  * deactivate (NOT Implemented) &#9785;
+  * suspend (NOT Implemented) &#9785;
+  * unsuspend (NOT Implemented) &#9785;
+  * unlock (NOT Implemented) &#9785;
+  * reset_password (NOT Implemented) &#9785;
+  * expire_password (NOT Implemented) &#9785;
+  * reset_factors (NOT Implemented) &#9785;
+  * forgotpasswords (NOT Implemented) &#9785;
+  * Changepassword (NOT Implemented) &#9785;
+  * change_recovery_question (NOT Implemented) &#9785;
+* Roles (Admin Roles) (NOT Implemented) &#9785;
 * Groups (okta.Groups)
-    - Get Group (Implemented with Groups.GetByID) &#9786;
-    - List Groups (Implemented with Groups.ListWithFilter) &#9786;
-    - Add Group (Implemented) &#9786;
-    - Update Group (NOT Implemented)
-    - Remove Group (NOT Implemented)
+    - Get Group (Implemented with Groups.GetByID) &#9745;
+    - List Groups (Implemented with Groups.ListWithFilter) &#9745;
+    - Add Group (Implemented Groups.Add) &#9745;
+    - Update Group (NOT Implemented) &#9785;
+    - Delete Group (Implemented Groups.Delete) &#9745;
     - Group Members (Implemented with Groups.GetUsers)
-    - Add User To Group (NOT Implemented)
-    - Remove User From Group (NOT Implemented)
-    - List Apps (NOT Implemented)
+    - Add User To Group (NOT Implemented) &#9785;
+    - Remove User From Group (NOT Implemented) &#9785;
+    - List Apps (NOT Implemented) &#9785;
 * Factors (NOT Implemented)
-    - Get user FActor(s) (NOT Implemented)
-    - Get enrolled factors (NOT Implemented)
-    - Eligible factors (NOT Implemented)
-    - Enroll in factor (NOT Implemented)
-    - reset factor (NOT Implemented)
-    - verify factors (NOT Implemented)
+    - Get user FActor(s) (NOT Implemented) &#9785;
+    - Get enrolled factors (NOT Implemented) &#9785;
+    - Eligible factors (NOT Implemented) &#9785;
+    - Enroll in factor (NOT Implemented) &#9785;
+    - reset factor (NOT Implemented) &#9785;
+    - verify factors (NOT Implemented) &#9785;
 
 
 
