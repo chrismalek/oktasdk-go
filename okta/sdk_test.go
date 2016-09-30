@@ -93,8 +93,8 @@ func TestRateLimitRateExceededError(t *testing.T) {
 	mux.HandleFunc("/users/me", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add(headerRateLimit, strconv.Itoa(headerRateLimitWant))
 		w.Header().Add(headerRateRemaining, strconv.Itoa(headerRateRemainingWant))
-		thirtySecondsFromNow := time.Now().Add(30 * time.Second)
-		w.Header().Add(headerRateReset, strconv.FormatInt(thirtySecondsFromNow.Unix(), 10))
+		threeSecondsFromNow := time.Now().Add(3 * time.Second)
+		w.Header().Add(headerRateReset, strconv.FormatInt(threeSecondsFromNow.Unix(), 10))
 	})
 
 	client = NewClient(nil, testServerOrg, testToken, false)
@@ -131,6 +131,35 @@ func TestRateLimitRateExceededError(t *testing.T) {
 
 	if err == nil {
 		t.Errorf("Expected Rate Limit Error To be Returned. However, No Error was created.\n")
+	}
+
+	// Let's tell the client that we want to wait until the rate limit resets which is every minute
+	// In our test we should really only have to wait 3 seconds and NOT get an error.
+	client.PauseOnRateLimit = true
+
+	_, err = client.Do(req, nil)
+
+	if err != nil {
+		t.Errorf("We expected the client to pause for 3 seconds. However, it looks like an error was return.\n")
+	}
+
+	// Reconfigure clien to drain all but 2 requests from the rate limit
+	// We should not expect an error now.
+	client.PauseOnRateLimit = false
+	client.RateRemainingFloor = 2
+
+	_, err = client.Do(req, nil)
+
+	if err != nil {
+		t.Errorf("Expected nil Rate Limit Error after reconfiguring client for a floor of 2. However, an error was still return.\n")
+	}
+
+	// reconfigure client to only consume 200
+	client.PauseOnRateLimit = false
+	client.RateRemainingFloor = 200
+
+	if err != nil {
+		t.Errorf("We expected the client to have a rate limit error since the server says here there are only %v requests remaining\n", headerRateRemainingWant)
 	}
 
 }

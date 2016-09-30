@@ -39,9 +39,10 @@ const (
 	FilterGreaterThanOperator = "gt"
 	// FilterLessThanOperator - filter operator for "less than"
 	FilterLessThanOperator = "lt"
+
 	// If the API returns a "X-Rate-Limit-Remaining" header less than this the SDK will either pause
 	//  Or throw  RateLimitError depending on the client.PauseOnRateLimit value
-	rateBottomThreshold = 30
+	defaultRateRemainingFloor = 30
 )
 
 // A Client manages communication with the API.
@@ -60,6 +61,12 @@ type Client struct {
 	apiKey                   string
 	authorizationHeaderValue string
 	PauseOnRateLimit         bool
+
+	// RateRemainingFloor - If the API returns a "X-Rate-Limit-Remaining" header less than this the SDK will either pause
+	//  Or throw  RateLimitError depending on the client.PauseOnRateLimit value. It defaults to 30
+	// One client dooing too much work can lock out all API Access for every other client
+	// We are trying to be a "good API User Citizen"
+	RateRemainingFloor int
 
 	rateMu         sync.Mutex
 	mostRecentRate Rate
@@ -101,6 +108,7 @@ func NewClient(httpClient *http.Client, orgName string, apiToken string, isProdu
 	c.authorizationHeaderValue = fmt.Sprintf(headerAuthorizationFormat, apiToken)
 	c.apiKey = apiToken
 	c.Limit = defaultLimit
+	c.RateRemainingFloor = defaultRateRemainingFloor
 	c.common.client = c
 
 	c.Users = (*UsersService)(&c.common)
@@ -264,7 +272,7 @@ func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 	mostRecentRate := c.mostRecentRate
 	c.rateMu.Unlock()
 
-	if !mostRecentRate.ResetTime.IsZero() && mostRecentRate.Remaining < rateBottomThreshold && time.Now().Before(mostRecentRate.ResetTime) {
+	if !mostRecentRate.ResetTime.IsZero() && mostRecentRate.Remaining < c.RateRemainingFloor && time.Now().Before(mostRecentRate.ResetTime) {
 
 		if c.PauseOnRateLimit {
 			// If rate limit is hitting threshold then pause until the rate limit resets
