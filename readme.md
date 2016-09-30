@@ -9,7 +9,7 @@ Much credits has to be given to the [go-github](https://github.com/google/go-git
 
 *Warnings* (There are many)
 
-* I have a far from mastered the Go language. 
+* I have far from mastered the Go language. 
 * This is not a complete SDK. It has been developed based on my own needs.
 * Use At your own risk!
 * Not all features of the OKTA API are implemented.

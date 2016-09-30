@@ -39,6 +39,7 @@ const (
 	FilterGreaterThanOperator = "gt"
 	// FilterLessThanOperator - filter operator for "less than"
 	FilterLessThanOperator = "lt"
+	rateBottomThreshold    = 30
 )
 
 // A Client manages communication with the API.
@@ -57,8 +58,11 @@ type Client struct {
 	apiKey                   string
 	authorizationHeaderValue string
 	PauseOnRateLimit         bool
-	rateMu                   sync.Mutex
-	Limit                    int8
+
+	rateMu         sync.Mutex
+	mostRecentRate Rate
+
+	Limit int8
 	// mostRecent rateLimitCategory
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
@@ -106,7 +110,7 @@ func NewClient(httpClient *http.Client, orgName string, apiToken string, isProdu
 // Rate represents the rate limit for the current client.
 type Rate struct {
 	// The number of requests per minute the client is currently limited to.
-	Limit int
+	RatePerMinuteLimit int
 
 	// The number of remaining requests the client can make this minute
 	Remaining int
@@ -182,7 +186,7 @@ func parseRate(r *http.Response) Rate {
 	var rate Rate
 
 	if limit := r.Header.Get(headerRateLimit); limit != "" {
-		rate.Limit, _ = strconv.Atoi(limit)
+		rate.RatePerMinuteLimit, _ = strconv.Atoi(limit)
 	}
 	if remaining := r.Header.Get(headerRateRemaining); remaining != "" {
 		rate.Remaining, _ = strconv.Atoi(remaining)
@@ -221,9 +225,11 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 
 	response := newResponse(resp)
 
-	// c.rateMu.Lock()
-
-	// c.rateMu.Unlock()
+	c.rateMu.Lock()
+	c.mostRecentRate.RatePerMinuteLimit = response.Rate.RatePerMinuteLimit
+	c.mostRecentRate.Remaining = response.Rate.Remaining
+	c.mostRecentRate.ResetTime = response.Rate.ResetTime
+	c.rateMu.Unlock()
 
 	err = CheckResponse(resp)
 	if err != nil {
@@ -252,25 +258,23 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 // Otherwise it returns nil, and Client.Do should proceed normally.
 func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 
-	// TODO:
-	// c.rateMu.Lock()
-	// // rate := c.rateLimits[rateLimitCategory]
-	// c.rateMu.Unlock()
-	// if !rate.Reset.Time.IsZero() && rate.Remaining == 0 && time.Now().Before(rate.Reset.Time) {
-	// 	// Create a fake response.
-	// 	resp := &http.Response{
-	// 		Status:     http.StatusText(http.StatusForbidden),
-	// 		StatusCode: http.StatusForbidden,
-	// 		Request:    req,
-	// 		Header:     make(http.Header),
-	// 		Body:       ioutil.NopCloser(strings.NewReader("")),
-	// 	}
-	// 	return &RateLimitError{
-	// 		Rate:     rate,
-	// 		Response: resp,
-	// 		Message:  fmt.Sprintf("API rate limit of %v still exceeded until %v, not making remote request.", rate.Limit, rate.Reset.Time),
-	// 	}
-	// }
+	c.rateMu.Lock()
+	mostRecentRate := c.mostRecentRate
+	c.rateMu.Unlock()
+
+	if !mostRecentRate.ResetTime.IsZero() && mostRecentRate.Remaining < rateBottomThreshold && time.Now().Before(mostRecentRate.ResetTime) {
+
+		if c.PauseOnRateLimit {
+			// If rate limit is hitting threshold then pause until the rate limit resets
+			//   This behavior is controled by the client PauseOnRateLimit value
+			<-time.After(mostRecentRate.ResetTime.Sub(time.Now().Add(3 * time.Millisecond)))
+		} else {
+			return &RateLimitError{
+				Rate: mostRecentRate,
+			}
+		}
+
+	}
 
 	return nil
 }
@@ -295,31 +299,18 @@ func CheckResponse(r *http.Response) error {
 	if err == nil && data != nil {
 		json.Unmarshal(data, &errorResp.ErrorDetail)
 	}
-	return errorResp
-	// switch {
 
-	// case r.StatusCode == http.StatusNotFound:
+	switch {
+	case r.StatusCode == http.StatusTooManyRequests:
 
-	// case r.StatusCode == http.StatusUnauthorized:
+		return &RateLimitError{
+			Rate:        parseRate(r),
+			Response:    r,
+			ErrorDetail: errorResp.ErrorDetail}
 
-	// }
-	// errorResponse := &ErrorResponse{Response: r}
-	// data, err := ioutil.ReadAll(r.Body)
-	// if err == nil && data != nil {
-	// 	json.Unmarshal(data, errorResponse)
-	// }
-	// switch {
-	// case r.StatusCode == http.StatusUnauthorized:
-	// 	return error.Error("unauthroized") // TODO
-	// case r.StatusCode == http.StatusForbidden && r.Header.Get(headerRateRemaining) == "0":
-	// 	return &RateLimitError{
-	// 		Rate:     parseRate(r),
-	// 		Response: errorResponse.Response,
-	// 		Message:  errorResponse.Message,
-	// 	}
-	// default:
-	// 	return errorResponse
-	// }
+	default:
+		return errorResp
+	}
 
 }
 
@@ -341,6 +332,20 @@ type errorResponse struct {
 func (r *errorResponse) Error() string {
 	return fmt.Sprintf("HTTP Method: %v - URL: %v: - HTTP Status Code: %d, OKTA Error Code: %v, OKTA Error Summary: %v",
 		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.ErrorDetail.ErrorCode, r.ErrorDetail.ErrorSummary)
+}
+
+// RateLimitError occurs when OKTA returns 429 "Too Many Requests" response with a rate limit
+// remaining value of 0, and error message starts with "API rate limit exceeded for ".
+type RateLimitError struct {
+	Rate        Rate // Rate specifies last known rate limit for the client
+	ErrorDetail apiError
+	Response    *http.Response //
+}
+
+func (r *RateLimitError) Error() string {
+
+	return fmt.Sprintf("rate reset in %v", r.Rate.ResetTime.Sub(time.Now()))
+
 }
 
 // Code stolen from Github api libary
