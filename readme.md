@@ -27,12 +27,12 @@ The current state of the this SDK is in development. There is still much work to
   * Create User (NOT Implemented) &#9785;
       * Various ways to create users
   * Get user
-      * Me (Implemented using Users.GetByID pass "me" as parameter)
-      * By ID (Implemented Users.GetByID)
-      * By Login (Implemented via Users.ListWithFilter passing in Login as filter parameter)
-      * List User by various filters (Implemented via Users.ListWithFilter)
+      * Me (Implemented using Users.GetByID pass "me" as parameter)  &#9745;
+      * By ID (Implemented Users.GetByID) &#9745;
+      * By Login (Implemented via Users.ListWithFilter passing in Login as filter parameter)  &#9745;
+      * List User by various filters (Implemented via Users.ListWithFilter)  &#9745;
           * status, lastupdated, id, profile.login, profile.email, profile.firstName, profile.lastName
-	  * [List User with Search (Early Access)](http://developer.okta.com/docs/api/resources/users.html#list-users-with-search)   (NOT Implemented)
+	  * [List User with Search (Early Access)](http://developer.okta.com/docs/api/resources/users.html#list-users-with-search)   (NOT Implemented)  &#9785;
   * update User (NOT Implemented) &#9785;
       - password &#9785;
       - user object &#9785;
