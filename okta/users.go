@@ -45,12 +45,13 @@ type provider struct {
 
 type recoveryQuestion struct {
 	Question string `json:"question"`
+	Answer   string `json:"question,omitempty"`
 }
 
 type credentials struct {
 	Password         struct{}         `json:"password"`
-	Provider         provider         `json:"provider"`
-	RecoveryQuestion recoveryQuestion `json:"recovery_question"`
+	Provider         provider         `json:"provider,omitempty"`
+	RecoveryQuestion recoveryQuestion `json:"recovery_question,omitempty"`
 }
 
 type userProfile struct {
@@ -58,27 +59,27 @@ type userProfile struct {
 	FirstName   string `json:"firstName"`
 	LastName    string `json:"lastName"`
 	Login       string `json:"login"`
-	MobilePhone string `json:"mobilePhone"`
-	SecondEmail string `json:"secondEmail"`
-	PsEmplid    string `json:"psEmplid"`
-	NickName    string `json:"nickname"`
-	DisplayName string `json:"displayName"`
+	MobilePhone string `json:"mobilePhone,omitempty"`
+	SecondEmail string `json:"secondEmail,omitempty"`
+	PsEmplid    string `json:"psEmplid,omitempty"`
+	NickName    string `json:"nickname,omitempty"`
+	DisplayName string `json:"displayName,omitempty"`
 
-	ProfileURL        string `json:"profileUrl"`
-	PreferredLanguage string `json:"preferredLanguage"`
-	UserType          string `json:"userType"`
-	Organization      string `json:"organization"`
-	Title             string `json:"title"`
-	Division          string `json:"division"`
-	Department        string `json:"department"`
-	CostCenter        string `json:"costCenter"`
-	EmployeeNumber    string `json:"employeeNumber"`
-	PrimaryPhone      string `json:"primaryPhone"`
-	StreetAddress     string `json:"streetAddress"`
-	City              string `json:"city"`
-	State             string `json:"state"`
-	ZipCode           string `json:"zipCode"`
-	CountryCode       string `json:"countryCode"`
+	ProfileURL        string `json:"profileUrl,omitempty"`
+	PreferredLanguage string `json:"preferredLanguage,omitempty"`
+	UserType          string `json:"userType,omitempty"`
+	Organization      string `json:"organization,omitempty"`
+	Title             string `json:"title,omitempty"`
+	Division          string `json:"division,omitempty"`
+	Department        string `json:"department,omitempty"`
+	CostCenter        string `json:"costCenter,omitempty"`
+	EmployeeNumber    string `json:"employeeNumber,omitempty"`
+	PrimaryPhone      string `json:"primaryPhone,omitempty"`
+	StreetAddress     string `json:"streetAddress,omitempty"`
+	City              string `json:"city,omitempty"`
+	State             string `json:"state,omitempty"`
+	ZipCode           string `json:"zipCode,omitempty"`
+	CountryCode       string `json:"countryCode,omitempty"`
 }
 
 type userLinks struct {
@@ -107,17 +108,17 @@ type userLinks struct {
 
 // User is a struct that represents a user object from OKTA.
 type User struct {
-	Activated       string      `json:"activated"`
-	Created         string      `json:"created"`
-	Credentials     credentials `json:"credentials"`
-	ID              string      `json:"id"`
-	LastLogin       string      `json:"lastLogin"`
-	LastUpdated     string      `json:"lastUpdated"`
-	PasswordChanged string      `json:"passwordChanged"`
+	Activated       string      `json:"activated,omitempty"`
+	Created         string      `json:"created,omitempty"`
+	Credentials     credentials `json:"credentials,omitempty"`
+	ID              string      `json:"id,omitempty"`
+	LastLogin       string      `json:"lastLogin,omitempty"`
+	LastUpdated     string      `json:"lastUpdated,omitempty"`
+	PasswordChanged string      `json:"passwordChanged,omitempty"`
 	Profile         userProfile `json:"profile"`
-	Status          string      `json:"status"`
-	StatusChanged   string      `json:"statusChanged"`
-	Links           userLinks   `json:"_links"`
+	Status          string      `json:"status,omitempty"`
+	StatusChanged   string      `json:"statusChanged,omitempty"`
+	Links           userLinks   `json:"_links,omitempty"`
 	MFAFactors      []userMFAFactor
 	Groups          []Group
 }
