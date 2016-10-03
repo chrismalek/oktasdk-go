@@ -39,19 +39,22 @@ const (
 type UsersService service
 
 type provider struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name string `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
 }
 
 type recoveryQuestion struct {
-	Question string `json:"question"`
+	Question string `json:"question,omitempty"`
 	Answer   string `json:"question,omitempty"`
 }
 
+type passwordValue struct {
+	Value string `json:"value,omitempty"`
+}
 type credentials struct {
-	Password         struct{}         `json:"password"`
-	Provider         provider         `json:"provider,omitempty"`
-	RecoveryQuestion recoveryQuestion `json:"recovery_question,omitempty"`
+	Password         *passwordValue    `json:"password",omitempty"`
+	Provider         *provider         `json:"provider,omitempty"`
+	RecoveryQuestion *recoveryQuestion `json:"recovery_question,omitempty"`
 }
 
 type userProfile struct {
@@ -108,32 +111,55 @@ type userLinks struct {
 
 // User is a struct that represents a user object from OKTA.
 type User struct {
-	Activated       string      `json:"activated,omitempty"`
-	Created         string      `json:"created,omitempty"`
-	Credentials     credentials `json:"credentials,omitempty"`
-	ID              string      `json:"id,omitempty"`
-	LastLogin       string      `json:"lastLogin,omitempty"`
-	LastUpdated     string      `json:"lastUpdated,omitempty"`
-	PasswordChanged string      `json:"passwordChanged,omitempty"`
-	Profile         userProfile `json:"profile"`
-	Status          string      `json:"status,omitempty"`
-	StatusChanged   string      `json:"statusChanged,omitempty"`
-	Links           userLinks   `json:"_links,omitempty"`
-	MFAFactors      []userMFAFactor
-	Groups          []Group
+	Activated       string          `json:"activated,omitempty"`
+	Created         string          `json:"created,omitempty"`
+	Credentials     credentials     `json:"credentials,omitempty"`
+	ID              string          `json:"id,omitempty"`
+	LastLogin       string          `json:"lastLogin,omitempty"`
+	LastUpdated     string          `json:"lastUpdated,omitempty"`
+	PasswordChanged string          `json:"passwordChanged,omitempty"`
+	Profile         userProfile     `json:"profile"`
+	Status          string          `json:"status,omitempty"`
+	StatusChanged   string          `json:"statusChanged,omitempty"`
+	Links           userLinks       `json:"_links,omitempty"`
+	MFAFactors      []userMFAFactor `json:"-,omitempty"`
+	Groups          []Group         `json:"-,omitempty"`
 }
 
 type userMFAFactor struct {
-	ID          string    `json:"id"`
-	FactorType  string    `json:"factorType"`
-	Provider    string    `json:"provider"`
-	VendorName  string    `json:"vendorName"`
-	Status      string    `json:"status"`
-	Created     time.Time `json:"created"`
-	LastUpdated time.Time `json:"lastUpdated"`
+	ID          string    `json:"id,omitempty"`
+	FactorType  string    `json:"factorType,omitempty"`
+	Provider    string    `json:"provider,omitempty"`
+	VendorName  string    `json:"vendorName,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	Created     time.Time `json:"created,omitempty"`
+	LastUpdated time.Time `json:"lastUpdated,omitempty"`
 	Profile     struct {
-		CredentialID string `json:"credentialId"`
-	} `json:"profile"`
+		CredentialID string `json:"credentialId,omitempty"`
+	} `json:"profile",omitempty"`
+}
+
+type newUser struct {
+	Profile     userProfile  `json:"profile"`
+	Credentials *credentials `json:"credentials,omitempty"`
+}
+
+func (s *UsersService) NewUser() newUser {
+
+	return newUser{}
+}
+
+func (u *newUser) SetPassword(passwordIn string) {
+
+	if passwordIn != "" {
+
+		pass := new(passwordValue)
+		pass.Value = passwordIn
+		cred := new(credentials)
+		cred.Password = pass
+		u.Credentials = cred
+
+	}
 }
 
 func (u User) String() string {
@@ -324,4 +350,25 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 		}
 	}
 	return users, resp, err
+}
+
+// Create - Creates a new user. You must pass in a "newUser" object created from Users.NewUser()
+// There are many differnt reasons that OKTA may reject the request so you have to check the error messages
+func (s *UsersService) Create(userIn *newUser, createAsActive bool) (*User, *Response, error) {
+
+	u := fmt.Sprintf("users?activate=%v", createAsActive)
+
+	req, err := s.client.NewRequest("POST", u, userIn)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	newUser := new(User)
+	resp, err := s.client.Do(req, newUser)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return newUser, resp, err
 }

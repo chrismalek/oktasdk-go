@@ -214,7 +214,7 @@ func parseRate(r *http.Response) Rate {
 // error if an API error has occurred.  If v implements the io.Writer
 // interface, the raw response body will be written to v, without attempting to
 // first decode it.  If rate limit is exceeded and reset time is in the future,
-// Do returns *RateLimitError immediately without making a network API call.
+// Do returns rate immediately without making a network API call.
 func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 
 	// If we've hit rate limit, don't make further requests before Reset time.
@@ -339,8 +339,8 @@ type errorResponse struct {
 }
 
 func (r *errorResponse) Error() string {
-	return fmt.Sprintf("HTTP Method: %v - URL: %v: - HTTP Status Code: %d, OKTA Error Code: %v, OKTA Error Summary: %v",
-		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.ErrorDetail.ErrorCode, r.ErrorDetail.ErrorSummary)
+	return fmt.Sprintf("HTTP Method: %v - URL: %v: - HTTP Status Code: %d, OKTA Error Code: %v, OKTA Error Summary: %v, OKTA Error Causes: %v",
+		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.ErrorDetail.ErrorCode, r.ErrorDetail.ErrorSummary, r.ErrorDetail.ErrorCauses)
 }
 
 // RateLimitError occurs when OKTA returns 429 "Too Many Requests" response with a rate limit
