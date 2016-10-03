@@ -45,14 +45,14 @@ type provider struct {
 
 type recoveryQuestion struct {
 	Question string `json:"question,omitempty"`
-	Answer   string `json:"question,omitempty"`
+	Answer   string `json:"answer,omitempty"`
 }
 
 type passwordValue struct {
 	Value string `json:"value,omitempty"`
 }
 type credentials struct {
-	Password         *passwordValue    `json:"password",omitempty"`
+	Password         *passwordValue    `json:"password,omitempty"`
 	Provider         *provider         `json:"provider,omitempty"`
 	RecoveryQuestion *recoveryQuestion `json:"recovery_question,omitempty"`
 }
@@ -141,11 +141,10 @@ type userMFAFactor struct {
 
 type newUser struct {
 	Profile     userProfile  `json:"profile"`
-	credentials *credentials `json:"credentials,omitempty"`
+	Credentials *credentials `json:"credentials,omitempty"`
 }
 
 func (s *UsersService) NewUser() newUser {
-
 	return newUser{}
 }
 
@@ -155,9 +154,36 @@ func (u *newUser) SetPassword(passwordIn string) {
 
 		pass := new(passwordValue)
 		pass.Value = passwordIn
-		cred := new(credentials)
+
+		var cred *credentials
+		if u.Credentials == nil {
+			cred = new(credentials)
+		} else {
+			cred = u.Credentials
+		}
+
 		cred.Password = pass
-		u.credentials = cred
+		u.Credentials = cred
+
+	}
+}
+
+func (u *newUser) SetRecoveryQuestion(questionIn string, answerIn string) {
+
+	if questionIn != "" && answerIn != "" {
+		recovery := new(recoveryQuestion)
+
+		recovery.Question = questionIn
+		recovery.Answer = answerIn
+
+		var cred *credentials
+		if u.Credentials == nil {
+			cred = new(credentials)
+		} else {
+			cred = u.Credentials
+		}
+		cred.RecoveryQuestion = recovery
+		u.Credentials = cred
 
 	}
 }

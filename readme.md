@@ -24,8 +24,11 @@ The current state of the this SDK is in development. There is still much work to
 ## Operations
 
 * User
-  * Create User (NOT Implemented) &#9785;
-      * Various ways to create users
+  * Create User (Implemented)  &#9745;
+      * Create User without password (Implemented in user.Create )  &#9745;
+        * See Examples `examples/userExamples.go createUserNoPassword()`
+      * Create User with password (Implemented in user.Create )  &#9745;
+        * See Examples `examples/userExamples.go createUserWithPassword()`
   * Get user
       * Me (Implemented using Users.GetByID pass "me" as parameter)  &#9745;
       * By ID (Implemented Users.GetByID) &#9745;
