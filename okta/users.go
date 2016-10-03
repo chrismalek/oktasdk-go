@@ -141,7 +141,7 @@ type userMFAFactor struct {
 
 type newUser struct {
 	Profile     userProfile  `json:"profile"`
-	Credentials *credentials `json:"credentials,omitempty"`
+	credentials *credentials `json:"credentials,omitempty"`
 }
 
 func (s *UsersService) NewUser() newUser {
@@ -157,7 +157,7 @@ func (u *newUser) SetPassword(passwordIn string) {
 		pass.Value = passwordIn
 		cred := new(credentials)
 		cred.Password = pass
-		u.Credentials = cred
+		u.credentials = cred
 
 	}
 }
@@ -354,7 +354,7 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 
 // Create - Creates a new user. You must pass in a "newUser" object created from Users.NewUser()
 // There are many differnt reasons that OKTA may reject the request so you have to check the error messages
-func (s *UsersService) Create(userIn *newUser, createAsActive bool) (*User, *Response, error) {
+func (s *UsersService) Create(userIn newUser, createAsActive bool) (*User, *Response, error) {
 
 	u := fmt.Sprintf("users?activate=%v", createAsActive)
 

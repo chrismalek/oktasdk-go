@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -140,5 +141,67 @@ func getFirstActiveUserRoles() {
 		}
 		printGroupArray(randomActiveUsers[0].Groups)
 	}
+
+}
+
+func createUserNoPassword() {
+	defer printEnd(printStart("createUserNoPassword"))
+
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
+
+	fmt.Printf("Client Base URL: %v\n\n", client.BaseURL)
+
+	newUserTemplate := client.Users.NewUser()
+	newUserTemplate.Profile.FirstName = "Test SDK First"
+	newUserTemplate.Profile.LastName = "Test SDK Last" + time.Now().Format("2006-01-02")
+	newUserTemplate.Profile.Login = "testuser2@localhost.com"
+	newUserTemplate.Profile.Email = newUserTemplate.Profile.Login
+
+	jsonTest, _ := json.Marshal(newUserTemplate)
+
+	fmt.Printf("User Json\n\t%v\n\n", string(jsonTest))
+	createNewUserAsActive := false
+
+	newUser, _, err := client.Users.Create(newUserTemplate, createNewUserAsActive)
+
+	if err != nil {
+
+		fmt.Printf("Error Creating User:\n \t%v", err)
+		return
+	}
+	fmt.Printf("NewUser Created\n")
+	printUser(*newUser)
+
+}
+func createUserWithPassword() {
+	defer printEnd(printStart("createUserWithPassword"))
+
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
+
+	fmt.Printf("Client Base URL: %v\n\n", client.BaseURL)
+
+	newUserTemplate := client.Users.NewUser()
+	newUserTemplate.Profile.FirstName = "Test SDK First"
+	newUserTemplate.Profile.LastName = "Test SDK Last" + time.Now().Format("2006-01-02")
+	newUserTemplate.Profile.Login = "testuserwpassword3@localhost.com"
+	newUserTemplate.Profile.Email = newUserTemplate.Profile.Login
+	newUserTemplate.Profile.DisplayName = "OKTA SDK Test User"
+	newUserTemplate.Profile.Division = "IT"
+	newUserTemplate.SetPassword("cottoN.hothousE.adoptivE.ivE.87")
+
+	jsonTest, _ := json.Marshal(newUserTemplate)
+
+	fmt.Printf("User Json\n\t%v\n\n", string(jsonTest))
+
+	createNewUserAsActive := true
+	newUser, _, err := client.Users.Create(newUserTemplate, createNewUserAsActive)
+
+	if err != nil {
+
+		fmt.Printf("Error Creating User:\n \t%v", err)
+		return
+	}
+	fmt.Printf("NewUser Created\n")
+	printUser(*newUser)
 
 }

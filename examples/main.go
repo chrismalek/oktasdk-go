@@ -18,6 +18,8 @@ func main() {
 	getActiveUsersExampleAllPages()
 	getActiveUserUpdatedInLastMonthAllPages()
 	getFirstActiveUserRoles()
+	createUserNoPassword()
+	createUserWithPassword()
 
 	fmt.Printf("\n\n%%%%%% Group Examples\n\n\n")
 
@@ -37,7 +39,7 @@ func printUserArray(users []okta.User) {
 }
 
 func printUser(user okta.User) {
-	fmt.Printf("\tFound User: %v\n", user.Profile.Login)
+	fmt.Printf("\t User: %v \tid: %v\n", user.Profile.Login, user.ID)
 
 }
 func printGroupArray(groups []okta.Group) {
