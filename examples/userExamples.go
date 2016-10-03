@@ -242,3 +242,44 @@ func createUserWithRecoveryAndPassword() {
 	printUser(*newUser)
 
 }
+
+func CreateUserThenActivate() {
+
+	defer printEnd(printStart("CreateUserThenActivate"))
+
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
+
+	fmt.Printf("Client Base URL: %v\n\n", client.BaseURL)
+
+	newUserTemplate := client.Users.NewUser()
+	newUserTemplate.Profile.FirstName = "Test SDK First"
+	newUserTemplate.Profile.LastName = "Test SDK Last" + time.Now().Format("2006-01-02")
+	newUserTemplate.Profile.Login = "CreateUserThenActivate@localhost.com"
+	newUserTemplate.Profile.Email = newUserTemplate.Profile.Login
+	newUserTemplate.Profile.DisplayName = "OKTA SDK CreateUserThenActivate"
+
+	jsonTest, _ := json.Marshal(newUserTemplate)
+
+	fmt.Printf("User Json\n\t%v\n\n", string(jsonTest))
+
+	createNewUserAsActive := false
+	newUser, _, err := client.Users.Create(newUserTemplate, createNewUserAsActive)
+
+	if err != nil {
+
+		fmt.Printf("Error Creating User:\n \t%v", err)
+		return
+	}
+
+	fmt.Printf("NewUser Created\n")
+	printUser(*newUser)
+	sendEmail := false
+	activationInfo, _, err := client.Users.Activate(newUser.ID, sendEmail)
+
+	if err != nil {
+		fmt.Printf("Error Activating User:\n \t%v\n", err)
+		return
+	}
+	fmt.Printf("User activated :  send this URL to user: %v\n", activationInfo.ActivationURL)
+
+}

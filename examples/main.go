@@ -13,15 +13,16 @@ var isProductionOKTAORG = false
 
 func main() {
 	fmt.Printf("\n\n%%%%%% User Examples\n\n\n")
-	// nameSearchExample()
-	// getActiveUsersExampleOnePageAtATime()
-	// getActiveUsersExampleAllPages()
-	// getActiveUserUpdatedInLastMonthAllPages()
-	// getFirstActiveUserRoles()
-	// createUserNoPassword()
-	// createUserWithPassword()
+	nameSearchExample()
+	getActiveUsersExampleOnePageAtATime()
+	getActiveUsersExampleAllPages()
+	getActiveUserUpdatedInLastMonthAllPages()
+	getFirstActiveUserRoles()
+	createUserNoPassword()
+	createUserWithPassword()
 	createUserWithRecoveryAndPassword()
-	return
+	CreateUserThenActivate()
+
 	fmt.Printf("\n\n%%%%%% Group Examples\n\n\n")
 
 	searchForGroupByName()

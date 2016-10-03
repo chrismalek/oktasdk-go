@@ -38,6 +38,10 @@ const (
 // methods of the OKTA API.
 type UsersService service
 
+type activationResponse struct {
+	ActivationURL string `json:"activationUrl"`
+}
+
 type provider struct {
 	Name string `json:"name,omitempty"`
 	Type string `json:"type,omitempty"`
@@ -397,4 +401,25 @@ func (s *UsersService) Create(userIn newUser, createAsActive bool) (*User, *Resp
 	}
 
 	return newUser, resp, err
+}
+
+// Activate Activates a user. You can have OKTA send an email by including a "sendEmail=true"
+// If you pass in sendEmail=false, then activationResponse.ActivationURL will have a string URL that
+// can be sent to the end user. You can discard response if sendEmail=true
+func (s *UsersService) Activate(id string, sendEmail bool) (*activationResponse, *Response, error) {
+	u := fmt.Sprintf("users/%v/lifecycle/activate?sendEmail=%v", id, sendEmail)
+
+	req, err := s.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	activationInfo := new(activationResponse)
+	resp, err := s.client.Do(req, activationInfo)
+
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return activationInfo, resp, err
 }
