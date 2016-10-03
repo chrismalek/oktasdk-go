@@ -1,6 +1,7 @@
 package okta
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"time"
@@ -146,6 +147,10 @@ type userMFAFactor struct {
 type newUser struct {
 	Profile     userProfile  `json:"profile"`
 	Credentials *credentials `json:"credentials,omitempty"`
+}
+
+type newPasswordSet struct {
+	Credentials credentials `json:"credentials"`
 }
 
 func (s *UsersService) NewUser() newUser {
@@ -422,4 +427,50 @@ func (s *UsersService) Activate(id string, sendEmail bool) (*activationResponse,
 	}
 
 	return activationInfo, resp, err
+}
+
+// Deactivate - Deactivates a user
+func (s *UsersService) Deactivate(id string) (*Response, error) {
+	u := fmt.Sprintf("users/%v/lifecycle/deactivate", id)
+
+	req, err := s.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.client.Do(req, nil)
+
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// SetPassword - Sets a user password to an Admin provided String
+func (s *UsersService) SetPassword(id string, newPassword string) (*User, *Response, error) {
+
+	if id == "" || newPassword == "" {
+		return nil, nil, errors.New("please provide a User ID and Password")
+	}
+
+	passwordUpdate := new(newPasswordSet)
+
+	pass := new(passwordValue)
+	pass.Value = newPassword
+
+	passwordUpdate.Credentials.Password = pass
+
+	u := fmt.Sprintf("users/%v", id)
+	req, err := s.client.NewRequest("POST", u, passwordUpdate)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	user := new(User)
+	resp, err := s.client.Do(req, user)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return user, resp, err
 }

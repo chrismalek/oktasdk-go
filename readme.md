@@ -39,17 +39,17 @@ The current state of the this SDK is in development. There is still much work to
   * update User (NOT Implemented) &#9785;
       - password &#9785;
       - user object &#9785;
-  * Groups - get user groups (Implemented with Users.PopulateGroups)
-  * activate (NOT Implemented) &#9785;
-  * deactivate (NOT Implemented) &#9785;
+  * Groups - get user groups (Implemented with Users.PopulateGroups) #9745;
+  * activate (implemented in Users.Activate) #9745;
+  * deactivate (implemented in Users.Deactivate) #9745;
   * suspend (NOT Implemented) &#9785;
   * unsuspend (NOT Implemented) &#9785;
   * unlock (NOT Implemented) &#9785;
   * reset_password (NOT Implemented) &#9785;
+  * SetPassword (Implemented in Users.SetPassword) #9745;
   * expire_password (NOT Implemented) &#9785;
   * reset_factors (NOT Implemented) &#9785;
   * forgotpasswords (NOT Implemented) &#9785;
-  * Changepassword (NOT Implemented) &#9785;
   * change_recovery_question (NOT Implemented) &#9785;
 * Roles (Admin Roles) (NOT Implemented) &#9785;
 * Groups (okta.Groups)

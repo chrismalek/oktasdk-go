@@ -254,7 +254,7 @@ func CreateUserThenActivate() {
 	newUserTemplate := client.Users.NewUser()
 	newUserTemplate.Profile.FirstName = "Test SDK First"
 	newUserTemplate.Profile.LastName = "Test SDK Last" + time.Now().Format("2006-01-02")
-	newUserTemplate.Profile.Login = "CreateUserThenActivate@localhost.com"
+	newUserTemplate.Profile.Login = "CreateUserThenActivate2@localhost.com"
 	newUserTemplate.Profile.Email = newUserTemplate.Profile.Login
 	newUserTemplate.Profile.DisplayName = "OKTA SDK CreateUserThenActivate"
 
@@ -282,4 +282,34 @@ func CreateUserThenActivate() {
 	}
 	fmt.Printf("User activated :  send this URL to user: %v\n", activationInfo.ActivationURL)
 
+}
+
+func SetUserPassword() {
+
+	defer printEnd(printStart("CreateUserThenActivate"))
+
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
+
+	newUser, _, err := client.Users.SetPassword("00u8cmwszdE5qztLT0h7", "heRo.laKe.ransOm.23.dogfoOd")
+
+	if err != nil {
+		fmt.Printf("Error Setting Password On User:\n \t%v\n", err)
+		return
+	}
+	fmt.Printf("Password Set\n")
+	printUser(*newUser)
+
+}
+
+func deactivateUser() {
+	defer printEnd(printStart("deactivateUser"))
+
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
+	_, err := client.Users.Deactivate("00u8cmwszdE5qztLT0h7")
+	if err != nil {
+		fmt.Printf("Could Not deactivate user:\n%v\n", err)
+		return
+	}
+
+	fmt.Printf("User deactivated\n")
 }
