@@ -446,6 +446,60 @@ func (s *UsersService) Deactivate(id string) (*Response, error) {
 	return resp, err
 }
 
+// Suspend - Suspends a user - If user is NOT active an Error will come back based on OKTA API:
+// http://developer.okta.com/docs/api/resources/users.html#suspend-user
+func (s *UsersService) Suspend(id string) (*Response, error) {
+	u := fmt.Sprintf("users/%v/lifecycle/suspend", id)
+
+	req, err := s.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.client.Do(req, nil)
+
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Unsuspend - Unsuspends a user - If user is NOT SUSPENDED, an Error will come back based on OKTA API:
+// http://developer.okta.com/docs/api/resources/users.html#unsuspend-user
+func (s *UsersService) Unsuspend(id string) (*Response, error) {
+	u := fmt.Sprintf("users/%v/lifecycle/unsuspend", id)
+
+	req, err := s.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.client.Do(req, nil)
+
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Unlock - Unlocks a user - Per docs, only for OKTA Mastered Account
+// http://developer.okta.com/docs/api/resources/users.html#unlock-user
+func (s *UsersService) Unlock(id string) (*Response, error) {
+	u := fmt.Sprintf("users/%v/lifecycle/unlock", id)
+
+	req, err := s.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.client.Do(req, nil)
+
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
 // SetPassword - Sets a user password to an Admin provided String
 func (s *UsersService) SetPassword(id string, newPassword string) (*User, *Response, error) {
 

@@ -42,9 +42,9 @@ The current state of the this SDK is in development. There is still much work to
   * Groups - get user groups (Implemented with Users.PopulateGroups) &#9745;
   * activate (implemented in Users.Activate) &#9745;
   * deactivate (implemented in Users.Deactivate) &#9745;
-  * suspend (NOT Implemented) &#9785;
-  * unsuspend (NOT Implemented) &#9785;
-  * unlock (NOT Implemented) &#9785;
+  * suspend (implemented in Users.Suspend) &#9745;
+  * unsuspend (implemented in Users.Unsuspend) &#9745;
+  * unlock (implemented in Users.Unlock) &#9745;
   * reset_password (NOT Implemented) &#9785;
   * SetPassword (Implemented in Users.SetPassword) &#9745;
   * expire_password (NOT Implemented) &#9785;
