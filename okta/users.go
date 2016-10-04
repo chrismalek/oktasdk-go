@@ -39,6 +39,7 @@ const (
 // methods of the OKTA API.
 type UsersService service
 
+// ActivationResponse - Response coming back from a user activation
 type activationResponse struct {
 	ActivationURL string `json:"activationUrl"`
 }
@@ -153,6 +154,12 @@ type newPasswordSet struct {
 	Credentials credentials `json:"credentials"`
 }
 
+type resetPasswordResponse struct {
+	ResetPasswordURL string `json:"resetPasswordUrl"`
+}
+
+// NewUser - Returns a new user object. This is used to create users in OKTA. It only has the properties that
+// OKTA will take as input. The "User" object has more feilds that are OKTA returned like the ID, etc
 func (s *UsersService) NewUser() newUser {
 	return newUser{}
 }
@@ -527,4 +534,27 @@ func (s *UsersService) SetPassword(id string, newPassword string) (*User, *Respo
 	}
 
 	return user, resp, err
+}
+
+// ResetPassword - Generates a one-time token (OTT) that can be used to reset a user’s password.
+// The OTT link can be automatically emailed to the user or returned to the API caller and distributed using a custom flow.
+// http://developer.okta.com/docs/api/resources/users.html#reset-password
+// If you pass in sendEmail=false, then resetPasswordResponse.resetPasswordUrl will have a string URL that
+// can be sent to the end user. You can discard response if sendEmail=true
+func (s *UsersService) ResetPassword(id string, sendEmail bool) (*resetPasswordResponse, *Response, error) {
+	u := fmt.Sprintf("users/%v/lifecycle/reset_password?sendEmail=%v", id, sendEmail)
+
+	req, err := s.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	resetInfo := new(resetPasswordResponse)
+	resp, err := s.client.Do(req, resetInfo)
+
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return resetInfo, resp, err
 }

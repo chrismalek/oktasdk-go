@@ -45,7 +45,7 @@ The current state of the this SDK is in development. There is still much work to
   * suspend (implemented in Users.Suspend) &#9745;
   * unsuspend (implemented in Users.Unsuspend) &#9745;
   * unlock (implemented in Users.Unlock) &#9745;
-  * reset_password (NOT Implemented) &#9785;
+  * reset_password (implemented in Users.ResetPassword) &#9745;
   * SetPassword (Implemented in Users.SetPassword) &#9745;
   * expire_password (NOT Implemented) &#9785;
   * reset_factors (NOT Implemented) &#9785;
