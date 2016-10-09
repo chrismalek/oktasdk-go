@@ -24,7 +24,8 @@ func main() {
 	CreateUserThenActivate()
 	SetUserPassword()
 	deactivateUser()
-	return
+	getUserMFAFactor("00u8f4w4fde6yytOo0h7")
+
 	fmt.Printf("\n\n%%%%%% Group Examples\n\n\n")
 
 	searchForGroupByName()
@@ -44,6 +45,21 @@ func printUserArray(users []okta.User) {
 
 func printUser(user okta.User) {
 	fmt.Printf("\t User: %v \tid: %v\n", user.Profile.Login, user.ID)
+	fmt.Printf("\t\t Status: %v - Last Login: %v\n", user.Status, user.LastLogin)
+
+	if user.MFAFactors != nil {
+		fmt.Printf("\t\t--- MFA Status ---\n")
+
+		for _, mfa := range user.MFAFactors {
+			fmt.Printf("\t\tMFA Factor - Status: %v - Provider: %v - Type: %v\n", mfa.Status, mfa.Provider, mfa.FactorType)
+		}
+	}
+	if user.Groups != nil {
+		fmt.Printf("\t\t--- Group Memberships ---\n")
+		for _, group := range user.Groups {
+			fmt.Printf("\t\tGroup - Name: %v - ID: %v - Last Enrolled: %v\n", group.Profile.Name, group.ID, group.LastMembershipUpdated)
+		}
+	}
 
 }
 func printGroupArray(groups []okta.Group) {

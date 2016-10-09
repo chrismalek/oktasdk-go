@@ -558,3 +558,21 @@ func (s *UsersService) ResetPassword(id string, sendEmail bool) (*resetPasswordR
 
 	return resetInfo, resp, err
 }
+
+// PopulateMFAFactors will populate the MFA Factors a user is a member of. You pass in a pointer to an existing users
+func (s *UsersService) PopulateMFAFactors(user *User) (*Response, error) {
+	u := fmt.Sprintf("users/%v/factors", user.ID)
+
+	req, err := s.client.NewRequest("GET", u, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(req, &user.MFAFactors)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}

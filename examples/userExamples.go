@@ -313,3 +313,29 @@ func deactivateUser() {
 
 	fmt.Printf("User deactivated\n")
 }
+
+func getUserMFAFactor(oktaid string) {
+	defer printEnd(printStart("getUserMFAFactor"))
+
+	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
+	user, _, err := client.Users.GetByID(oktaid)
+
+	if err != nil {
+		fmt.Printf("Errr Getting Users:\n \t%v\n", err)
+		return
+	}
+
+	_, err = client.Users.PopulateMFAFactors(user)
+
+	if err != nil {
+		fmt.Printf("Errr Getting MFA Factors:\n \t%v\n", err)
+		return
+	}
+	_, err = client.Users.PopulateGroups(user)
+	if err != nil {
+		fmt.Printf("Errr Getting Groups:\n \t%v\n", err)
+		return
+	}
+	printUser(*user)
+
+}
