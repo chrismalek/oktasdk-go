@@ -49,8 +49,9 @@ The current state of the this SDK is in development. There is still much work to
   * SetPassword (Implemented in Users.SetPassword) &#9745;
   * expire_password (NOT Implemented) &#9785;
   * reset_factors (NOT Implemented) &#9785;
-  * forgotpasswords (NOT Implemented) &#9785;
+  * forgotpassword (NOT Implemented) &#9785;
   * change_recovery_question (NOT Implemented) &#9785;
+  * List Enrolled Factors (implemented in Users.PopulateEnrolledFactors)  &#9745;
 * Roles (Admin Roles) (NOT Implemented) &#9785;
 * Groups (okta.Groups)
     - Get Group (Implemented with Groups.GetByID) &#9745;
@@ -64,7 +65,7 @@ The current state of the this SDK is in development. There is still much work to
     - List Apps (NOT Implemented) &#9785;
 * Factors (NOT Implemented)
     - Get user FActor(s) (NOT Implemented) &#9785;
-    - Get enrolled factors (NOT Implemented) &#9785;
+    - (implemented in Users.PopulateEnrolledFactors)  &#9745;
     - Eligible factors (NOT Implemented) &#9785;
     - Enroll in factor (NOT Implemented) &#9785;
     - reset factor (NOT Implemented) &#9785;

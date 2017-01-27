@@ -273,6 +273,25 @@ func (s *UsersService) PopulateGroups(user *User) (*Response, error) {
 	return resp, err
 }
 
+// PopulateEnrolledFactors will populate the Enrolled MFA Factors a user is a member of.
+// You pass in a pointer to an existing users
+// http://developer.okta.com/docs/api/resources/factors.html#list-enrolled-factors
+func (s *UsersService) PopulateEnrolledFactors(user *User) (*Response, error) {
+	u := fmt.Sprintf("users/%v/factors", user.ID)
+	req, err := s.client.NewRequest("GET", u, nil)
+
+	if err != nil {
+		return nil, err
+	}
+	// TODO: If user has more than 200 groups this will only return those first 200
+	resp, err := s.client.Do(req, &user.MFAFactors)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
 // List users with status of LOCKED_OUT
 // filter=status eq "LOCKED_OUT"
 // List users updated after 06/01/2013 but before 01/01/2014
