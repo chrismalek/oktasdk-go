@@ -142,10 +142,11 @@ type userMFAFactor struct {
 	LastUpdated time.Time `json:"lastUpdated,omitempty"`
 	Profile     struct {
 		CredentialID string `json:"credentialId,omitempty"`
-	} `json:"profile",omitempty"`
+	} `json:"profile,omitempty"`
 }
 
-type newUser struct {
+// NewUser object to create user objects in OKTA
+type NewUser struct {
 	Profile     userProfile  `json:"profile"`
 	Credentials *credentials `json:"credentials,omitempty"`
 }
@@ -160,11 +161,11 @@ type resetPasswordResponse struct {
 
 // NewUser - Returns a new user object. This is used to create users in OKTA. It only has the properties that
 // OKTA will take as input. The "User" object has more feilds that are OKTA returned like the ID, etc
-func (s *UsersService) NewUser() newUser {
-	return newUser{}
+func (s *UsersService) NewUser() NewUser {
+	return NewUser{}
 }
 
-func (u *newUser) SetPassword(passwordIn string) {
+func (u *NewUser) SetPassword(passwordIn string) {
 
 	if passwordIn != "" {
 
@@ -184,7 +185,7 @@ func (u *newUser) SetPassword(passwordIn string) {
 	}
 }
 
-func (u *newUser) SetRecoveryQuestion(questionIn string, answerIn string) {
+func (u *NewUser) SetRecoveryQuestion(questionIn string, answerIn string) {
 
 	if questionIn != "" && answerIn != "" {
 		recovery := new(recoveryQuestion)
@@ -415,7 +416,7 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 
 // Create - Creates a new user. You must pass in a "newUser" object created from Users.NewUser()
 // There are many differnt reasons that OKTA may reject the request so you have to check the error messages
-func (s *UsersService) Create(userIn newUser, createAsActive bool) (*User, *Response, error) {
+func (s *UsersService) Create(userIn NewUser, createAsActive bool) (*User, *Response, error) {
 
 	u := fmt.Sprintf("users?activate=%v", createAsActive)
 
