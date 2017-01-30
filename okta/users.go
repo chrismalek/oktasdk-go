@@ -165,6 +165,7 @@ func (s *UsersService) NewUser() NewUser {
 	return NewUser{}
 }
 
+// SetPassword Adds a specified password to the new User
 func (u *NewUser) SetPassword(passwordIn string) {
 
 	if passwordIn != "" {
@@ -185,6 +186,7 @@ func (u *NewUser) SetPassword(passwordIn string) {
 	}
 }
 
+// SetRecoveryQuestion - Sets a custom security question and answer on a user object
 func (u *NewUser) SetRecoveryQuestion(questionIn string, answerIn string) {
 
 	if questionIn != "" && answerIn != "" {

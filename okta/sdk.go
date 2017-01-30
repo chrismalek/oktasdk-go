@@ -64,14 +64,14 @@ type Client struct {
 
 	// RateRemainingFloor - If the API returns a "X-Rate-Limit-Remaining" header less than this the SDK will either pause
 	//  Or throw  RateLimitError depending on the client.PauseOnRateLimit value. It defaults to 30
-	// One client dooing too much work can lock out all API Access for every other client
+	// One client doing too much work can lock out all API Access for every other client
 	// We are trying to be a "good API User Citizen"
 	RateRemainingFloor int
 
 	rateMu         sync.Mutex
 	mostRecentRate Rate
 
-	Limit int8
+	Limit int
 	// mostRecent rateLimitCategory
 
 	common service // Reuse a single struct instead of allocating one for each service on the heap.
@@ -266,19 +266,24 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 // current client state in order to quickly check if *RateLimitError can be immediately returned
 // from Client.Do, and if so, returns it so that Client.Do can skip making a network API call unnecessarily.
 // Otherwise it returns nil, and Client.Do should proceed normally.
+// http://developer.okta.com/docs/api/getting_started/design_principles.html#rate-limiting
 func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 
 	c.rateMu.Lock()
 	mostRecentRate := c.mostRecentRate
 	c.rateMu.Unlock()
 
+	// fmt.Printf("checkRateLimitBeforeDo: \t Remaining = %d, \t ResetTime = %s\n", mostRecentRate.Remaining, mostRecentRate.ResetTime.String())
 	if !mostRecentRate.ResetTime.IsZero() && mostRecentRate.Remaining < c.RateRemainingFloor && time.Now().Before(mostRecentRate.ResetTime) {
 
 		if c.PauseOnRateLimit {
 			// If rate limit is hitting threshold then pause until the rate limit resets
 			//   This behavior is controlled by the client PauseOnRateLimit value
+			// fmt.Printf("checkRateLimitBeforeDo: \t ***pause**** \t Time Now = %s \tPause After = %s\n", time.Now().String(), mostRecentRate.ResetTime.Sub(time.Now().Add(2*time.Second)).String())
 			<-time.After(mostRecentRate.ResetTime.Sub(time.Now().Add(2 * time.Second)))
 		} else {
+			// fmt.Printf("checkRateLimitBeforeDo: \t ***error****\n")
+
 			return &RateLimitError{
 				Rate: mostRecentRate,
 			}
