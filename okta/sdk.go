@@ -82,6 +82,9 @@ type Client struct {
 
 	// Service for Working with Groups
 	Groups *GroupsService
+
+	// Service for Working with Apps
+	Apps *AppsService
 }
 
 type service struct {
@@ -113,7 +116,7 @@ func NewClient(httpClient *http.Client, orgName string, apiToken string, isProdu
 
 	c.Users = (*UsersService)(&c.common)
 	c.Groups = (*GroupsService)(&c.common)
-
+	c.Apps = (*AppsService)(&c.common)
 	return c
 }
 
@@ -245,6 +248,8 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 	if err != nil {
 		// even though there was an error, we still return the response
 		// in case the caller wants to inspect it further
+		// fmt.Printf("Error after sdk.Do return\n")
+
 		return response, err
 	}
 
@@ -272,7 +277,6 @@ func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 	c.rateMu.Lock()
 	mostRecentRate := c.mostRecentRate
 	c.rateMu.Unlock()
-
 	// fmt.Printf("checkRateLimitBeforeDo: \t Remaining = %d, \t ResetTime = %s\n", mostRecentRate.Remaining, mostRecentRate.ResetTime.String())
 	if !mostRecentRate.ResetTime.IsZero() && mostRecentRate.Remaining < c.RateRemainingFloor && time.Now().Before(mostRecentRate.ResetTime) {
 
@@ -313,7 +317,6 @@ func CheckResponse(r *http.Response) error {
 	if err == nil && data != nil {
 		json.Unmarshal(data, &errorResp.ErrorDetail)
 	}
-
 	switch {
 	case r.StatusCode == http.StatusTooManyRequests:
 
