@@ -70,7 +70,10 @@ The current state of the this SDK is in development. There is still much work to
     - Enroll in factor (NOT Implemented) &#9785;
     - reset factor (NOT Implemented) &#9785;
     - verify factors (NOT Implemented) &#9785;
-
+* Apps (Barely Implemented)
+    - get App (Apps.GetByID) &#9745;
+    - get App Users (Apps.GetUsers)  &#9745;
+    - Many more API Interactions to go &#9785;
 
 
 # OKTA Links
