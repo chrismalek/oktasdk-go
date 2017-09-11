@@ -113,8 +113,9 @@ func setupTestUsers() {
 			ZipCode:           "94107",
 			CountryCode:       "US"},
 		Credentials: credentials{
-			RecoveryQuestion: recoveryQuestion{Question: "Who's a major player in the cowboy scene?"},
-			Provider: provider{Type: "OKTA",
+			Password:         &passwordValue{},
+			RecoveryQuestion: &recoveryQuestion{Question: "Who's a major player in the cowboy scene?"},
+			Provider: &provider{Type: "OKTA",
 				Name: "OKTA"},
 		},
 	}
