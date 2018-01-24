@@ -63,6 +63,8 @@ type Client struct {
 	authorizationHeaderValue string
 	PauseOnRateLimit         bool
 
+	oktaErrorCode string
+
 	// RateRemainingFloor - If the API returns a "X-Rate-Limit-Remaining" header less than this the SDK will either pause
 	//  Or throw  RateLimitError depending on the client.PauseOnRateLimit value. It defaults to 30
 	// One client doing too much work can lock out all API Access for every other client
@@ -264,7 +266,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 	c.mostRecentRate.ResetTime = response.Rate.ResetTime
 	c.rateMu.Unlock()
 
-	err = CheckResponse(resp)
+	err = CheckResponse(c, resp)
 	if err != nil {
 		// even though there was an error, we still return the response
 		// in case the caller wants to inspect it further
@@ -327,7 +329,7 @@ func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 // The error type will be *RateLimitError for rate limit exceeded errors,
 // and *TwoFactorAuthError for two-factor authentication errors.
 // TODO - check un-authorized
-func CheckResponse(r *http.Response) error {
+func CheckResponse(u *Client, r *http.Response) error {
 	if c := r.StatusCode; 200 <= c && c <= 299 {
 		return nil
 	}
@@ -339,13 +341,14 @@ func CheckResponse(r *http.Response) error {
 	}
 	switch {
 	case r.StatusCode == http.StatusTooManyRequests:
-
+		u.oktaErrorCode = errorResp.ErrorDetail.ErrorCode
 		return &RateLimitError{
 			Rate:        parseRate(r),
 			Response:    r,
 			ErrorDetail: errorResp.ErrorDetail}
 
 	default:
+		u.oktaErrorCode = errorResp.ErrorDetail.ErrorCode
 		return errorResp
 	}
 
