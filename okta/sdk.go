@@ -236,6 +236,11 @@ func parseRate(r *http.Response) Rate {
 	return rate
 }
 
+// retrieve our okta error code from the Client object
+func (c *Client) apiErrorCode() string {
+        return c.oktaErrorCode
+}
+
 // Do sends an API request and returns the API response.  The API response is
 // JSON decoded and stored in the value pointed to by v, or returned as an
 // error if an API error has occurred.  If v implements the io.Writer
@@ -331,8 +336,8 @@ func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 // The error type will be *RateLimitError for rate limit exceeded errors,
 // and *TwoFactorAuthError for two-factor authentication errors.
 // TODO - check un-authorized
-func CheckResponse(u *Client, r *http.Response) error {
-	if c := r.StatusCode; 200 <= c && c <= 299 {
+func CheckResponse(c *Client, r *http.Response) error {
+	if s := r.StatusCode; 200 <= s && s <= 299 {
 		return nil
 	}
 
@@ -343,14 +348,14 @@ func CheckResponse(u *Client, r *http.Response) error {
 	}
 	switch {
 	case r.StatusCode == http.StatusTooManyRequests:
-		u.oktaErrorCode = errorResp.ErrorDetail.ErrorCode
+		c.oktaErrorCode = errorResp.ErrorDetail.ErrorCode
 		return &RateLimitError{
 			Rate:        parseRate(r),
 			Response:    r,
 			ErrorDetail: errorResp.ErrorDetail}
 
 	default:
-		u.oktaErrorCode = errorResp.ErrorDetail.ErrorCode
+		c.oktaErrorCode = errorResp.ErrorDetail.ErrorCode
 		return errorResp
 	}
 
