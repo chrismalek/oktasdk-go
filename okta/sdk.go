@@ -63,6 +63,8 @@ type Client struct {
 	authorizationHeaderValue string
 	PauseOnRateLimit         bool
 
+	// From the http response, populate this var with the okta error code, if applicable
+	// https://developer.okta.com/reference/error_codes/
 	oktaErrorCode string
 
 	// RateRemainingFloor - If the API returns a "X-Rate-Limit-Remaining" header less than this the SDK will either pause
