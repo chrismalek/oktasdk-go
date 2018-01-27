@@ -65,7 +65,7 @@ type Client struct {
 
 	// From the http response, populate this var with the okta error code, if applicable
 	// https://developer.okta.com/reference/error_codes/
-	oktaErrorCode string
+	OktaErrorCode string
 
 	// RateRemainingFloor - If the API returns a "X-Rate-Limit-Remaining" header less than this the SDK will either pause
 	//  Or throw  RateLimitError depending on the client.PauseOnRateLimit value. It defaults to 30
@@ -343,14 +343,14 @@ func CheckResponse(c *Client, r *http.Response) error {
 	}
 	switch {
 	case r.StatusCode == http.StatusTooManyRequests:
-		c.oktaErrorCode = errorResp.ErrorDetail.ErrorCode
+		c.OktaErrorCode = errorResp.ErrorDetail.ErrorCode
 		return &RateLimitError{
 			Rate:        parseRate(r),
 			Response:    r,
 			ErrorDetail: errorResp.ErrorDetail}
 
 	default:
-		c.oktaErrorCode = errorResp.ErrorDetail.ErrorCode
+		c.OktaErrorCode = errorResp.ErrorDetail.ErrorCode
 		return errorResp
 	}
 
