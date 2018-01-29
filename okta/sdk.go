@@ -341,16 +341,16 @@ func CheckResponse(c *Client, r *http.Response) error {
 	if err == nil && data != nil {
 		json.Unmarshal(data, &errorResp.ErrorDetail)
 	}
+	c.OktaErrorCode = errorResp.ErrorDetail.ErrorCode
+
 	switch {
 	case r.StatusCode == http.StatusTooManyRequests:
-		c.OktaErrorCode = errorResp.ErrorDetail.ErrorCode
 		return &RateLimitError{
 			Rate:        parseRate(r),
 			Response:    r,
 			ErrorDetail: errorResp.ErrorDetail}
 
 	default:
-		c.OktaErrorCode = errorResp.ErrorDetail.ErrorCode
 		return errorResp
 	}
 
