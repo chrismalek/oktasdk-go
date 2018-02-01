@@ -78,6 +78,76 @@ var userTestJSONString = `
 }
 `
 
+var updateTestJSONString = `
+
+{
+  "id": "00ub0oNGTSWTBKOLGLNR",
+  "status": "ACTIVE",
+  "created": "2013-06-24T16:39:18.000Z",
+  "activated": "2013-06-24T16:39:19.000Z",
+  "statusChanged": "2013-06-24T16:39:19.000Z",
+  "lastLogin": "2013-06-24T17:39:19.000Z",
+  "lastUpdated": "2013-06-27T16:35:28.000Z",
+  "passwordChanged": "2013-06-24T16:39:19.000Z",
+  "profile": {
+    "login": "isaac.brock@example.com",
+    "firstName": "Herschel",
+    "lastName": "Brock",
+    "nickName": "issac",
+    "displayName": "Isaac Brock",
+    "email": "isaac.brock@example.com",
+    "secondEmail": "isaac@example.org",
+    "preferredLanguage": "en-US",
+    "organization": "Okta",
+    "title": "Director",
+    "division": "R&D",
+    "department": "Engineering",
+    "costCenter": "10",
+    "employeeNumber": "187",
+    "mobilePhone": "+1-555-415-1337",
+    "primaryPhone": "+1-555-514-1337",
+    "streetAddress": "301 Brannan St.",
+    "city": "San Francisco",
+    "state": "CA",
+    "zipCode": "94107",
+    "countryCode": "US"
+  },
+  "credentials": {
+    "password": {},
+    "recovery_question": {
+      "question": "Who's a major player in the cowboy scene?"
+    },
+    "provider": {
+      "type": "OKTA",
+      "name": "OKTA"
+    }
+  },
+  "_links": {
+    "resetPassword": {
+      "href": "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/lifecycle/reset_password"
+    },
+    "resetFactors": {
+      "href": "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/lifecycle/reset_factors"
+    },
+    "expirePassword": {
+      "href": "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/lifecycle/expire_password"
+    },
+    "forgotPassword": {
+      "href": "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/credentials/forgot_password"
+    },
+    "changeRecoveryQuestion": {
+      "href": "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/credentials/change_recovery_question"
+    },
+    "deactivate": {
+      "href": "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/lifecycle/deactivate"
+    },
+    "changePassword": {
+      "href": "https://your-domain.okta.com/api/v1/users/00ub0oNGTSWTBKOLGLNR/credentials/change_password"
+    }
+  }
+}
+`
+
 var testuser *User
 
 func setupTestUsers() {
@@ -148,6 +218,36 @@ func TestUserGet(t *testing.T) {
 	if !reflect.DeepEqual(user, testuser) {
 		// fmt.Printf("pretty---\n%v\n---\n", pretty.Diff(user, testuser))
 		t.Errorf("client.Users.GetByID returned \n\t%+v, want \n\t%+v\n", user, testuser)
+	}
+}
+
+func TestUserUpdate(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestUsers()
+
+	updateuser := &NewUser{
+		Profile: userProfile{Login: "isaac.brock@example.com",
+			FirstName:         "Herschel",
+			LastName:          "Brock",
+			Email:             "isaac.brock@example.com",
+		},
+	}
+
+	mux.HandleFunc("/users/00ub0oNGTSWTBKOLGLNR", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, updateTestJSONString)
+	})
+
+	user, _, err := client.Users.Update(*updateuser, "00ub0oNGTSWTBKOLGLNR")
+	if err != nil {
+		t.Errorf("Users.Update returned error: %v", err)
+	}
+	if !reflect.DeepEqual(user.Profile.FirstName, updateuser.Profile.FirstName) {
+		// fmt.Printf("pretty---\n%v\n---\n", pretty.Diff(user, testuser))
+		t.Errorf("client.Users.Update returned \n\t%+v, want \n\t%+v\n", user.Profile.FirstName, updateuser.Profile.FirstName)
 	}
 }
 
