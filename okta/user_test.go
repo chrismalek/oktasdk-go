@@ -78,6 +78,7 @@ var userTestJSONString = `
   }
 }
 `
+
 var testuser *User
 
 func setupTestUsers() {
