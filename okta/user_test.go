@@ -1,6 +1,7 @@
 package okta
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -148,6 +149,50 @@ func TestUserGet(t *testing.T) {
 	if !reflect.DeepEqual(user, testuser) {
 		// fmt.Printf("pretty---\n%v\n---\n", pretty.Diff(user, testuser))
 		t.Errorf("client.Users.GetByID returned \n\t%+v, want \n\t%+v\n", user, testuser)
+	}
+}
+
+func TestUserUpdate(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestUsers()
+
+	// our updateuser struct with profile changes to pass into the Update function
+	updateuser := &NewUser{
+		Profile: userProfile{Login: "isaac.brock@example.com",
+			FirstName:         "Herschel",
+			LastName:          "Brock",
+			Email:             "isaac.brock@example.com",
+		},
+	}
+
+	// updateTestJSONString is our expected response after the update
+	// we alter the userTestJSONString json string with the changes we expect
+	// from the updateuser struct
+	err := json.Unmarshal([]byte(userTestJSONString), testuser)
+	if err != nil {
+		t.Errorf("Users.Update json UnMarshall returned error: %v", err)
+	}
+	testuser.Profile.FirstName = "Herschel"
+	temp, err := json.Marshal(testuser)
+	if err != nil {
+		t.Errorf("Users.Update json Marshall returned error: %v", err)
+	}
+	updateTestJSONString := string(temp)
+
+	mux.HandleFunc("/users/00ub0oNGTSWTBKOLGLNR", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, updateTestJSONString)
+	})
+
+	user, _, err := client.Users.Update(*updateuser, "00ub0oNGTSWTBKOLGLNR")
+	if err != nil {
+		t.Errorf("Users.Update returned error: %v", err)
+	}
+	if !reflect.DeepEqual(user.Profile.FirstName, updateuser.Profile.FirstName) {
+		t.Errorf("client.Users.Update returned \n\t%+v, want \n\t%+v\n", user.Profile.FirstName, updateuser.Profile.FirstName)
 	}
 }
 

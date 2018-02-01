@@ -437,6 +437,26 @@ func (s *UsersService) Create(userIn NewUser, createAsActive bool) (*User, *Resp
 	return newUser, resp, err
 }
 
+// Update - Update an existing user. We use the same "newUser" object as we do to create a user since the update api endpopint requires the same data structure (profile & credentials) in its body. The request uses POST and not PUT because POST supports partial updates.
+func (s *UsersService) Update(userIn NewUser, id string) (*User, *Response, error) {
+
+	u := fmt.Sprintf("users/%v", id)
+
+	req, err := s.client.NewRequest("POST", u, userIn)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	updateUser := new(User)
+	resp, err := s.client.Do(req, updateUser)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return updateUser, resp, err
+}
+
 // Activate Activates a user. You can have OKTA send an email by including a "sendEmail=true"
 // If you pass in sendEmail=false, then activationResponse.ActivationURL will have a string URL that
 // can be sent to the end user. You can discard response if sendEmail=true
