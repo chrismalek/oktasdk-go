@@ -208,7 +208,7 @@ func TestUserDelete(t *testing.T) {
 	mux.HandleFunc("/users/00ub0oNGTSWTBKOLGLNR", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "DELETE")
 		testAuthHeader(t, r)
-		fmt.Fprint(w, `{}`)
+		fmt.Fprint(w, "")
 	})
 
 	resp, err := client.Users.Delete("00ub0oNGTSWTBKOLGLNR")
