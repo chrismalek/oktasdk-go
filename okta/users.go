@@ -495,6 +495,23 @@ func (s *UsersService) Deactivate(id string) (*Response, error) {
 	return resp, err
 }
 
+// Delete - Delete a user. Does not check for user status DEPROVISIONED.
+func (s *UsersService) Delete(id string) (*Response, error) {
+	u := fmt.Sprintf("users/%v", id)
+
+	req, err := s.client.NewRequest("DELETE", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.client.Do(req, nil)
+
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
 // Suspend - Suspends a user - If user is NOT active an Error will come back based on OKTA API:
 // http://developer.okta.com/docs/api/resources/users.html#suspend-user
 func (s *UsersService) Suspend(id string) (*Response, error) {

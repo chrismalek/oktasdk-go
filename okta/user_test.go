@@ -196,6 +196,30 @@ func TestUserUpdate(t *testing.T) {
 	}
 }
 
+func TestUserDelete(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestUsers()
+
+	// user delete only works when user status is DEPROVISIONED
+	testuser.Status = "DEPROVISIONED"
+
+	mux.HandleFunc("/users/00ub0oNGTSWTBKOLGLNR", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "DELETE")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, "")
+	})
+
+	resp, err := client.Users.Delete("00ub0oNGTSWTBKOLGLNR")
+	if err != nil {
+		t.Errorf("Users.Delete returned error: %v", err)
+	}
+	if !reflect.DeepEqual(resp.Response.StatusCode, 200) {
+		t.Errorf("client.Users.Delete returned \n\t%+v, want \n\t%+v\n", resp.Response.StatusCode, 200)
+	}
+}
+
 //  Test User Search Query Parameter Generation
 // Test Pagination
 //
