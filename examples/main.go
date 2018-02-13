@@ -24,7 +24,8 @@ func main() {
 	CreateUserThenActivate()
 	SetUserPassword()
 	deactivateUser()
-	getUserMFAFactor("00u8f4w4fde6yytOo0h7")
+	getUser("00u5wb3ybyXqakBDa0h7")
+	getUserMFAFactor("00u5wb3ybyXqakBDa0h7")
 
 	fmt.Printf("\n\n%%%%%% Group Examples\n\n\n")
 
