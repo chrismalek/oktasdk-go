@@ -33,6 +33,8 @@ const (
 	UserStatusDeprovisioned = "DEPROVISIONED"
 
 	oktaFilterTimeFormat = "2006-01-02T15:05:05.000Z"
+
+	oktaPaginateSize = 200
 )
 
 // UsersService handles communication with the User data related
@@ -261,19 +263,24 @@ type UserListFilterOptions struct {
 
 // PopulateGroups will populate the groups a user is a member of. You pass in a pointer to an existing users
 func (s *UsersService) PopulateGroups(user *User) (*Response, error) {
-	u := fmt.Sprintf("users/%v/groups", user.ID)
-	req, err := s.client.NewRequest("GET", u, nil)
-
-	if err != nil {
-		return nil, err
+	paginate := "users/%v/groups?after=%v"
+	queryString := fmt.Sprintf("users/%v/groups", user.ID)
+	for {
+		groups := []Group{}
+		req, err := s.client.NewRequest("GET", queryString, nil)
+		if err != nil {
+			return nil, err
+		}
+		resp, err := s.client.Do(req, &groups)
+		if err != nil {
+			return resp, err
+		}
+		user.Groups = append(user.Groups, groups...)
+		if len(groups) < oktaPaginateSize {
+			return resp, err
+		}
+		queryString = fmt.Sprintf(paginate, user.ID, groups[oktaPaginateSize - 1].ID)
 	}
-	// TODO: If user has more than 200 groups this will only return those first 200
-	resp, err := s.client.Do(req, &user.Groups)
-	if err != nil {
-		return resp, err
-	}
-
-	return resp, err
 }
 
 // PopulateEnrolledFactors will populate the Enrolled MFA Factors a user is a member of.
