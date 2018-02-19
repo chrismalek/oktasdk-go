@@ -159,6 +159,19 @@ type resetPasswordResponse struct {
 	ResetPasswordURL string `json:"resetPasswordUrl"`
 }
 
+type userRoles struct {
+	Role []userRole `json:"-,omitempty"`
+}
+
+type userRole struct {
+	ID          string    `json:"id,omitempty"`
+	Label       string    `json:"label,omitempty"`
+	Type        string    `json:"type,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	Created     time.Time `json:"created,omitempty"`
+	LastUpdated time.Time `json:"lastUpdated,omitempty"`
+}
+
 // NewUser - Returns a new user object. This is used to create users in OKTA. It only has the properties that
 // OKTA will take as input. The "User" object has more feilds that are OKTA returned like the ID, etc
 func (s *UsersService) NewUser() NewUser {
@@ -565,6 +578,83 @@ func (s *UsersService) Unlock(id string) (*Response, error) {
 
 	return resp, err
 }
+
+// List User Roles. id must be User.ID
+// will return a struct containing a slice for each role assigned to the user
+// if the user has no roles, return nil
+func (s *UsersService) ListRoles(id string) (*userRoles, *Response, error) {
+
+	u := fmt.Sprintf("users/%v/roles", id)
+	req, err := s.client.NewRequest("GET", u, nil)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	role := make([]userRole, 0)
+	resp, err := s.client.Do(req, &role)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	if len(role) > 0 {
+		myRoles := new(userRoles)
+		for _, v := range role {
+			myRoles.Role = append(myRoles.Role, v)
+		}
+		return myRoles, resp, err
+	}
+
+	return nil, resp, err
+}
+
+// Assign Role to User. id must be User.ID
+// allowed roles: SUPER_ADMIN, ORG_ADMIN, API_ACCESS_MANAGEMENT_ADMIN, APP_ADMIN,
+// USER_ADMIN, MOBILE_ADMIN, READ_ONLY_ADMIN, HELP_DESK_ADMIN
+// https://help.okta.com/en/prod/Content/Topics/Security/Administrators.htm?cshid=Security_Administrators#Security_Administrators
+func (s *UsersService) AssignRole(id string, role string) (*Response, error) {
+
+	type roleType struct {
+		Type string `json:"type"`
+	}
+
+	u := fmt.Sprintf("users/%v/roles", id)
+	body := roleType{
+		Type: role,
+	}
+
+	req, err := s.client.NewRequest("POST", u, body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Unassign Role from User. id must be User.ID, role must be []userRole.ID from ListRoles
+func (s *UsersService) UnAssignRole(id string, role string) (*Response, error) {
+
+	u := fmt.Sprintf("users/%v/roles/%v", id, role)
+
+	req, err := s.client.NewRequest("DELETE", u, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := s.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
 
 // SetPassword - Sets a user password to an Admin provided String
 func (s *UsersService) SetPassword(id string, newPassword string) (*User, *Response, error) {

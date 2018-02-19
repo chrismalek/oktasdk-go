@@ -161,9 +161,9 @@ func TestUserUpdate(t *testing.T) {
 	// our updateuser struct with profile changes to pass into the Update function
 	updateuser := &NewUser{
 		Profile: userProfile{Login: "isaac.brock@example.com",
-			FirstName:         "Herschel",
-			LastName:          "Brock",
-			Email:             "isaac.brock@example.com",
+			FirstName: "Herschel",
+			LastName:  "Brock",
+			Email:     "isaac.brock@example.com",
 		},
 	}
 
