@@ -609,10 +609,24 @@ func (s *UsersService) ListRoles(id string) (*userRoles, *Response, error) {
 }
 
 // Assign Role to User. id must be User.ID
-// allowed roles: SUPER_ADMIN, ORG_ADMIN, API_ACCESS_MANAGEMENT_ADMIN, APP_ADMIN,
-// USER_ADMIN, MOBILE_ADMIN, READ_ONLY_ADMIN, HELP_DESK_ADMIN
-// https://help.okta.com/en/prod/Content/Topics/Security/Administrators.htm?cshid=Security_Administrators#Security_Administrators
 func (s *UsersService) AssignRole(id string, role string) (*Response, error) {
+
+	// verify the role is a valid Okta role
+	// https://help.okta.com/en/prod/Content/Topics/Security/Administrators.htm?cshid=Security_Administrators#Security_Administrators
+	allowedRoles := map[string]bool {
+		"SUPER_ADMIN": true,
+		"ORG_ADMIN": true,
+		"API_ACCESS_MANAGEMENT_ADMIN": true,
+		"APP_ADMIN": true,
+		"USER_ADMIN": true,
+		"MOBILE_ADMIN": true,
+		"READ_ONLY_ADMIN": true,
+		"HELP_DESK_ADMIN": true,
+	}
+
+	if ! allowedRoles[role] {
+		return nil, fmt.Errorf("Role %v is not a valid Okta role. Please review https://help.okta.com/en/prod/Content/Topics/Security/Administrators.htm?cshid=Security_Administrators#Security_Administrators", role)
+	}
 
 	type roleType struct {
 		Type string `json:"type"`
