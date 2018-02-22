@@ -613,18 +613,18 @@ func (s *UsersService) AssignRole(id string, role string) (*Response, error) {
 
 	// verify the role is a valid Okta role
 	// https://help.okta.com/en/prod/Content/Topics/Security/Administrators.htm?cshid=Security_Administrators#Security_Administrators
-	allowedRoles := map[string]bool {
-		"SUPER_ADMIN": true,
-		"ORG_ADMIN": true,
+	allowedRoles := map[string]bool{
+		"SUPER_ADMIN":                 true,
+		"ORG_ADMIN":                   true,
 		"API_ACCESS_MANAGEMENT_ADMIN": true,
-		"APP_ADMIN": true,
-		"USER_ADMIN": true,
-		"MOBILE_ADMIN": true,
-		"READ_ONLY_ADMIN": true,
-		"HELP_DESK_ADMIN": true,
+		"APP_ADMIN":                   true,
+		"USER_ADMIN":                  true,
+		"MOBILE_ADMIN":                true,
+		"READ_ONLY_ADMIN":             true,
+		"HELP_DESK_ADMIN":             true,
 	}
 
-	if ! allowedRoles[role] {
+	if !allowedRoles[role] {
 		return nil, fmt.Errorf("Role %v is not a valid Okta role. Please review https://help.okta.com/en/prod/Content/Topics/Security/Administrators.htm?cshid=Security_Administrators#Security_Administrators", role)
 	}
 
@@ -668,7 +668,6 @@ func (s *UsersService) UnAssignRole(id string, role string) (*Response, error) {
 
 	return resp, err
 }
-
 
 // SetPassword - Sets a user password to an Admin provided String
 func (s *UsersService) SetPassword(id string, newPassword string) (*User, *Response, error) {
