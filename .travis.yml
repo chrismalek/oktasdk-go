@@ -1,0 +1,6 @@
+sudo: required
+language: go
+install:
+- go get -d -v ./...
+script:
+- make test
