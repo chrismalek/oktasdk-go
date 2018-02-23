@@ -157,12 +157,9 @@ func TestUserDelete(t *testing.T) {
 		fmt.Fprint(w, "")
 	})
 
-	resp, err := client.Users.Delete("00ub0oNGTSWTBKOLGLNR")
+	_, err := client.Users.Delete("00ub0oNGTSWTBKOLGLNR")
 	if err != nil {
 		t.Errorf("Users.Delete returned error: %v", err)
-	}
-	if !reflect.DeepEqual(resp.Response.StatusCode, 200) {
-		t.Errorf("client.Users.Delete returned \n\t%+v, want \n\t%+v\n", resp.Response.StatusCode, 200)
 	}
 }
 
@@ -170,7 +167,6 @@ func TestListRoles(t *testing.T) {
 
 	setup()
 	defer teardown()
-	setupTestUsers()
 	setupTestRoles()
 
 	temp, err := json.Marshal(testroles.Role)
@@ -190,7 +186,50 @@ func TestListRoles(t *testing.T) {
 		t.Errorf("Users.ListRoles returned error: %v", err)
 	}
 	if !reflect.DeepEqual(roles, testroles) {
-		t.Errorf("client.Users.ListRoles returned \n\t%+v, want \n\t%+v\n", roles, testroles.Role)
+		t.Errorf("client.Users.ListRoles returned \n\t%+v, want \n\t%+v\n", roles, testroles)
+	}
+}
+
+func TestAssignRole(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestRoles()
+
+	type testRoleType struct {
+		Type string `json:"type"`
+	}
+
+	mux.HandleFunc("/users/00ub0oNGTSWTBKOLGLNR/roles", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		testBody(t, r, testRoleType{
+			Type: "USER_ADMIN",
+		})
+		fmt.Fprint(w, "")
+	})
+
+	_, err := client.Users.AssignRole("00ub0oNGTSWTBKOLGLNR", "USER_ADMIN")
+	if err != nil {
+		t.Errorf("Users.AssignRole returned error: %v", err)
+	}
+}
+
+func TestUnAssignRole(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestRoles()
+
+	mux.HandleFunc("/users/00ub0oNGTSWTBKOLGLNR/roles/KVJUKUS7IFCE2SKO", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "DELETE")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, "")
+	})
+
+	_, err := client.Users.UnAssignRole("00ub0oNGTSWTBKOLGLNR", "KVJUKUS7IFCE2SKO")
+	if err != nil {
+		t.Errorf("Users.UnAssignRole returned error: %v", err)
 	}
 }
 
