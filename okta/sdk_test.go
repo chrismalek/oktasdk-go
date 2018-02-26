@@ -1,7 +1,10 @@
 package okta
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -73,6 +76,21 @@ func testAuthHeader(t *testing.T, r *http.Request) {
 	want := fmt.Sprintf("SSWS %v", testToken)
 	if value := r.Header.Get("Authorization"); want != value {
 		t.Errorf("Authorization Header %s, want: %s", value, want)
+	}
+}
+
+func testBody(t *testing.T, r *http.Request, want interface{}) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		t.Errorf("Error reading request body: %v", err)
+	}
+	// if the last character of body is a newline, strip it
+	if bytes.Contains(body[len(body)-1:], []byte("\n")) {
+		body = body[:len(body)-1]
+	}
+	temp, err := json.Marshal(want)
+	if !bytes.Equal(body, temp) {
+		t.Errorf("Request body: %v, want %v", string(body), string(temp))
 	}
 }
 
