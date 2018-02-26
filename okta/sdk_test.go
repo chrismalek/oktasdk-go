@@ -84,8 +84,8 @@ func testBody(t *testing.T, r *http.Request, want interface{}) {
 	if err != nil {
 		t.Errorf("Error reading request body: %v", err)
 	}
-	// TODO: we check if newline is in body but not if it is the last character
-	if bytes.Contains(body, []byte("\n")) {
+	// if the last character of body is a newline, strip it
+	if bytes.Contains(body[len(body)-1:], []byte("\n")) {
 		body = body[:len(body)-1]
 	}
 	temp, err := json.Marshal(want)
