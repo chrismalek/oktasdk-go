@@ -571,7 +571,6 @@ func (s *UsersService) Unlock(id string) (*Response, error) {
 		return nil, err
 	}
 	resp, err := s.client.Do(req, nil)
-
 	if err != nil {
 		return resp, err
 	}
@@ -583,20 +582,17 @@ func (s *UsersService) Unlock(id string) (*Response, error) {
 // will return a struct containing a slice for each role assigned to the user
 // if the user has no roles, return nil
 func (s *UsersService) ListRoles(id string) (*userRoles, *Response, error) {
-
 	u := fmt.Sprintf("users/%v/roles", id)
-	req, err := s.client.NewRequest("GET", u, nil)
 
+	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	role := make([]userRole, 0)
 	resp, err := s.client.Do(req, &role)
 	if err != nil {
 		return nil, resp, err
 	}
-
 	if len(role) > 0 {
 		myRoles := new(userRoles)
 		for _, v := range role {
@@ -623,7 +619,6 @@ func (s *UsersService) AssignRole(id string, role string) (*Response, error) {
 		"READ_ONLY_ADMIN":             true,
 		"HELP_DESK_ADMIN":             true,
 	}
-
 	if !allowedRoles[role] {
 		return nil, fmt.Errorf("Role %v is not a valid Okta role. Please review https://help.okta.com/en/prod/Content/Topics/Security/Administrators.htm?cshid=Security_Administrators#Security_Administrators", role)
 	}
@@ -636,13 +631,10 @@ func (s *UsersService) AssignRole(id string, role string) (*Response, error) {
 	body := roleType{
 		Type: role,
 	}
-
 	req, err := s.client.NewRequest("POST", u, body)
-
 	if err != nil {
 		return nil, err
 	}
-
 	resp, err := s.client.Do(req, nil)
 	if err != nil {
 		return resp, err
@@ -653,14 +645,12 @@ func (s *UsersService) AssignRole(id string, role string) (*Response, error) {
 
 // Unassign Role from User. id must be User.ID, role must be []userRole.ID from ListRoles
 func (s *UsersService) UnAssignRole(id string, role string) (*Response, error) {
-
 	u := fmt.Sprintf("users/%v/roles/%v", id, role)
 
 	req, err := s.client.NewRequest("DELETE", u, nil)
 	if err != nil {
 		return nil, err
 	}
-
 	resp, err := s.client.Do(req, nil)
 	if err != nil {
 		return resp, err
