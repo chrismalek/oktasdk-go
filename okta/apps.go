@@ -1,6 +1,7 @@
 package okta
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"time"
@@ -120,7 +121,7 @@ func (a App) String() string {
 }
 
 // GetByID gets a group from OKTA by the Gropu ID. An error is returned if the group is not found
-func (a *AppsService) GetByID(appID string) (*App, *Response, error) {
+func (a *AppsService) GetByID(ctx context.Context, appID string) (*App, *Response, error) {
 
 	u := fmt.Sprintf("apps/%v", appID)
 	req, err := a.client.NewRequest("GET", u, nil)
@@ -131,7 +132,7 @@ func (a *AppsService) GetByID(appID string) (*App, *Response, error) {
 
 	app := new(App)
 
-	resp, err := a.client.Do(req, app)
+	resp, err := a.client.Do(ctx, req, app)
 
 	if err != nil {
 		return nil, resp, err
@@ -180,7 +181,7 @@ type AppUser struct {
 // GetUsers returns the members in an App
 //   Pass in an optional AppFilterOptions struct to filter the results
 //   The Users in the app are returned
-func (a *AppsService) GetUsers(appID string, opt *AppFilterOptions) (appUsers []AppUser, resp *Response, err error) {
+func (a *AppsService) GetUsers(ctx context.Context, appID string, opt *AppFilterOptions) (appUsers []AppUser, resp *Response, err error) {
 
 	pagesRetreived := 0
 	var u string
@@ -202,7 +203,7 @@ func (a *AppsService) GetUsers(appID string, opt *AppFilterOptions) (appUsers []
 		fmt.Printf("____ERROR HERE\n")
 		return nil, nil, err
 	}
-	resp, err = a.client.Do(req, &appUsers)
+	resp, err = a.client.Do(ctx, req, &appUsers)
 
 	if err != nil {
 		fmt.Printf("____ERROR HERE 2\n")
@@ -226,7 +227,7 @@ func (a *AppsService) GetUsers(appID string, opt *AppFilterOptions) (appUsers []
 				pageOpts.Limit = opt.Limit
 				pageOpts.NumberOfPages = 1
 
-				userPage, resp, err = a.GetUsers(appID, pageOpts)
+				userPage, resp, err = a.GetUsers(ctx, appID, pageOpts)
 
 				if err != nil {
 					return appUsers, resp, err

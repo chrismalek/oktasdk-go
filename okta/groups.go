@@ -1,6 +1,7 @@
 package okta
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -80,7 +81,7 @@ func (g Group) String() string {
 
 // ListWithFilter - Method to list groups with different filter options.
 //  Pass in a GroupFilterOptions to specify filters. Values in that struct will turn into Query parameters
-func (g *GroupsService) ListWithFilter(opt *GroupFilterOptions) ([]Group, *Response, error) {
+func (g *GroupsService) ListWithFilter(ctx context.Context, opt *GroupFilterOptions) ([]Group, *Response, error) {
 
 	var u string
 	var err error
@@ -118,7 +119,7 @@ func (g *GroupsService) ListWithFilter(opt *GroupFilterOptions) ([]Group, *Respo
 		return nil, nil, err
 	}
 	groups := make([]Group, 1)
-	resp, err := g.client.Do(req, &groups)
+	resp, err := g.client.Do(ctx, req, &groups)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -138,7 +139,7 @@ func (g *GroupsService) ListWithFilter(opt *GroupFilterOptions) ([]Group, *Respo
 				pageOption.NumberOfPages = 1
 				pageOption.Limit = opt.Limit
 
-				groupPage, resp, err = g.ListWithFilter(pageOption)
+				groupPage, resp, err = g.ListWithFilter(ctx, pageOption)
 				if err != nil {
 					return groups, resp, err
 				}
@@ -154,7 +155,7 @@ func (g *GroupsService) ListWithFilter(opt *GroupFilterOptions) ([]Group, *Respo
 }
 
 // GetByID gets a group from OKTA by the Gropu ID. An error is returned if the group is not found
-func (g *GroupsService) GetByID(groupID string) (*Group, *Response, error) {
+func (g *GroupsService) GetByID(ctx context.Context, groupID string) (*Group, *Response, error) {
 
 	u := fmt.Sprintf("groups/%v", groupID)
 	req, err := g.client.NewRequest("GET", u, nil)
@@ -165,7 +166,7 @@ func (g *GroupsService) GetByID(groupID string) (*Group, *Response, error) {
 
 	group := new(Group)
 
-	resp, err := g.client.Do(req, group)
+	resp, err := g.client.Do(ctx, req, group)
 
 	if err != nil {
 		return nil, resp, err
@@ -177,7 +178,7 @@ func (g *GroupsService) GetByID(groupID string) (*Group, *Response, error) {
 // GetUsers returns the members in a group
 //   Pass in an optional GroupFilterOptions struct to filter the results
 //   The Users in the group are returned
-func (g *GroupsService) GetUsers(groupID string, opt *GroupUserFilterOptions) (users []User, resp *Response, err error) {
+func (g *GroupsService) GetUsers(ctx context.Context, groupID string, opt *GroupUserFilterOptions) (users []User, resp *Response, err error) {
 	pagesRetreived := 0
 	var u string
 	if opt.NextURL != nil {
@@ -197,7 +198,7 @@ func (g *GroupsService) GetUsers(groupID string, opt *GroupUserFilterOptions) (u
 	if err != nil {
 		return nil, nil, err
 	}
-	resp, err = g.client.Do(req, &users)
+	resp, err = g.client.Do(ctx, req, &users)
 
 	if err != nil {
 		return nil, resp, err
@@ -219,7 +220,7 @@ func (g *GroupsService) GetUsers(groupID string, opt *GroupUserFilterOptions) (u
 				pageOpts.Limit = opt.Limit
 				pageOpts.NumberOfPages = 1
 
-				userPage, resp, err = g.GetUsers(groupID, pageOpts)
+				userPage, resp, err = g.GetUsers(ctx, groupID, pageOpts)
 				if err != nil {
 					return users, resp, err
 				}
@@ -236,7 +237,7 @@ func (g *GroupsService) GetUsers(groupID string, opt *GroupUserFilterOptions) (u
 }
 
 // Add - Adds an OKTA Mastered Group with name and description. GroupName is required.
-func (g *GroupsService) Add(groupName string, groupDescription string) (*Group, *Response, error) {
+func (g *GroupsService) Add(ctx context.Context, groupName string, groupDescription string) (*Group, *Response, error) {
 
 	if groupName == "" {
 		return nil, nil, errors.New("groupName parameter is required for ADD")
@@ -256,7 +257,7 @@ func (g *GroupsService) Add(groupName string, groupDescription string) (*Group, 
 
 	group := new(Group)
 
-	resp, err := g.client.Do(req, group)
+	resp, err := g.client.Do(ctx, req, group)
 
 	if err != nil {
 		return nil, resp, err
@@ -266,7 +267,7 @@ func (g *GroupsService) Add(groupName string, groupDescription string) (*Group, 
 }
 
 // Delete - Delets an OKTA Mastered Group with ID
-func (g *GroupsService) Delete(groupID string) (*Response, error) {
+func (g *GroupsService) Delete(ctx context.Context, groupID string) (*Response, error) {
 
 	if groupID == "" {
 		return nil, errors.New("groupID parameter is required for Delete")
@@ -279,7 +280,7 @@ func (g *GroupsService) Delete(groupID string) (*Response, error) {
 		return nil, err
 	}
 
-	resp, err := g.client.Do(req, nil)
+	resp, err := g.client.Do(ctx, req, nil)
 
 	if err != nil {
 		return resp, err

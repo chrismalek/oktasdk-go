@@ -2,6 +2,7 @@ package okta
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -238,7 +239,8 @@ func parseRate(r *http.Response) Rate {
 // interface, the raw response body will be written to v, without attempting to
 // first decode it.  If rate limit is exceeded and reset time is in the future,
 // Do returns rate immediately without making a network API call.
-func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
+func (c *Client) Do(ctx context.Context, req *http.Request, v interface{}) (*Response, error) {
+	req = req.WithContext(ctx)
 
 	// If we've hit rate limit, don't make further requests before Reset time.
 	if err := c.checkRateLimitBeforeDo(req); err != nil {

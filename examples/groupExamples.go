@@ -1,10 +1,11 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"time"
 
-	"github.com/chrismalek/oktasdk-go/okta"
+	"github.com/nzoschke/oktasdk-go/okta"
 )
 
 func searchForGroupByName() {
@@ -17,7 +18,7 @@ func searchForGroupByName() {
 	groupFilterOptions := new(okta.GroupFilterOptions)
 	groupFilterOptions.GetAllPages = true
 	groupFilterOptions.NameStartsWith = "TEST"
-	groupSearchResult, response, err := client.Groups.ListWithFilter(groupFilterOptions)
+	groupSearchResult, response, err := client.Groups.ListWithFilter(context.Background(), groupFilterOptions)
 
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
@@ -41,7 +42,7 @@ func getFirst3PageOfOKTAGroupsUpdatedRecently() {
 	groupFilterOptions.LastUpdated.Value = time.Now().AddDate(0, -1, 0) // Last Month
 	groupFilterOptions.LastUpdated.Operator = okta.FilterGreaterThanOperator
 
-	groupSearchResult, response, err := client.Groups.ListWithFilter(groupFilterOptions)
+	groupSearchResult, response, err := client.Groups.ListWithFilter(context.Background(), groupFilterOptions)
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
 	} else {
@@ -57,7 +58,7 @@ func getGroupByID() {
 	defer printEnd(printStart("getGroupByID"))
 	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
 
-	group, response, err := client.Groups.GetByID("00g2nlq3l6DDWPIYBOTG")
+	group, response, err := client.Groups.GetByID(context.Background(), "00g2nlq3l6DDWPIYBOTG")
 
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
@@ -81,7 +82,7 @@ func getRandomOKTAGroupUser() {
 	groupFilterOptions.LastMembershipUpdated.Value = time.Now().AddDate(0, -1, 0) // Last Month
 	groupFilterOptions.LastMembershipUpdated.Operator = okta.FilterGreaterThanOperator
 
-	groupSearchResult, response, err := client.Groups.ListWithFilter(groupFilterOptions)
+	groupSearchResult, response, err := client.Groups.ListWithFilter(context.Background(), groupFilterOptions)
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
 
@@ -92,7 +93,7 @@ func getRandomOKTAGroupUser() {
 			groupUserOptions := new(okta.GroupUserFilterOptions)
 			groupUserOptions.GetAllPages = true
 
-			userList, response, err := client.Groups.GetUsers(groupSearchResult[0].ID, groupUserOptions)
+			userList, response, err := client.Groups.GetUsers(context.Background(), groupSearchResult[0].ID, groupUserOptions)
 			if err != nil {
 				fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
 
@@ -113,7 +114,7 @@ func groupAddAndDelete() {
 	groupName := "OKTASDK-GO-" + time.Now().String()
 	groupDescription := "Created by OKTASDK-GO @ " + time.Now().String()
 
-	newGroup, response, err := client.Groups.Add(groupName, groupDescription)
+	newGroup, response, err := client.Groups.Add(context.Background(), groupName, groupDescription)
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
 		return
@@ -122,7 +123,7 @@ func groupAddAndDelete() {
 	printGroup(*newGroup)
 
 	fmt.Printf("Deleting New Group ID: %v\n", newGroup.ID)
-	response, err = client.Groups.Delete(newGroup.ID)
+	response, err = client.Groups.Delete(context.Background(), newGroup.ID)
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
 		return

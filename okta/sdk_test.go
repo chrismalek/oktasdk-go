@@ -1,6 +1,7 @@
 package okta
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -112,7 +113,7 @@ func TestRateLimitRateExceededError(t *testing.T) {
 		t.Errorf("Error Creating Client: %v\n", err)
 	}
 
-	_, err = client.Do(req, nil)
+	_, err = client.Do(context.Background(), req, nil)
 
 	if err != nil {
 		t.Errorf("Error doing GET Test: %v\n", err)
@@ -127,7 +128,7 @@ func TestRateLimitRateExceededError(t *testing.T) {
 		t.Errorf("client.mostRecentRate.RatePerMinuteLimit was not cached. Expected %v, Got: %v", client.mostRecentRate.RatePerMinuteLimit, headerRateLimitWant)
 	}
 	// Second Call should return an error becasue it has cached the values
-	_, err = client.Do(req, nil)
+	_, err = client.Do(context.Background(), req, nil)
 
 	if err == nil {
 		t.Errorf("Expected Rate Limit Error To be Returned. However, No Error was created.\n")
@@ -137,7 +138,7 @@ func TestRateLimitRateExceededError(t *testing.T) {
 	// In our test we should really only have to wait 3 seconds and NOT get an error.
 	client.PauseOnRateLimit = true
 
-	_, err = client.Do(req, nil)
+	_, err = client.Do(context.Background(), req, nil)
 
 	if err != nil {
 		t.Errorf("We expected the client to pause for 3 seconds. However, it looks like an error was return.\n")
@@ -148,7 +149,7 @@ func TestRateLimitRateExceededError(t *testing.T) {
 	client.PauseOnRateLimit = false
 	client.RateRemainingFloor = 2
 
-	_, err = client.Do(req, nil)
+	_, err = client.Do(context.Background(), req, nil)
 
 	if err != nil {
 		t.Errorf("Expected nil Rate Limit Error after reconfiguring client for a floor of 2. However, an error was still return.\n")

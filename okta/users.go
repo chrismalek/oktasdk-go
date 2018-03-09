@@ -1,6 +1,7 @@
 package okta
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/url"
@@ -215,7 +216,7 @@ func (u User) String() string {
 
 // GetByID returns a user object for a specific OKTA ID.
 // Generally the id input string is the cryptic OKTA key value from User.ID. However, the OKTA API may accept other values like "me", or login shortname
-func (s *UsersService) GetByID(id string) (*User, *Response, error) {
+func (s *UsersService) GetByID(ctx context.Context, id string) (*User, *Response, error) {
 	u := fmt.Sprintf("users/%v", id)
 	req, err := s.client.NewRequest("GET", u, nil)
 	if err != nil {
@@ -223,7 +224,7 @@ func (s *UsersService) GetByID(id string) (*User, *Response, error) {
 	}
 
 	user := new(User)
-	resp, err := s.client.Do(req, user)
+	resp, err := s.client.Do(ctx, req, user)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -261,7 +262,7 @@ type UserListFilterOptions struct {
 }
 
 // PopulateGroups will populate the groups a user is a member of. You pass in a pointer to an existing users
-func (s *UsersService) PopulateGroups(user *User) (*Response, error) {
+func (s *UsersService) PopulateGroups(ctx context.Context, user *User) (*Response, error) {
 	u := fmt.Sprintf("users/%v/groups", user.ID)
 	req, err := s.client.NewRequest("GET", u, nil)
 
@@ -269,7 +270,7 @@ func (s *UsersService) PopulateGroups(user *User) (*Response, error) {
 		return nil, err
 	}
 	// Get first page of users.
-	resp, err := s.client.Do(req, &user.Groups)
+	resp, err := s.client.Do(ctx, req, &user.Groups)
 	if err != nil {
 		return resp, err
 	}
@@ -284,7 +285,7 @@ func (s *UsersService) PopulateGroups(user *User) (*Response, error) {
 			req, err := s.client.NewRequest("GET", nextURL, nil)
 			userGroupsPages := []Group{}
 
-			resp, err := s.client.Do(req, &userGroupsPages)
+			resp, err := s.client.Do(ctx, req, &userGroupsPages)
 			nextURL = ""
 			if err != nil {
 				return resp, err
@@ -305,7 +306,7 @@ func (s *UsersService) PopulateGroups(user *User) (*Response, error) {
 // PopulateEnrolledFactors will populate the Enrolled MFA Factors a user is a member of.
 // You pass in a pointer to an existing users
 // http://developer.okta.com/docs/api/resources/factors.html#list-enrolled-factors
-func (s *UsersService) PopulateEnrolledFactors(user *User) (*Response, error) {
+func (s *UsersService) PopulateEnrolledFactors(ctx context.Context, user *User) (*Response, error) {
 	u := fmt.Sprintf("users/%v/factors", user.ID)
 	req, err := s.client.NewRequest("GET", u, nil)
 
@@ -313,7 +314,7 @@ func (s *UsersService) PopulateEnrolledFactors(user *User) (*Response, error) {
 		return nil, err
 	}
 	// TODO: If user has more than 200 groups this will only return those first 200
-	resp, err := s.client.Do(req, &user.MFAFactors)
+	resp, err := s.client.Do(ctx, req, &user.MFAFactors)
 	if err != nil {
 		return resp, err
 	}
@@ -344,7 +345,7 @@ func appendToFilterString(currFilterString string, appendFilterKey string, appen
 }
 
 // ListWithFilter will use the input UserListFilterOptions to find users and return a paged result set
-func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Response, error) {
+func (s *UsersService) ListWithFilter(ctx context.Context, opt *UserListFilterOptions) ([]User, *Response, error) {
 	var u string
 	var err error
 
@@ -406,7 +407,7 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 		return nil, nil, err
 	}
 	users := make([]User, 1)
-	resp, err := s.client.Do(req, &users)
+	resp, err := s.client.Do(ctx, req, &users)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -427,7 +428,7 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 				pageOption.NumberOfPages = 1
 				pageOption.Limit = opt.Limit
 
-				userPage, resp, err = s.ListWithFilter(pageOption)
+				userPage, resp, err = s.ListWithFilter(ctx, pageOption)
 				if err != nil {
 					return users, resp, err
 				}
@@ -443,7 +444,7 @@ func (s *UsersService) ListWithFilter(opt *UserListFilterOptions) ([]User, *Resp
 
 // Create - Creates a new user. You must pass in a "newUser" object created from Users.NewUser()
 // There are many differnt reasons that OKTA may reject the request so you have to check the error messages
-func (s *UsersService) Create(userIn NewUser, createAsActive bool) (*User, *Response, error) {
+func (s *UsersService) Create(ctx context.Context, userIn NewUser, createAsActive bool) (*User, *Response, error) {
 
 	u := fmt.Sprintf("users?activate=%v", createAsActive)
 
@@ -454,7 +455,7 @@ func (s *UsersService) Create(userIn NewUser, createAsActive bool) (*User, *Resp
 	}
 
 	newUser := new(User)
-	resp, err := s.client.Do(req, newUser)
+	resp, err := s.client.Do(ctx, req, newUser)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -465,7 +466,7 @@ func (s *UsersService) Create(userIn NewUser, createAsActive bool) (*User, *Resp
 // Activate Activates a user. You can have OKTA send an email by including a "sendEmail=true"
 // If you pass in sendEmail=false, then activationResponse.ActivationURL will have a string URL that
 // can be sent to the end user. You can discard response if sendEmail=true
-func (s *UsersService) Activate(id string, sendEmail bool) (*ActivationResponse, *Response, error) {
+func (s *UsersService) Activate(ctx context.Context, id string, sendEmail bool) (*ActivationResponse, *Response, error) {
 	u := fmt.Sprintf("users/%v/lifecycle/activate?sendEmail=%v", id, sendEmail)
 
 	req, err := s.client.NewRequest("POST", u, nil)
@@ -474,7 +475,7 @@ func (s *UsersService) Activate(id string, sendEmail bool) (*ActivationResponse,
 	}
 
 	activationInfo := new(ActivationResponse)
-	resp, err := s.client.Do(req, activationInfo)
+	resp, err := s.client.Do(ctx, req, activationInfo)
 
 	if err != nil {
 		return nil, resp, err
@@ -484,14 +485,14 @@ func (s *UsersService) Activate(id string, sendEmail bool) (*ActivationResponse,
 }
 
 // Deactivate - Deactivates a user
-func (s *UsersService) Deactivate(id string) (*Response, error) {
+func (s *UsersService) Deactivate(ctx context.Context, id string) (*Response, error) {
 	u := fmt.Sprintf("users/%v/lifecycle/deactivate", id)
 
 	req, err := s.client.NewRequest("POST", u, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s.client.Do(req, nil)
+	resp, err := s.client.Do(ctx, req, nil)
 
 	if err != nil {
 		return resp, err
@@ -502,14 +503,14 @@ func (s *UsersService) Deactivate(id string) (*Response, error) {
 
 // Suspend - Suspends a user - If user is NOT active an Error will come back based on OKTA API:
 // http://developer.okta.com/docs/api/resources/users.html#suspend-user
-func (s *UsersService) Suspend(id string) (*Response, error) {
+func (s *UsersService) Suspend(ctx context.Context, id string) (*Response, error) {
 	u := fmt.Sprintf("users/%v/lifecycle/suspend", id)
 
 	req, err := s.client.NewRequest("POST", u, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s.client.Do(req, nil)
+	resp, err := s.client.Do(ctx, req, nil)
 
 	if err != nil {
 		return resp, err
@@ -520,14 +521,14 @@ func (s *UsersService) Suspend(id string) (*Response, error) {
 
 // Unsuspend - Unsuspends a user - If user is NOT SUSPENDED, an Error will come back based on OKTA API:
 // http://developer.okta.com/docs/api/resources/users.html#unsuspend-user
-func (s *UsersService) Unsuspend(id string) (*Response, error) {
+func (s *UsersService) Unsuspend(ctx context.Context, id string) (*Response, error) {
 	u := fmt.Sprintf("users/%v/lifecycle/unsuspend", id)
 
 	req, err := s.client.NewRequest("POST", u, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s.client.Do(req, nil)
+	resp, err := s.client.Do(ctx, req, nil)
 
 	if err != nil {
 		return resp, err
@@ -538,14 +539,14 @@ func (s *UsersService) Unsuspend(id string) (*Response, error) {
 
 // Unlock - Unlocks a user - Per docs, only for OKTA Mastered Account
 // http://developer.okta.com/docs/api/resources/users.html#unlock-user
-func (s *UsersService) Unlock(id string) (*Response, error) {
+func (s *UsersService) Unlock(ctx context.Context, id string) (*Response, error) {
 	u := fmt.Sprintf("users/%v/lifecycle/unlock", id)
 
 	req, err := s.client.NewRequest("POST", u, nil)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := s.client.Do(req, nil)
+	resp, err := s.client.Do(ctx, req, nil)
 
 	if err != nil {
 		return resp, err
@@ -555,7 +556,7 @@ func (s *UsersService) Unlock(id string) (*Response, error) {
 }
 
 // SetPassword - Sets a user password to an Admin provided String
-func (s *UsersService) SetPassword(id string, newPassword string) (*User, *Response, error) {
+func (s *UsersService) SetPassword(ctx context.Context, id string, newPassword string) (*User, *Response, error) {
 
 	if id == "" || newPassword == "" {
 		return nil, nil, errors.New("please provide a User ID and Password")
@@ -575,7 +576,7 @@ func (s *UsersService) SetPassword(id string, newPassword string) (*User, *Respo
 	}
 
 	user := new(User)
-	resp, err := s.client.Do(req, user)
+	resp, err := s.client.Do(ctx, req, user)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -588,7 +589,7 @@ func (s *UsersService) SetPassword(id string, newPassword string) (*User, *Respo
 // http://developer.okta.com/docs/api/resources/users.html#reset-password
 // If you pass in sendEmail=false, then resetPasswordResponse.resetPasswordUrl will have a string URL that
 // can be sent to the end user. You can discard response if sendEmail=true
-func (s *UsersService) ResetPassword(id string, sendEmail bool) (*ResetPasswordResponse, *Response, error) {
+func (s *UsersService) ResetPassword(ctx context.Context, id string, sendEmail bool) (*ResetPasswordResponse, *Response, error) {
 	u := fmt.Sprintf("users/%v/lifecycle/reset_password?sendEmail=%v", id, sendEmail)
 
 	req, err := s.client.NewRequest("POST", u, nil)
@@ -597,7 +598,7 @@ func (s *UsersService) ResetPassword(id string, sendEmail bool) (*ResetPasswordR
 	}
 
 	resetInfo := new(ResetPasswordResponse)
-	resp, err := s.client.Do(req, resetInfo)
+	resp, err := s.client.Do(ctx, req, resetInfo)
 
 	if err != nil {
 		return nil, resp, err
@@ -607,7 +608,7 @@ func (s *UsersService) ResetPassword(id string, sendEmail bool) (*ResetPasswordR
 }
 
 // PopulateMFAFactors will populate the MFA Factors a user is a member of. You pass in a pointer to an existing users
-func (s *UsersService) PopulateMFAFactors(user *User) (*Response, error) {
+func (s *UsersService) PopulateMFAFactors(ctx context.Context, user *User) (*Response, error) {
 	u := fmt.Sprintf("users/%v/factors", user.ID)
 
 	req, err := s.client.NewRequest("GET", u, nil)
@@ -616,7 +617,7 @@ func (s *UsersService) PopulateMFAFactors(user *User) (*Response, error) {
 		return nil, err
 	}
 
-	resp, err := s.client.Do(req, &user.MFAFactors)
+	resp, err := s.client.Do(ctx, req, &user.MFAFactors)
 	if err != nil {
 		return resp, err
 	}
