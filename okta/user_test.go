@@ -1,6 +1,7 @@
 package okta
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"reflect"
@@ -141,7 +142,7 @@ func TestUserGet(t *testing.T) {
 		fmt.Fprint(w, userTestJSONString)
 	})
 
-	user, _, err := client.Users.GetByID("00ub0oNGTSWTBKOLGLNR")
+	user, _, err := client.Users.GetByID(context.Background(), "00ub0oNGTSWTBKOLGLNR")
 	if err != nil {
 		t.Errorf("Users.Get returned error: %v", err)
 	}
