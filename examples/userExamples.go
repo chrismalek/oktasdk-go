@@ -1,11 +1,12 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"time"
 
-	"github.com/chrismalek/oktasdk-go/okta"
+	"github.com/nzoschke/oktasdk-go/okta"
 )
 
 func nameSearchExample() {
@@ -19,7 +20,7 @@ func nameSearchExample() {
 	userFilter := &okta.UserListFilterOptions{}
 	userFilter.FirstNameEqualTo = "Chris"
 	userFilter.LastNameEqualTo = "Malek"
-	userList, response, err := client.Users.ListWithFilter(userFilter)
+	userList, response, err := client.Users.ListWithFilter(context.Background(), userFilter)
 
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
@@ -46,7 +47,7 @@ func getActiveUsersExampleOnePageAtATime() {
 	for {
 
 		i++
-		userPage, response, err := client.Users.ListWithFilter(userFilter)
+		userPage, response, err := client.Users.ListWithFilter(context.Background(), userFilter)
 
 		if err != nil {
 			fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
@@ -79,7 +80,7 @@ func getActiveUsersExampleAllPages() {
 	userFilter.GetAllPages = true
 	userFilter.StatusEqualTo = okta.UserStatusActive
 
-	allUsers, response, err := client.Users.ListWithFilter(userFilter)
+	allUsers, response, err := client.Users.ListWithFilter(context.Background(), userFilter)
 
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
@@ -104,7 +105,7 @@ func getActiveUserUpdatedInLastMonthAllPages() {
 	userFilter.LastUpdated.Value = time.Now().AddDate(0, -1, 0)
 	userFilter.LastUpdated.Operator = okta.FilterGreaterThanOperator
 
-	allUsers, response, err := client.Users.ListWithFilter(userFilter)
+	allUsers, response, err := client.Users.ListWithFilter(context.Background(), userFilter)
 
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
@@ -126,7 +127,7 @@ func getFirstActiveUserRoles() {
 	userFilter.Limit = 1
 	userFilter.StatusEqualTo = okta.UserStatusActive
 
-	randomActiveUsers, response, err := client.Users.ListWithFilter(userFilter)
+	randomActiveUsers, response, err := client.Users.ListWithFilter(context.Background(), userFilter)
 
 	if err != nil {
 		fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
@@ -135,7 +136,7 @@ func getFirstActiveUserRoles() {
 	fmt.Printf("len(all_users) = %v\n", len(randomActiveUsers))
 	printUserArray(randomActiveUsers)
 	if len(randomActiveUsers) > 0 {
-		response, err := client.Users.PopulateGroups(&randomActiveUsers[0])
+		response, err := client.Users.PopulateGroups(context.Background(), &randomActiveUsers[0])
 		if err != nil {
 			fmt.Printf("Response Error %+v\n\t URL used:%v\n", err, response.Request.URL.String())
 		}
@@ -162,7 +163,7 @@ func createUserNoPassword() {
 	fmt.Printf("User Json\n\t%v\n\n", string(jsonTest))
 	createNewUserAsActive := false
 
-	newUser, _, err := client.Users.Create(newUserTemplate, createNewUserAsActive)
+	newUser, _, err := client.Users.Create(context.Background(), newUserTemplate, createNewUserAsActive)
 
 	if err != nil {
 
@@ -194,7 +195,7 @@ func createUserWithPassword() {
 	fmt.Printf("User Json\n\t%v\n\n", string(jsonTest))
 
 	createNewUserAsActive := true
-	newUser, _, err := client.Users.Create(newUserTemplate, createNewUserAsActive)
+	newUser, _, err := client.Users.Create(context.Background(), newUserTemplate, createNewUserAsActive)
 
 	if err != nil {
 
@@ -231,7 +232,7 @@ func createUserWithRecoveryAndPassword() {
 	fmt.Printf("User Json\n\t%v\n\n", string(jsonTest))
 
 	createNewUserAsActive := true
-	newUser, _, err := client.Users.Create(newUserTemplate, createNewUserAsActive)
+	newUser, _, err := client.Users.Create(context.Background(), newUserTemplate, createNewUserAsActive)
 
 	if err != nil {
 
@@ -263,7 +264,7 @@ func CreateUserThenActivate() {
 	fmt.Printf("User Json\n\t%v\n\n", string(jsonTest))
 
 	createNewUserAsActive := false
-	newUser, _, err := client.Users.Create(newUserTemplate, createNewUserAsActive)
+	newUser, _, err := client.Users.Create(context.Background(), newUserTemplate, createNewUserAsActive)
 
 	if err != nil {
 
@@ -274,7 +275,7 @@ func CreateUserThenActivate() {
 	fmt.Printf("NewUser Created\n")
 	printUser(*newUser)
 	sendEmail := false
-	activationInfo, _, err := client.Users.Activate(newUser.ID, sendEmail)
+	activationInfo, _, err := client.Users.Activate(context.Background(), newUser.ID, sendEmail)
 
 	if err != nil {
 		fmt.Printf("Error Activating User:\n \t%v\n", err)
@@ -290,7 +291,7 @@ func SetUserPassword() {
 
 	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
 
-	newUser, _, err := client.Users.SetPassword("00u8cmwszdE5qztLT0h7", "heRo.laKe.ransOm.23.dogfoOd")
+	newUser, _, err := client.Users.SetPassword(context.Background(), "00u8cmwszdE5qztLT0h7", "heRo.laKe.ransOm.23.dogfoOd")
 
 	if err != nil {
 		fmt.Printf("Error Setting Password On User:\n \t%v\n", err)
@@ -305,7 +306,7 @@ func deactivateUser() {
 	defer printEnd(printStart("deactivateUser"))
 
 	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
-	_, err := client.Users.Deactivate("00u8cmwszdE5qztLT0h7")
+	_, err := client.Users.Deactivate(context.Background(), "00u8cmwszdE5qztLT0h7")
 	if err != nil {
 		fmt.Printf("Could Not deactivate user:\n%v\n", err)
 		return
@@ -318,20 +319,20 @@ func getUserMFAFactor(oktaid string) {
 	defer printEnd(printStart("getUserMFAFactor"))
 
 	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
-	user, _, err := client.Users.GetByID(oktaid)
+	user, _, err := client.Users.GetByID(context.Background(), oktaid)
 
 	if err != nil {
 		fmt.Printf("Errr Getting Users:\n \t%v\n", err)
 		return
 	}
 
-	_, err = client.Users.PopulateMFAFactors(user)
+	_, err = client.Users.PopulateMFAFactors(context.Background(), user)
 
 	if err != nil {
 		fmt.Printf("Errr Getting MFA Factors:\n \t%v\n", err)
 		return
 	}
-	_, err = client.Users.PopulateGroups(user)
+	_, err = client.Users.PopulateGroups(context.Background(), user)
 	if err != nil {
 		fmt.Printf("Errr Getting Groups:\n \t%v\n", err)
 		return
@@ -344,14 +345,14 @@ func getUser(oktaid string) {
 	defer printEnd(printStart("getUser"))
 
 	client := okta.NewClient(nil, orgName, apiToken, isProductionOKTAORG)
-	user, _, err := client.Users.GetByID(oktaid)
+	user, _, err := client.Users.GetByID(context.Background(), oktaid)
 
 	if err != nil {
 		fmt.Printf("Errr Getting Users:\n \t%v\n", err)
 		return
 	}
 
-	_, err = client.Users.PopulateGroups(user)
+	_, err = client.Users.PopulateGroups(context.Background(), user)
 	if err != nil {
 		fmt.Printf("Errr Getting Groups:\n \t%v\n", err)
 		return

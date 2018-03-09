@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/chrismalek/oktasdk-go/okta"
+	"github.com/nzoschke/oktasdk-go/okta"
 )
 
 var orgName = os.Getenv("OKTA_API_TEST_ORG")
