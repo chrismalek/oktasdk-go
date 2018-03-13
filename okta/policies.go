@@ -72,9 +72,9 @@ type settings struct {
 		SymantecVip  mfaFactor `json:"symantec_vip,omitempty"`
 	} `json:"factors,omitempty"`
 	password struct {
-		password   password     `json:"password,omitempty"`
-		recovery   recovery     `json:"recovery,omitempty"`
-		delegation dedlegration `json:"lockout,omitempty"`
+		password   password   `json:"password,omitempty"`
+		recovery   recovery   `json:"recovery,omitempty"`
+		delegation delegation `json:"lockout,omitempty"`
 	} `json:"password,omitempty"`
 }
 
@@ -119,6 +119,9 @@ type lockout struct {
 type recovery struct {
 	factors struct {
 	} `json:"factors,omitempty"`
+}
+
+type delegation struct {
 }
 
 type mfaFactor struct {
