@@ -90,6 +90,9 @@ type Client struct {
 
 	// Service for Working with Apps
 	Apps *AppsService
+
+	// Service for Working with Policies
+	Policies *PoliciesService
 }
 
 type service struct {
