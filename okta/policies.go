@@ -320,7 +320,7 @@ func (p *PoliciesService) CreatePolicy(policy Policy) (*Policy, *Response, error
 
 // Update a policy
 // You must pass in the Policy object from Policies.Policy()
-// This endpoint uses a PUT do I'm going to assume partial updates are not supported
+// This endpoint uses a PUT so I'm going to assume partial updates are not supported
 func (p *PoliciesService) UpdatePolicy(policy Policy) (*Policy, *Response, error) {
 	u := fmt.Sprintf("policies")
 	req, err := p.client.NewRequest("POST", u, policy)
@@ -335,4 +335,160 @@ func (p *PoliciesService) UpdatePolicy(policy Policy) (*Policy, *Response, error
 	}
 
 	return updatePolicy, resp, err
+}
+
+// Activate a policy
+// Requires Policy ID from Policy object
+func (p *PoliciesService) ActivatePolicy(id string) (*Response, error) {
+	u := fmt.Sprintf("policies/%v/lifecycle/activate", id)
+	req, err := p.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := p.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Deactivate a policy
+// Requires Policy ID from Policy object
+func (p *PoliciesService) DeactivatePolicy(id string) (*Response, error) {
+	u := fmt.Sprintf("policies/%v/lifecycle/deactivate", id)
+	req, err := p.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := p.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Get policy rules
+// Requires Policy ID from Policy object
+// TODO: struct for return more than one rule
+func (p *PoliciesService) GetPolicyRules(id string) (*Rule, *Response, error) {
+	u := fmt.Sprintf("policies/%v/rules", id)
+	req, err := p.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	rule := new(Rule)
+	resp, err := p.client.Do(req, rule)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return rule, resp, err
+}
+
+// Create a rule
+// Requires Policy ID from Policy object
+// You must pass in the Rule object created from Policies.Rule()
+func (p *PoliciesService) CreateRule(id string, rule Rule) (*Rule, *Response, error) {
+	u := fmt.Sprintf("policies/%v/rules", id)
+	req, err := p.client.NewRequest("POST", u, rule)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	newRule := new(Rule)
+	resp, err := p.client.Do(req, newRule)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return newRule, resp, err
+}
+
+// Delete a rule
+// Requires Policy ID from Policy object and Rule ID from Rule object
+func (p *PoliciesService) DeleteRule(policyId string, ruleId string) (*Response, error) {
+	u := fmt.Sprintf("policies/%vrules/%v", policyId, ruleId)
+	req, err := p.client.NewRequest("DELETE", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := p.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Get a rule
+// Requires Policy ID from Policy object and Rule ID from Rule object
+func (p *PoliciesService) GetRule(policyId string, ruleId string) (*Rule, *Response, error) {
+	u := fmt.Sprintf("policies/%v/rules/%v", policyId, ruleId)
+	req, err := p.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	rule := new(Rule)
+	resp, err := p.client.Do(req, rule)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return rule, resp, err
+}
+
+// Update a rule
+// Requires Policy ID from Policy object and Rule ID from Rule object
+// You must pass in the Rule object from Policies.Rule()
+// This endpoint uses a PUT so I'm going to assume partial updates are not supported
+func (p *PoliciesService) UpdateRule(policyId string, ruleId string, rule Rule) (*Rule, *Response, error) {
+	u := fmt.Sprintf("policies/%v/rules/%v", policyId, ruleId)
+	req, err := p.client.NewRequest("POST", u, rule)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	updateRule := new(Rule)
+	resp, err := p.client.Do(req, updateRule)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return updateRule, resp, err
+}
+
+// Activate a rule
+// Requires Policy ID from Policy object and Rule ID from Rule object
+func (p *PoliciesService) ActivateRule(policyId string, ruleId string) (*Response, error) {
+	u := fmt.Sprintf("policies/%v/rules/%v/lifecycle/activate", policyId, ruleId)
+	req, err := p.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := p.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Deactivate a rule
+// Requires Policy ID from Policy object and Rule ID from Rule object
+func (p *PoliciesService) DeactivateRule(policyId string, ruleId string) (*Response, error) {
+	u := fmt.Sprintf("policies/%v/rules/%v/lifecycle/deactivate", policyId, ruleId)
+	req, err := p.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := p.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
 }
