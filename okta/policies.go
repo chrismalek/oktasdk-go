@@ -1,12 +1,23 @@
 package okta
 
 import (
+	"fmt"
 	"time"
 )
 
 // PoliciesService handles communication with the Policy data related
 // methods of the OKTA API.
 type PoliciesService service
+
+// Return the Policy object. Used to create & update policies
+func (p *PoliciesService) Policy() Policy {
+	return Policy{}
+}
+
+// Return the Rule object. Used to create & update rules
+func (p *PoliciesService) Rule() Rule {
+	return Rule{}
+}
 
 // Policy represents the Policy Object from the OKTA API
 type Policy struct {
@@ -187,8 +198,8 @@ type policyLinks struct {
 	Rules      string `json:"rules,omitempty"`
 }
 
-// Rules represent the Rules Object from the OKTA API
-type Rules struct {
+// Rule represents the Rule Object from the OKTA API
+type Rule struct {
 	ID          string     `json:"id,omitempty"`
 	Type        string     `json:"type"`
 	Status      string     `json:"status,omitempty"`
@@ -234,4 +245,94 @@ type ruleLinks struct {
 	Self       string `json:"self"`
 	Activate   string `json:"activate,omitempty"`
 	Deactivate string `json:"deactivate,omitempty"`
+}
+
+// Get a policy
+// Requires Policy ID from Policy object
+func (p *PoliciesService) GetPolicy(id string) (*Policy, *Response, error) {
+	u := fmt.Sprintf("policies/%v", id)
+	req, err := p.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	policy := new(Policy)
+	resp, err := p.client.Do(req, policy)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return policy, resp, err
+}
+
+// Get all policies by type
+// Allowed types are OKTA_SIGN_ON, PASSWORD, MFA_ENROLL, or OAUTH_AUTHORIZATION_POLICY
+// TODO: struct for return more than one policy
+func (p *PoliciesService) GetPolicesByType(policyType string) (*Policy, *Response, error) {
+	u := fmt.Sprintf("policies?type=%v", policyType)
+	req, err := p.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	policy := new(Policy)
+	resp, err := p.client.Do(req, policy)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return policy, resp, err
+}
+
+// Delete a policy
+// Requires Policy ID from Policy object
+func (p *PoliciesService) DeletePolicy(id string) (*Response, error) {
+	u := fmt.Sprintf("policies/%v", id)
+	req, err := p.client.NewRequest("DELETE", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := p.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Create a policy
+// You must pass in the Policy object created from Policies.Policy()
+func (p *PoliciesService) CreatePolicy(policy Policy) (*Policy, *Response, error) {
+	u := fmt.Sprintf("policies")
+	req, err := p.client.NewRequest("POST", u, policy)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	newPolicy := new(Policy)
+	resp, err := p.client.Do(req, newPolicy)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return newPolicy, resp, err
+}
+
+// Update a policy
+// You must pass in the Policy object from Policies.Policy()
+// This endpoint uses a PUT do I'm going to assume partial updates are not supported
+func (p *PoliciesService) UpdatePolicy(policy Policy) (*Policy, *Response, error) {
+	u := fmt.Sprintf("policies")
+	req, err := p.client.NewRequest("POST", u, policy)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	updatePolicy := new(Policy)
+	resp, err := p.client.Do(req, updatePolicy)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return updatePolicy, resp, err
 }
