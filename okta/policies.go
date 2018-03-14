@@ -24,7 +24,6 @@ type Policy struct {
 	Links       policyLinks `json:"_links,omitempty"`
 }
 
-// the conditions that must be met during policy or rule evaluation
 type conditions struct {
 	People struct {
 		Groups groups `json:"groups,omitempty"`
@@ -35,32 +34,27 @@ type conditions struct {
 	AuthProvider authProvider `json:"authProvider,omitempty"`
 }
 
-// set of users to be included or excluded
 type users struct {
 	Include []string `json:"include,omitempty"`
 	Exclude []string `json:"exclude,omitempty"`
 }
 
-// set of groups to be included or excluded
 type groups struct {
 	Include []string `json:"include,omitempty"`
 	Exclude []string `json:"exclude,omitempty"`
 }
 
-// network selection mode, and a set of network zones to be included or excluded
 type network struct {
 	Connection string   `json:"connection,omitempty"`
 	Include    []string `json:"include,omitempty"`
 	Exclude    []string `json:"exclude,omitempty"`
 }
 
-// specifies an authentication for users
 type authProvider struct {
 	Provider string   `json:"provider"`
 	Include  []string `json:"include,omitempty"`
 }
 
-// policy level settings for the particular policy type
 type settings struct {
 	Factors struct {
 		GoogleOtp    mfaFactor `json:"google_otp,omitempty"`
@@ -118,13 +112,13 @@ type lockout struct {
 
 type recovery struct {
 	Factors struct {
-		RecoveryQuestion recoveryQuestion `json:"recovery_question,omitempty"`
-		OktaEmail        oktaEmail        `json:"okta_email,omitempty"`
-		OktaSms          oktaSms          `json:"okta_sms,omitempty"`
+		RecoveryQuestion policyRecoveryQuestion `json:"recovery_question,omitempty"`
+		OktaEmail        oktaEmail              `json:"okta_email,omitempty"`
+		OktaSms          oktaSms                `json:"okta_sms,omitempty"`
 	} `json:"factors,omitempty"`
 }
 
-type recoveryQuestion struct {
+type policyRecoveryQuestion struct {
 	Status     string                     `json:"status"`
 	Properties recoveryQuestionProperties `json:"properties,omitempty"`
 }
@@ -133,7 +127,7 @@ type recoveryQuestionProperties struct {
 	Complexity recoveryQuestionPropertiesComplexity `json:"complexity,omitempty"`
 }
 
-type recoveryQuestionPropertiesiComplexity struct {
+type recoveryQuestionPropertiesComplexity struct {
 	MinLength int `json:"minLength,omitempty"`
 }
 
@@ -207,7 +201,6 @@ type Rules struct {
 	Links       ruleLinks  `json:"_links,omitempty"`
 }
 
-// actions to be taken if the rule conditions are satisfied
 type actions struct {
 	signon struct {
 		Access                  string  `json:"access"`
