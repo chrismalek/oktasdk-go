@@ -24,7 +24,7 @@ type Policy struct {
 	ID          string      `json:"id,omitempty"`
 	Type        string      `json:"type"`
 	Name        string      `json:"name"`
-	System      string      `json:"system,omitempty"`
+	System      bool        `json:"system,omitempty"`
 	Description string      `json:"description,omitempty"`
 	Priority    int         `json:"priority,omitempty"`
 	Status      string      `json:"status,omitempty"`
@@ -33,6 +33,10 @@ type Policy struct {
 	Created     time.Time   `json:"created,omitempty"`
 	LastUpdated time.Time   `json:"lastUpdated,omitempty"`
 	Links       policyLinks `json:"_links,omitempty"`
+}
+
+type policies struct {
+	Policies []Policy `json:"-,omitempty"`
 }
 
 type conditions struct {
@@ -189,13 +193,31 @@ type factorConsentTerms struct {
 // TODO add MFA conditions objects
 // https://developer.okta.com/docs/api/resources/policy#policy-conditions-1
 
-// TODO: policy links object is not complete?
-// https://developer.okta.com/docs/api/resources/policy#LinksObject
 type policyLinks struct {
-	Self       string `json:"self"`
-	Activate   string `json:"activate",omitempty`
-	Deactivate string `json:"deactivate,omitempty"`
-	Rules      string `json:"rules,omitempty"`
+	Self struct {
+		Href  string `json:"href"`
+		Hints struct {
+			Allow []string `json:"allow"`
+		} `json:"hints"`
+	} `json:"self"`
+	Activate struct {
+		Href  string `json:"href"`
+		Hints struct {
+			Allow []string `json:"allow"`
+		} `json:"hints"`
+	} `json:"activate",omitempty`
+	Deactivate struct {
+		Href  string `json:"href"`
+		Hints struct {
+			Allow []string `json:"allow"`
+		} `json:"hints"`
+	} `json:"deactivate,omitempty"`
+	Rules struct {
+		Href  string `json:"href"`
+		Hints struct {
+			Allow []string `json:"allow"`
+		} `json:"hints"`
+	} `json:"rules,omitempty"`
 }
 
 // Rule represents the Rule Object from the OKTA API
@@ -210,6 +232,10 @@ type Rule struct {
 	Conditions  conditions `json:"conditions,omitempty"`
 	Actions     actions    `json:"actions,omitempty"`
 	Links       ruleLinks  `json:"_links,omitempty"`
+}
+
+type rules struct {
+	Rules []Rule `json:"-,omitempty"`
 }
 
 type actions struct {
@@ -239,12 +265,31 @@ type session struct {
 	UsePersistentCookie       bool `json:"usePersistentCookie,,omitempty"`
 }
 
-// TODO: rule links object is not complete
-// https://developer.okta.com/docs/api/resources/policy#RulesLinksObject
 type ruleLinks struct {
-	Self       string `json:"self"`
-	Activate   string `json:"activate,omitempty"`
-	Deactivate string `json:"deactivate,omitempty"`
+	Self struct {
+		Href  string `json:"href"`
+		Hints struct {
+			Allow []string `json:"allow"`
+		} `json:"hints"`
+	} `json:"self"`
+	Activate struct {
+		Href  string `json:"href"`
+		Hints struct {
+			Allow []string `json:"allow"`
+		} `json:"hints"`
+	} `json:"activate",omitempty`
+	Deactivate struct {
+		Href  string `json:"href"`
+		Hints struct {
+			Allow []string `json:"allow"`
+		} `json:"hints"`
+	} `json:"deactivate,omitempty"`
+	Rules struct {
+		Href  string `json:"href"`
+		Hints struct {
+			Allow []string `json:"allow"`
+		} `json:"hints"`
+	} `json:"rules,omitempty"`
 }
 
 // Get a policy
@@ -267,21 +312,28 @@ func (p *PoliciesService) GetPolicy(id string) (*Policy, *Response, error) {
 
 // Get all policies by type
 // Allowed types are OKTA_SIGN_ON, PASSWORD, MFA_ENROLL, or OAUTH_AUTHORIZATION_POLICY
-// TODO: struct for return more than one policy
-func (p *PoliciesService) GetPolicesByType(policyType string) (*Policy, *Response, error) {
+// TODO: MFA_ENROLL obj build out not complete
+func (p *PoliciesService) GetPolicesByType(policyType string) (*policies, *Response, error) {
 	u := fmt.Sprintf("policies?type=%v", policyType)
 	req, err := p.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	policy := new(Policy)
-	resp, err := p.client.Do(req, policy)
+	policy := make([]Policy, 0)
+	resp, err := p.client.Do(req, &policy)
 	if err != nil {
 		return nil, resp, err
 	}
+	if len(policy) > 0 {
+		myPolicies := new(policies)
+		for _, v := range policy {
+			myPolicies.Policies = append(myPolicies.Policies, v)
+		}
+		return myPolicies, resp, err
+	}
 
-	return policy, resp, err
+	return nil, resp, err
 }
 
 // Delete a policy
@@ -371,21 +423,27 @@ func (p *PoliciesService) DeactivatePolicy(id string) (*Response, error) {
 
 // Get policy rules
 // Requires Policy ID from Policy object
-// TODO: struct for return more than one rule
-func (p *PoliciesService) GetPolicyRules(id string) (*Rule, *Response, error) {
+func (p *PoliciesService) GetPolicyRules(id string) (*rules, *Response, error) {
 	u := fmt.Sprintf("policies/%v/rules", id)
 	req, err := p.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	rule := new(Rule)
-	resp, err := p.client.Do(req, rule)
+	rule := make([]Rule, 0)
+	resp, err := p.client.Do(req, &rule)
 	if err != nil {
 		return nil, resp, err
 	}
+	if len(rule) > 0 {
+		myRules := new(rules)
+		for _, v := range rule {
+			myRules.Rules = append(myRules.Rules, v)
+		}
+		return myRules, resp, err
+	}
 
-	return rule, resp, err
+	return nil, resp, err
 }
 
 // Create a rule
