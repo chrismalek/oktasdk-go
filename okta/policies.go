@@ -21,179 +21,130 @@ func (p *PoliciesService) Rule() Rule {
 
 // Policy represents the Policy Object from the OKTA API
 type Policy struct {
-	ID          string      `json:"id,omitempty"`
-	Type        string      `json:"type"`
-	Name        string      `json:"name"`
-	System      bool        `json:"system,omitempty"`
-	Description string      `json:"description,omitempty"`
-	Priority    int         `json:"priority,omitempty"`
-	Status      string      `json:"status,omitempty"`
-	Conditions  conditions  `json:"conditions,omitempty"`
-	Settings    settings    `json:"settings,omitempty"`
-	Created     time.Time   `json:"created,omitempty"`
-	LastUpdated time.Time   `json:"lastUpdated,omitempty"`
-	Links       policyLinks `json:"_links,omitempty"`
+	ID          string     `json:"id,omitempty"`
+	Type        string     `json:"type"`
+	Name        string     `json:"name"`
+	System      bool       `json:"system,omitempty"`
+	Description string     `json:"description,omitempty"`
+	Priority    int        `json:"priority,omitempty"`
+	Status      string     `json:"status,omitempty"`
+	Conditions  conditions `json:"conditions,omitempty"`
+	Settings    struct {
+		Factors struct {
+			GoogleOtp    mfaFactor `json:"google_otp,omitempty"`
+			OktaOtp      mfaFactor `json:"okta_otp,omitempty"`
+			OktaPush     mfaFactor `json:"okta_push,omitempty"`
+			OktaQuestion mfaFactor `json:"okta_question,omitempty"`
+			OktaSms      mfaFactor `json:"okta_sms,omitempty"`
+			RsaToken     mfaFactor `json:"rsa_token,omitempty"`
+			SymantecVip  mfaFactor `json:"symantec_vip,omitempty"`
+		} `json:"factors,omitempty"`
+		Password struct {
+			Complexity struct {
+				MinLength         int      `json:"minLength,omitempty"`
+				MinLowerCase      int      `json:"minLowerCase,omitempty"`
+				MinUpperCase      int      `json:"minUpperCase,omitempty"`
+				MinNumber         int      `json:"minNumber,omitempty"`
+				MinSymbol         int      `json:"minSymbol,omitempty"`
+				ExcludeUsername   bool     `json:"excludeUsername,omitempty"`
+				ExcludeAttributes []string `json:"excludeAttributes,omitempty"`
+				Dictionary        struct {
+					Common struct {
+						Exclude bool `json:"excllude,omitempty"`
+					} `json:"common,omitempty"`
+				} `json:"dictionary,omitempty"`
+			} `json:"complexity,omitempty"`
+			Age struct {
+				MaxAgeDays     int `json:"maxAgeDays,omitempty"`
+				ExpireWarnDays int `json:"expireWarnDays,omitempty"`
+				MinAgeMinutes  int `json:"minAgeMinutes,omitempty"`
+				HistoryCount   int `json:"historyCount,omitempty"`
+			} `json:"age,omitempty"`
+			Lockout struct {
+				MaxAttempts         int  `json:"maxAttempts,omitempty"`
+				AutoUnlockMinutes   int  `json:"autoUnlockMinutes,omitempty"`
+				ShowLockoutFailures bool `json:"showLockoutFailures,omitempty"`
+			} `json:"lockout,omitempty"`
+		} `json:"password,omitempty"`
+		Recovery struct {
+			Factors struct {
+				RecoveryQuestion struct {
+					Status     string `json:"status,omitempty"`
+					Properties struct {
+						Complexity struct {
+							MinLength int `json:"minLength,omitempty"`
+						} `json:"complexity,omitempty"`
+					} `json:"properties,omitempty"`
+				} `json:"recovery_question,omitempty"`
+				OktaEmail struct {
+					Status     string `json:"status,omitempty"`
+					Properties struct {
+						RecoveryToken struct {
+							TokenLifetimeMinutes int `json:"tokenLifetimeMinutes,omitempty"`
+						} `json:"recoveryToken,omitempty"`
+					} `json:"properties,omitempty"`
+				} `json:"okta_email,omitempty"`
+				OktaSms struct {
+					Status string `json:"status,omitempty"`
+				} `json:"okta_sms,omitempty"`
+			} `json:"factors,omitempty"`
+		} `json:"recovery,omitempty"`
+		Delegation struct {
+			Options struct {
+				SkipUnlock bool `json:"skipUnlock,omitempty"`
+			} `json:"options,omitempty"`
+		} `json:"delegation,omitempty"`
+	} `json:"settings,omitempty"`
+	Created     time.Time `json:"created,omitempty"`
+	LastUpdated time.Time `json:"lastUpdated,omitempty"`
+	Links       links     `json:"_links,omitempty"`
 }
 
+// policy settings for mfa use the same mfaFactor obj
+type mfaFactor struct {
+	Consent struct {
+		Terms struct {
+			Format string `json:"format,omitempty"`
+			Value  string `json:"value,omitempty"`
+		} `json:"terms,omitempty"`
+		Type string `json:"type,omitempty"`
+	} `json:"consent,omitempty"`
+	Enroll struct {
+		Self string `json:"self,omitempty"`
+	} `json:"enroll,omitempty"`
+}
+
+// GetPolicesByType returns an array of Policy objs
 type policies struct {
 	Policies []Policy `json:"-,omitempty"`
 }
 
-type conditions struct {
+// Policy & Rule obj use the same conditions obj
+type conditons struct {
 	People struct {
-		Groups groups `json:"groups,omitempty"`
-		Users  users  `json:"users,omitempty"`
+		Groups struct {
+			Include []string `json:"include,omitempty"`
+			Exclude []string `json:"exclude,omitempty"`
+		} `json:"groups,omitempty"`
+		Users struct {
+			Include []string `json:"include,omitempty"`
+			Exclude []string `json:"exclude,omitempty"`
+		} `json:"users,omitempty"`
 	} `json:"people,omitempty"`
-	AuthContext  string       `json:"authType,omitempty"`
-	Network      network      `json:"network,omitempty"`
-	AuthProvider authProvider `json:"authProvider,omitempty"`
+	AuthType string `json:"authType,omitempty"`
+	Network  struct {
+		Connection string   `json:"connection,omitempty"`
+		Include    []string `json:"include,omitempty"`
+		Exclude    []string `json:"exclude,omitempty"`
+	} `json:"network,omitempty"`
+	AuthProvider struct {
+		Provider string   `json:"provider,omitempty"`
+		Include  []string `json:"include,omitempty"`
+	} `json:"authProvider,omitempty"`
 }
 
-type users struct {
-	Include []string `json:"include,omitempty"`
-	Exclude []string `json:"exclude,omitempty"`
-}
-
-type groups struct {
-	Include []string `json:"include,omitempty"`
-	Exclude []string `json:"exclude,omitempty"`
-}
-
-type network struct {
-	Connection string   `json:"connection,omitempty"`
-	Include    []string `json:"include,omitempty"`
-	Exclude    []string `json:"exclude,omitempty"`
-}
-
-type authProvider struct {
-	Provider string   `json:"provider"`
-	Include  []string `json:"include,omitempty"`
-}
-
-type settings struct {
-	Factors struct {
-		GoogleOtp    mfaFactor `json:"google_otp,omitempty"`
-		OktaOtp      mfaFactor `json:"okta_otp,omitempty"`
-		OktaPush     mfaFactor `json:"okta_push,omitempty"`
-		OktaQuestion mfaFactor `json:"okta_question,omitempty"`
-		OktaSms      mfaFactor `json:"okta_sms,omitempty"`
-		RsaToken     mfaFactor `json:"rsa_token,omitempty"`
-		SymantecVip  mfaFactor `json:"symantec_vip,omitempty"`
-	} `json:"factors,omitempty"`
-	Password struct {
-		password   password   `json:"password,omitempty"`
-		recovery   recovery   `json:"recovery,omitempty"`
-		delegation delegation `json:"lockout,omitempty"`
-	} `json:"password,omitempty"`
-}
-
-type password struct {
-	Complexity complexity `json:"complexity,omitempty"`
-	Age        age        `json:"age,omitempty"`
-	Lockout    lockout    `json:"lockout,omitempty"`
-}
-
-type complexity struct {
-	MinLength         int        `json:"minLength,omitempty"`
-	MinLowerCase      int        `json:"minLowerCase,omitempty"`
-	MinUpperCase      int        `json:"minUpperCase,omitempty"`
-	MinNumber         int        `json:"minNumber,omitempty"`
-	MinSymbol         int        `json:"minSymbol,omitempty"`
-	ExcludeUsername   bool       `json:"excludeUsername,omitempty"`
-	ExcludeAttributes []string   `json:"excludeAttributes,omitempty"`
-	Dictionary        dictionary `json:"dictionary,omitempty"`
-}
-
-type dictionary struct {
-	Common common `json:"common,omitempty"`
-}
-
-type common struct {
-	Exclude bool `json:"excllude,omitempty"`
-}
-
-type age struct {
-	MaxAgeDays     int `json:"maxAgeDays,omitempty"`
-	ExpireWarnDays int `json:"expireWarnDays,omitempty"`
-	MinAgeMinutes  int `json:"minAgeMinutes,omitempty"`
-	HistoryCount   int `json:"historyCount,omitempty"`
-}
-
-type lockout struct {
-	MaxAttempts         int  `json:"maxAttempts,omitempty"`
-	AutoUnlockMinutes   int  `json:"autoUnlockMinutes,omitempty"`
-	ShowLockoutFailures bool `json:"showLockoutFailures,omitempty"`
-}
-
-type recovery struct {
-	Factors struct {
-		RecoveryQuestion policyRecoveryQuestion `json:"recovery_question,omitempty"`
-		OktaEmail        oktaEmail              `json:"okta_email,omitempty"`
-		OktaSms          oktaSms                `json:"okta_sms,omitempty"`
-	} `json:"factors,omitempty"`
-}
-
-type policyRecoveryQuestion struct {
-	Status     string                     `json:"status"`
-	Properties recoveryQuestionProperties `json:"properties,omitempty"`
-}
-
-type recoveryQuestionProperties struct {
-	Complexity recoveryQuestionPropertiesComplexity `json:"complexity,omitempty"`
-}
-
-type recoveryQuestionPropertiesComplexity struct {
-	MinLength int `json:"minLength,omitempty"`
-}
-
-type oktaEmail struct {
-	Status     string              `json:"status"`
-	Properties oktaEmailProperties `json:"properties,omitempty"`
-}
-
-type oktaEmailProperties struct {
-	RecoveryToken oktaEmailPropertiesRecoveryToken `json:"recoveryToken,omitempty"`
-}
-
-type oktaEmailPropertiesRecoveryToken struct {
-	TokenLifetimeMinutes int `json:"tokenLifetimeMinutes,omitempty"`
-}
-
-type oktaSms struct {
-	Status string `json:"status,omitempty"`
-}
-
-type delegation struct {
-	Options options `json:"options,omitempty"`
-}
-
-type options struct {
-	SkipUnlock bool `json:"skipUnlock,omitempty"`
-}
-
-type mfaFactor struct {
-	Consent factorConsent `json:"consent,omitempty"`
-	Enroll  factorEnroll  `json:"enroll,omitempty"`
-}
-
-type factorConsent struct {
-	Terms factorConsentTerms `json:"terms,omitempty"`
-	Type  string             `json:"type,omitempty"`
-}
-
-type factorEnroll struct {
-	Self string `json:"self,omitempty"`
-}
-
-type factorConsentTerms struct {
-	Format string `json:"format,omitempty"`
-	Value  string `json:"value,omitempty"`
-}
-
-// TODO add MFA conditions objects
-// https://developer.okta.com/docs/api/resources/policy#policy-conditions-1
-
-type policyLinks struct {
+// Policy & Rule obj use the same links obj
+type links struct {
 	Self struct {
 		Href  string `json:"href"`
 		Hints struct {
@@ -201,22 +152,22 @@ type policyLinks struct {
 		} `json:"hints"`
 	} `json:"self"`
 	Activate struct {
-		Href  string `json:"href"`
+		Href  string `json:"href,omitempty"`
 		Hints struct {
-			Allow []string `json:"allow"`
-		} `json:"hints"`
+			Allow []string `json:"allow,omitempty"`
+		} `json:"hints,omitempty"`
 	} `json:"activate",omitempty`
 	Deactivate struct {
-		Href  string `json:"href"`
+		Href  string `json:"href,omitempty"`
 		Hints struct {
-			Allow []string `json:"allow"`
-		} `json:"hints"`
+			Allow []string `json:"allow,omitempty"`
+		} `json:"hints,omitempty"`
 	} `json:"deactivate,omitempty"`
 	Rules struct {
-		Href  string `json:"href"`
+		Href  string `json:"href,omitempty"`
 		Hints struct {
-			Allow []string `json:"allow"`
-		} `json:"hints"`
+			Allow []string `json:"allow,omitempty"`
+		} `json:"hints,omitempty"`
 	} `json:"rules,omitempty"`
 }
 
@@ -226,70 +177,41 @@ type Rule struct {
 	Type        string     `json:"type"`
 	Status      string     `json:"status,omitempty"`
 	Priority    int        `json:"priority,omitempty"`
-	System      string     `json:"system,omitempty"`
+	System      bool       `json:"system,omitempty"`
 	Created     time.Time  `json:"created,omitempty"`
 	LastUpdated time.Time  `json:"lastUpdated,omitempty"`
 	Conditions  conditions `json:"conditions,omitempty"`
-	Actions     actions    `json:"actions,omitempty"`
-	Links       ruleLinks  `json:"_links,omitempty"`
+	Actions     struct {
+		signon struct {
+			Access                  string `json:"access,omitempty"`
+			RequireFactor           bool   `json:"requireFactor,omitempty"`
+			FactorPromptMode        string `json:"factorPromptMode,omitempty"`
+			RememberDeviceByDefault bool   `json:"rememberDeviceByDefault,omitempty"`
+			FactorLifetime          int    `json:"factorLifetime,omitempty"`
+			Session                 struct {
+				MaxSessionIdleMinutes     int  `json:"maxSessionIdleMinutes,omitempty"`
+				MaxSessionLifetimeMinutes int  `json:"maxSessionLifetimeMinutes,omitempty"`
+				UsePersistentCookie       bool `json:"usePersistentCookie,,omitempty"`
+			} `json:"session,omitempty"`
+		} `json:"signon,omitempty"`
+		enroll struct {
+			Self string `json:"self,omitempty"`
+		} `json:"enroll,omitempty"`
+		PasswordChange           passwordAction `json:"passwordChange,omitempty"`
+		SelfServicePasswordReset passwordAction `json:"selfServicePasswordReset,omitempty"`
+		SelfServiceUnlock        passwordAction `json:"selfServiceUnlock,omitempty"`
+	} `json:"actions,omitempty"`
+	Links links `json:"_links,omitempty"`
 }
 
-type rules struct {
-	Rules []Rule `json:"-,omitempty"`
-}
-
-type actions struct {
-	signon struct {
-		Access                  string  `json:"access"`
-		RequireFactor           bool    `json:"requireFactor,omitempty"`
-		FactorPromptMode        string  `json:"factorPromptMode,omitempty"`
-		RememberDeviceByDefault bool    `json:"rememberDeviceByDefault,omitempty"`
-		FactorLifetime          int     `json:"factorLifetime,omitempty"`
-		Session                 session `json:"session,omitempty"`
-	} `json:"signon,omitempty"`
-	enroll struct {
-		Self string `json:"self,omitempty"`
-	} `json:"enroll,omitempty"`
-	PasswordChange           passwordAction `json:"passwordChange,omitempty"`
-	SelfServicePasswordReset passwordAction `json:"selfServicePasswordReset,omitempty"`
-	SelfServiceUnlock        passwordAction `json:"selfServiceUnlock,omitempty"`
-}
-
+// rule actions for passwords use the same passwordAction obj
 type passwordAction struct {
 	Access string `json:"access,omitempty"`
 }
 
-type session struct {
-	MaxSessionIdleMinutes     int  `json:"maxSessionIdleMinutes,omitempty"`
-	MaxSessionLifetimeMinutes int  `json:"maxSessionLifetimeMinutes,omitempty"`
-	UsePersistentCookie       bool `json:"usePersistentCookie,,omitempty"`
-}
-
-type ruleLinks struct {
-	Self struct {
-		Href  string `json:"href"`
-		Hints struct {
-			Allow []string `json:"allow"`
-		} `json:"hints"`
-	} `json:"self"`
-	Activate struct {
-		Href  string `json:"href"`
-		Hints struct {
-			Allow []string `json:"allow"`
-		} `json:"hints"`
-	} `json:"activate",omitempty`
-	Deactivate struct {
-		Href  string `json:"href"`
-		Hints struct {
-			Allow []string `json:"allow"`
-		} `json:"hints"`
-	} `json:"deactivate,omitempty"`
-	Rules struct {
-		Href  string `json:"href"`
-		Hints struct {
-			Allow []string `json:"allow"`
-		} `json:"hints"`
-	} `json:"rules,omitempty"`
+// GetPolicyRules returns an array of Rule objs
+type rules struct {
+	Rules []Rule `json:"-,omitempty"`
 }
 
 // Get a policy
