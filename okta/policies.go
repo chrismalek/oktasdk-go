@@ -120,7 +120,7 @@ type policies struct {
 }
 
 // Policy & Rule obj use the same conditions obj
-type conditons struct {
+type conditions struct {
 	People struct {
 		Groups struct {
 			Include []string `json:"include,omitempty"`
