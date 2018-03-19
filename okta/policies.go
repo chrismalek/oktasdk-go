@@ -10,14 +10,8 @@ import (
 type PoliciesService service
 
 // Return the Policy object. Used to create & update policies
-func (p *PoliciesService) SignOnPolicy() SignOnPolicy {
-	return SignOnPolicy{}
-}
-func (p *PoliciesService) MfaPolicy() MfaPolicy {
-	return MfaPolicy{}
-}
-func (p *PoliciesService) PasswordPolicy() PasswordPolicy {
-	return PasswordPolicy{}
+func (p *PoliciesService) Policy() Policy {
+	return Policy{}
 }
 
 // Return the Rule object. Used to create & update rules
@@ -25,68 +19,11 @@ func (p *PoliciesService) Rule() Rule {
 	return Rule{}
 }
 
-type SignOnPolicy struct {
-	ID          string    `json:"id,omitempty"`
-	Type        string    `json:"type"`
-	Name        string    `json:"name"`
-	System      bool      `json:"system,omitempty"`
-	Description string    `json:"description,omitempty"`
-	Priority    int       `json:"priority,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Created     time.Time `json:"created,omitempty"`
-	LastUpdated time.Time `json:"lastUpdated,omitempty"`
-	Conditions  struct {
-		People `json:"people,omitempty"`
-	} `json:"conditions,omitempty"`
-	Links `json:"_links,omitempty"`
-}
-
-type MfaPolicy struct {
-	ID          string    `json:"id,omitempty"`
-	Type        string    `json:"type"`
-	Name        string    `json:"name"`
-	System      bool      `json:"system,omitempty"`
-	Description string    `json:"description,omitempty"`
-	Priority    int       `json:"priority,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Created     time.Time `json:"created,omitempty"`
-	LastUpdated time.Time `json:"lastUpdated,omitempty"`
-	Settings    struct {
-		Factors `json:"factors,omitempty"`
-	} `json:"settings,omitempty"`
-	Conditions struct {
-		People `json:"people,omitempty"`
-	} `json:"conditions,omitempty"`
-	Links `json:"_links,omitempty"`
-}
-
-type PasswordPolicy struct {
-	ID          string    `json:"id,omitempty"`
-	Type        string    `json:"type"`
-	Name        string    `json:"name"`
-	System      bool      `json:"system,omitempty"`
-	Description string    `json:"description,omitempty"`
-	Priority    int       `json:"priority,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Created     time.Time `json:"created,omitempty"`
-	LastUpdated time.Time `json:"lastUpdated,omitempty"`
-	Settings    struct {
-		Password   `json:"password,omitempty"`
-		Recovery   `json:"recovery,omitempty"`
-		Delegation `json:"delegation,omitempty"`
-	} `json:"settings,omitempty"`
-	Conditions struct {
-		People       `json:"people,omitempty"`
-		AuthProvider `json:"authProvider,omitempty"`
-	} `json:"conditions,omitempty"`
-	Links `json:"_links,omitempty"`
-}
-
 // Policy represents the Policy Object from the OKTA API
-type completePolicy struct {
+type Policy struct {
 	ID          string    `json:"id,omitempty"`
-	Type        string    `json:"type"`
-	Name        string    `json:"name"`
+	Type        string    `json:"type,omitempty"`
+	Name        string    `json:"name,omitempty"`
 	System      bool      `json:"system,omitempty"`
 	Description string    `json:"description,omitempty"`
 	Priority    int       `json:"priority,omitempty"`
@@ -94,20 +31,21 @@ type completePolicy struct {
 	Created     time.Time `json:"created,omitempty"`
 	LastUpdated time.Time `json:"lastUpdated,omitempty"`
 	Conditions  struct {
-		People       `json:"people,omitempty"`
-		AuthType     string `json:"authType,omitempty"`
-		Network      `json:"network,omitempty"`
-		AuthProvider `json:"authProvider,omitempty"`
+		*People       `json:"people,omitempty"`
+		AuthType      *string `json:"authType,omitempty"`
+		*Network      `json:"network,omitempty"`
+		*AuthProvider `json:"authProvider,omitempty"`
 	} `json:"conditions,omitempty"`
 	Settings struct {
-		Factors    `json:"factors,omitempty"`
-		Password   `json:"password,omitempty"`
-		Recovery   `json:"recovery,omitempty"`
-		Delegation `json:"delegation,omitempty"`
+		*Factors    `json:"factors,omitempty"`
+		*Password   `json:"password,omitempty"`
+		*Recovery   `json:"recovery,omitempty"`
+		*Delegation `json:"delegation,omitempty"`
 	} `json:"settings,omitempty"`
 	Links `json:"_links,omitempty"`
 }
 
+// Mfa policy factors obj
 type Factors struct {
 	GoogleOtp struct {
 		Consent `json:"consent,omitempty"`
@@ -139,111 +77,119 @@ type Factors struct {
 	} `json:"symantec_vip,omitempty"`
 }
 
+// Mfa policy factor consent obj
 type Consent struct {
 	Terms struct {
-		Format string `json:"format,omitempty"`
-		Value  string `json:"value,omitempty"`
+		Format *string `json:"format,omitempty"`
+		Value  *string `json:"value,omitempty"`
 	} `json:"terms,omitempty"`
-	Type string `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
 }
 
+// Mfa policy factor enroll obj
 type Enroll struct {
-	Self string `json:"self,omitempty"`
+	Self *string `json:"self,omitempty"`
 }
 
+// password policy obj
 type Password struct {
 	Complexity struct {
-		MinLength         int      `json:"minLength,omitempty"`
-		MinLowerCase      int      `json:"minLowerCase,omitempty"`
-		MinUpperCase      int      `json:"minUpperCase,omitempty"`
-		MinNumber         int      `json:"minNumber,omitempty"`
-		MinSymbol         int      `json:"minSymbol,omitempty"`
-		ExcludeUsername   bool     `json:"excludeUsername,omitempty"`
-		ExcludeAttributes []string `json:"excludeAttributes,omitempty"`
+		MinLength         *int      `json:"minLength,omitempty"`
+		MinLowerCase      *int      `json:"minLowerCase,omitempty"`
+		MinUpperCase      *int      `json:"minUpperCase,omitempty"`
+		MinNumber         *int      `json:"minNumber,omitempty"`
+		MinSymbol         *int      `json:"minSymbol,omitempty"`
+		ExcludeUsername   *bool     `json:"excludeUsername,omitempty"`
+		ExcludeAttributes *[]string `json:"excludeAttributes,omitempty"`
 		Dictionary        struct {
 			Common struct {
-				Exclude bool `json:"excllude,omitempty"`
+				Exclude *bool `json:"exclude,omitempty"`
 			} `json:"common,omitempty"`
 		} `json:"dictionary,omitempty"`
 	} `json:"complexity,omitempty"`
 	Age struct {
-		MaxAgeDays     int `json:"maxAgeDays,omitempty"`
-		ExpireWarnDays int `json:"expireWarnDays,omitempty"`
-		MinAgeMinutes  int `json:"minAgeMinutes,omitempty"`
-		HistoryCount   int `json:"historyCount,omitempty"`
+		MaxAgeDays     *int `json:"maxAgeDays,omitempty"`
+		ExpireWarnDays *int `json:"expireWarnDays,omitempty"`
+		MinAgeMinutes  *int `json:"minAgeMinutes,omitempty"`
+		HistoryCount   *int `json:"historyCount,omitempty"`
 	} `json:"age,omitempty"`
 	Lockout struct {
-		MaxAttempts         int  `json:"maxAttempts,omitempty"`
-		AutoUnlockMinutes   int  `json:"autoUnlockMinutes,omitempty"`
-		ShowLockoutFailures bool `json:"showLockoutFailures,omitempty"`
+		MaxAttempts         *int  `json:"maxAttempts,omitempty"`
+		AutoUnlockMinutes   *int  `json:"autoUnlockMinutes,omitempty"`
+		ShowLockoutFailures *bool `json:"showLockoutFailures,omitempty"`
 	} `json:"lockout,omitempty"`
 }
 
+// passowrd policy recover obj
 type Recovery struct {
 	Factors struct {
 		RecoveryQuestion struct {
-			Status     string `json:"status,omitempty"`
+			Status     *string `json:"status,omitempty"`
 			Properties struct {
 				Complexity struct {
-					MinLength int `json:"minLength,omitempty"`
+					MinLength *int `json:"minLength,omitempty"`
 				} `json:"complexity,omitempty"`
 			} `json:"properties,omitempty"`
 		} `json:"recovery_question,omitempty"`
 		OktaEmail struct {
-			Status     string `json:"status,omitempty"`
+			Status     *string `json:"status,omitempty"`
 			Properties struct {
 				RecoveryToken struct {
-					TokenLifetimeMinutes int `json:"tokenLifetimeMinutes,omitempty"`
+					TokenLifetimeMinutes *int `json:"tokenLifetimeMinutes,omitempty"`
 				} `json:"recoveryToken,omitempty"`
 			} `json:"properties,omitempty"`
 		} `json:"okta_email,omitempty"`
 		OktaSms struct {
-			Status string `json:"status,omitempty"`
+			Status *string `json:"status,omitempty"`
 		} `json:"okta_sms,omitempty"`
 	} `json:"factors,omitempty"`
 }
 
+// password policy delegation obj
 type Delegation struct {
 	Options struct {
-		SkipUnlock bool `json:"skipUnlock,omitempty"`
+		SkipUnlock *bool `json:"skipUnlock,omitempty"`
 	} `json:"options,omitempty"`
 }
 
+// policy & rule conditions people obj
 type People struct {
 	Groups struct {
-		Include []string `json:"include,omitempty"`
-		Exclude []string `json:"exclude,omitempty"`
+		Include *[]string `json:"include,omitempty"`
+		Exclude *[]string `json:"exclude,omitempty"`
 	} `json:"groups,omitempty"`
 	Users struct {
-		Include []string `json:"include,omitempty"`
-		Exclude []string `json:"exclude,omitempty"`
+		Include *[]string `json:"include,omitempty"`
+		Exclude *[]string `json:"exclude,omitempty"`
 	} `json:"users,omitempty"`
 }
 
+// policy & rule conditions network obj
 type Network struct {
-	Connection string   `json:"connection,omitempty"`
-	Include    []string `json:"include,omitempty"`
-	Exclude    []string `json:"exclude,omitempty"`
+	Connection *string   `json:"connection,omitempty"`
+	Include    *[]string `json:"include,omitempty"`
+	Exclude    *[]string `json:"exclude,omitempty"`
 }
 
+// policy & rule authProvider obj
 type AuthProvider struct {
-	Provider string   `json:"provider,omitempty"`
-	Include  []string `json:"include,omitempty"`
+	Provider *string   `json:"provider,omitempty"`
+	Include  *[]string `json:"include,omitempty"`
 }
 
 // GetPolicesByType returns an array of Policy objs
 type policies struct {
-	Policies []completePolicy `json:"-,omitempty"`
+	Policies []Policy `json:",-"`
 }
 
 // Policy & Rule obj use the same links obj
 type Links struct {
 	Self struct {
-		Href  string `json:"href"`
+		Href  string `json:"href,omitempty"`
 		Hints struct {
-			Allow []string `json:"allow"`
-		} `json:"hints"`
-	} `json:"self"`
+			Allow []string `json:"allow,omitempty"`
+		} `json:"hints,omitempty"`
+	} `json:"self,omitempty"`
 	Activate struct {
 		Href  string `json:"href,omitempty"`
 		Hints struct {
@@ -267,7 +213,7 @@ type Links struct {
 // Rule represents the Rule Object from the OKTA API
 type Rule struct {
 	ID          string    `json:"id,omitempty"`
-	Type        string    `json:"type"`
+	Type        string    `json:"type,omitempty"`
 	Status      string    `json:"status,omitempty"`
 	Priority    int       `json:"priority,omitempty"`
 	System      bool      `json:"system,omitempty"`
@@ -284,7 +230,7 @@ type Rule struct {
 			Session                 struct {
 				MaxSessionIdleMinutes     int  `json:"maxSessionIdleMinutes,omitempty"`
 				MaxSessionLifetimeMinutes int  `json:"maxSessionLifetimeMinutes,omitempty"`
-				UsePersistentCookie       bool `json:"usePersistentCookie,,omitempty"`
+				UsePersistentCookie       bool `json:"usePersistentCookie,omitempty"`
 			} `json:"session,omitempty"`
 		} `json:"signon,omitempty"`
 		enroll struct {
@@ -304,19 +250,19 @@ type passwordAction struct {
 
 // GetPolicyRules returns an array of Rule objs
 type rules struct {
-	Rules []Rule `json:"-,omitempty"`
+	Rules []Rule `json:",-"`
 }
 
 // Get a policy
 // Requires Policy ID from Policy object
-func (p *PoliciesService) GetPolicy(id string) (*completePolicy, *Response, error) {
+func (p *PoliciesService) GetPolicy(id string) (*Policy, *Response, error) {
 	u := fmt.Sprintf("policies/%v", id)
 	req, err := p.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	policy := new(completePolicy)
+	policy := new(Policy)
 	resp, err := p.client.Do(req, policy)
 	if err != nil {
 		return nil, resp, err
@@ -334,7 +280,7 @@ func (p *PoliciesService) GetPolicesByType(policyType string) (*policies, *Respo
 		return nil, nil, err
 	}
 
-	policy := make([]completePolicy, 0)
+	policy := make([]Policy, 0)
 	resp, err := p.client.Do(req, &policy)
 	if err != nil {
 		return nil, resp, err
@@ -368,14 +314,14 @@ func (p *PoliciesService) DeletePolicy(id string) (*Response, error) {
 
 // Create a policy
 // You must pass in the Policy object created from Policies.Policy()
-func (p *PoliciesService) CreatePolicy(policy PasswordPolicy) (*completePolicy, *Response, error) {
+func (p *PoliciesService) CreatePolicy(policy interface{}) (*Policy, *Response, error) {
 	u := fmt.Sprintf("policies")
 	req, err := p.client.NewRequest("POST", u, policy)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	newPolicy := new(completePolicy)
+	newPolicy := new(Policy)
 	resp, err := p.client.Do(req, newPolicy)
 	if err != nil {
 		return nil, resp, err
@@ -387,14 +333,14 @@ func (p *PoliciesService) CreatePolicy(policy PasswordPolicy) (*completePolicy, 
 // Update a policy
 // You must pass in the Policy object from Policies.Policy()
 // This endpoint uses a PUT so I'm going to assume partial updates are not supported
-func (p *PoliciesService) UpdatePolicy(policy PasswordPolicy) (*completePolicy, *Response, error) {
+func (p *PoliciesService) UpdatePolicy(policy Policy) (*Policy, *Response, error) {
 	u := fmt.Sprintf("policies")
 	req, err := p.client.NewRequest("POST", u, policy)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	updatePolicy := new(completePolicy)
+	updatePolicy := new(Policy)
 	resp, err := p.client.Do(req, updatePolicy)
 	if err != nil {
 		return nil, resp, err
