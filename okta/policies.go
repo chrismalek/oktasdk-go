@@ -32,15 +32,33 @@ func (p *PoliciesService) Password() Password {
 }
 
 // Return the Recovery object.
-// Used to create & update the recovery policy obj password settings
+// Used to create & update the recovery policy obj recovery settings
 func (p *PoliciesService) Recovery() Recovery {
 	return Recovery{}
 }
 
 // Return the Delegation object.
-// Used to create & update the delegation policy obj password settings
+// Used to create & update the delegation policy obj delegation settings
 func (p *PoliciesService) Delegation() Delegation {
 	return Delegation{}
+}
+
+// Return the SignOn object.
+// Used to create & update the signon rules obj signon actions
+func (p *PoliciesService) SignOn() SignOn {
+	return SignOn{}
+}
+
+// Return the Enroll object.
+// Used to create & update the enroll rules obj enroll actions
+func (p *PoliciesService) Enroll() Enroll {
+	return Enroll{}
+}
+
+// Return the PasswordAction object.
+// Used to create & update the passwordaction rules obj passwordaction actions
+func (p *PoliciesService) PasswordAction() PasswordAction {
+	return PasswordAction{}
 }
 
 // InputPolicy represents the Policy Object from the OKTA API
@@ -71,6 +89,7 @@ type InputPolicy struct {
 }
 
 // PeopleConditionUsers updates the People Users condition for the InputPolicy
+// requires inputs string "include" or "exclude" & a string slice of Okta users
 func (p *InputPolicy) PeopleConditionUsers(clude string, values []string) error {
 	var pop *Users
 	if p.Conditions.People.Users == nil {
@@ -91,6 +110,7 @@ func (p *InputPolicy) PeopleConditionUsers(clude string, values []string) error 
 }
 
 // PeopleConditionGroups updates the People Groups condition for the InputPolicy
+// requires inputs string "include" or "exclude" & a string slice of Okta groups
 func (p *InputPolicy) PeopleConditionGroups(clude string, values []string) error {
 	var pop *Groups
 	if p.Conditions.People.Groups == nil {
@@ -111,6 +131,7 @@ func (p *InputPolicy) PeopleConditionGroups(clude string, values []string) error
 }
 
 // PasswordSettings updates the password settings for the InputPolicy
+// requires input the Password struct with the values to update
 func (p *InputPolicy) PasswordSettings(settings Password) {
 	var pop *Password
 	if p.Settings.Password == nil {
@@ -123,6 +144,7 @@ func (p *InputPolicy) PasswordSettings(settings Password) {
 }
 
 // RecoverySettings updates the recovery settings for the InputPolicy
+// requires input the Recovery struct with the values to update
 func (p *InputPolicy) RecoverySettings(settings Recovery) {
 	var pop *Recovery
 	if p.Settings.Recovery == nil {
@@ -135,6 +157,7 @@ func (p *InputPolicy) RecoverySettings(settings Recovery) {
 }
 
 // DelegationSettings updates the delegation settings for the InputPolicy
+// requires input the Delegation struct with the values to update
 func (p *InputPolicy) DelegationSettings(settings Delegation) {
 	var pop *Delegation
 	if p.Settings.Delegation == nil {
@@ -149,7 +172,7 @@ func (p *InputPolicy) DelegationSettings(settings Delegation) {
 // SignOnPolicy represents the Policy Object from the OKTA API
 // used to create or update a signon policy
 // this policy is a separate struct because it does not include settings
-// TODO: policy signon should use the InputPolicy struct, not sre how atm
+// TODO: policy signon should use the InputPolicy struct, not sure how atm
 type SignOnPolicy struct {
 	ID          string    `json:"id,omitempty"`
 	Type        string    `json:"type,omitempty"`
@@ -169,6 +192,7 @@ type SignOnPolicy struct {
 }
 
 // SignOnPeopleConditionUsers updates the People Users condition for the SignOnPolicy
+// requires inputs string "include" or "exclude" & a string slice of Okta users
 func (p *SignOnPolicy) SignOnPeopleConditionUsers(clude string, values []string) error {
 	var pop *Users
 	if p.Conditions.People.Users == nil {
@@ -189,6 +213,7 @@ func (p *SignOnPolicy) SignOnPeopleConditionUsers(clude string, values []string)
 }
 
 // SIgnOnPeopleConditionGroups updates the People Groups condition for the SignOnPolicy
+// requires inputs string "include" or "exclude" & a string slice of Okta groups
 func (p *SignOnPolicy) SignOnPeopleConditionGroups(clude string, values []string) error {
 	var pop *Groups
 	if p.Conditions.People.Groups == nil {
@@ -424,30 +449,31 @@ type InputRule struct {
 	System      bool      `json:"system,omitempty"`
 	Created     time.Time `json:"created,omitempty"`
 	LastUpdated time.Time `json:"lastUpdated,omitempty"`
-	Conditions struct {
+	Conditions  struct {
 		People struct {
 			*Groups `json:"groups,omitempty"`
 			*Users  `json:"users,omitempty"`
 		} `json:"people,omitempty"`
-		AuthType      string `json:"authType,omitempty"`
-		Network struct {
-			Connection string   `json:"connection,omitempty"`
+		AuthType string `json:"authType,omitempty"`
+		Network  struct {
+			Connection string `json:"connection,omitempty"`
 			// TODO: Include & Exclude not supported as only needed when
 			// Connection is "ZONE". zone requires the zone api (not implemented atm)
-			Include    *[]string `json:"include,omitempty"`
-			Exclude    *[]string `json:"exclude,omitempty"`
+			Include *[]string `json:"include,omitempty"`
+			Exclude *[]string `json:"exclude,omitempty"`
 		} `json:"network,omitempty"`
 	} `json:"conditions,omitempty"`
 	Actions struct {
-		*Signon `json:"session,omitempty"`
-		*Enroll `json:"enroll,omitempty"`
-		PasswordChange *PasswordAction `json:"passwordChange,omitempty"`
+		*SignOn                  `json:"session,omitempty"`
+		*Enroll                  `json:"enroll,omitempty"`
+		PasswordChange           *PasswordAction `json:"passwordChange,omitempty"`
 		SelfServicePasswordReset *PasswordAction `json:"selfServicePasswordReset,omitempty"`
-		SelfServiceUnlock *PasswordAction `json:"selfServiceUnlock,omitempty"`
+		SelfServiceUnlock        *PasswordAction `json:"selfServiceUnlock,omitempty"`
 	} `json:"actions,omitempty"`
 }
 
 // PeopleRuleUsers updates the People Users condition for the InputRule
+// requires inputs string "include" or "exclude" & a string slice of Okta users
 func (p *InputRule) PeopleRuleUsers(clude string, values []string) error {
 	var pop *Users
 	if p.Conditions.People.Users == nil {
@@ -468,6 +494,7 @@ func (p *InputRule) PeopleRuleUsers(clude string, values []string) error {
 }
 
 // PeopleRuleGroups updates the People Groups condition for the InputRule
+// requires inputs string "include" or "exclude" & a string slice of Okta groups
 func (p *InputRule) PeopleRuleGroups(clude string, values []string) error {
 	var pop *Groups
 	if p.Conditions.People.Groups == nil {
@@ -487,6 +514,71 @@ func (p *InputRule) PeopleRuleGroups(clude string, values []string) error {
 	return nil
 }
 
+// SignOnActions updates the signon actions for the InputRule
+// requires input the SignOn struct with the values to update
+func (p *InputRule) SignOnActions(settings SignOn) {
+	var pop *SignOn
+	if p.Actions.SignOn == nil {
+		pop = new(SignOn)
+	} else {
+		pop = p.Actions.SignOn
+	}
+	pop = &settings
+	p.Actions.SignOn = pop
+}
+
+// EnrollActions updates the enroll actions for the InputRule
+// requires input the Enroll struct with the values to update
+func (p *InputRule) EnrollActions(settings Enroll) {
+	var pop *Enroll
+	if p.Actions.Enroll == nil {
+		pop = new(Enroll)
+	} else {
+		pop = p.Actions.Enroll
+	}
+	pop = &settings
+	p.Actions.Enroll = pop
+}
+
+// PasswordChangeActions updates the passwordchange actions for the InputRule
+// requires input the PasswordAction struct with the values to update
+func (p *InputRule) PasswordChangeActions(settings PasswordAction) {
+	var pop *PasswordAction
+	if p.Actions.PasswordChange == nil {
+		pop = new(PasswordAction)
+	} else {
+		pop = p.Actions.PasswordChange
+	}
+	pop = &settings
+	p.Actions.PasswordChange = pop
+}
+
+// SelfServicePasswordResetActions updates the selfservicepasswordreset actions for the InputRule
+// requires input the PasswordAction struct with the values to update
+func (p *InputRule) SelfServicePasswordResetActions(settings PasswordAction) {
+	var pop *PasswordAction
+	if p.Actions.SelfServicePasswordReset == nil {
+		pop = new(PasswordAction)
+	} else {
+		pop = p.Actions.SelfServicePasswordReset
+	}
+	pop = &settings
+	p.Actions.SelfServicePasswordReset = pop
+}
+
+// SelfServiceUnlockActions updates the selfserviceunlock actions for the InputRule
+// requires input the PasswordAction struct with the values to update
+func (p *InputRule) SelfServiceUnlockActions(settings PasswordAction) {
+	var pop *PasswordAction
+	if p.Actions.SelfServiceUnlock == nil {
+		pop = new(PasswordAction)
+	} else {
+		pop = p.Actions.SelfServiceUnlock
+	}
+	pop = &settings
+	p.Actions.SelfServiceUnlock = pop
+}
+
 // Rule represents the complete Rule Object from the OKTA API
 // used to return rule data (no need for pointers)
 type Rule struct {
@@ -499,21 +591,21 @@ type Rule struct {
 	LastUpdated time.Time `json:"lastUpdated,omitempty"`
 	Conditions  struct {
 		People       `json:"people,omitempty"`
-		AuthType      string `json:"authType,omitempty"`
+		AuthType     string `json:"authType,omitempty"`
 		Network      `json:"network,omitempty"`
 		AuthProvider `json:"authProvider,omitempty"`
 	} `json:"conditions,omitempty"`
 	Actions struct {
-		Signon `json:"session,omitempty"`
-		Enroll `json:"enroll,omitempty"`
-		PasswordChange PasswordAction `json:"passwordChange,omitempty"`
+		SignOn                   `json:"session,omitempty"`
+		Enroll                   `json:"enroll,omitempty"`
+		PasswordChange           PasswordAction `json:"passwordChange,omitempty"`
 		SelfServicePasswordReset PasswordAction `json:"selfServicePasswordReset,omitempty"`
-		SelfServiceUnlock PasswordAction `json:"selfServiceUnlock,omitempty"`
+		SelfServiceUnlock        PasswordAction `json:"selfServiceUnlock,omitempty"`
 	} `json:"actions,omitempty"`
 	Links `json:"_links,omitempty"`
 }
 
-type Signon struct {
+type SignOn struct {
 	Access                  string `json:"access,omitempty"`
 	RequireFactor           bool   `json:"requireFactor,omitempty"`
 	FactorPromptMode        string `json:"factorPromptMode,omitempty"`
