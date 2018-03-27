@@ -126,7 +126,7 @@ type Policy struct {
 	Links `json:"_links,omitempty"`
 }
 
-// Mfa policy factors obj
+// Mfa policy settings factors obj
 type Factors struct {
 	GoogleOtp struct {
 		Consent `json:"consent,omitempty"`
@@ -158,7 +158,7 @@ type Factors struct {
 	} `json:"symantec_vip,omitempty"`
 }
 
-// Mfa policy factor consent obj
+// Mfa policy factors consent obj
 type Consent struct {
 	Terms struct {
 		Format string `json:"format,omitempty"`
@@ -167,12 +167,12 @@ type Consent struct {
 	Type string `json:"type,omitempty"`
 }
 
-// Mfa policy & rule factor enroll obj
+// Mfa policy & rule factors enroll obj
 type Enroll struct {
 	Self string `json:"self,omitempty"`
 }
 
-// password policy obj
+// Password policy settings password obj
 type Password struct {
 	Complexity struct {
 		MinLength         int      `json:"minLength,omitempty"`
@@ -201,7 +201,7 @@ type Password struct {
 	} `json:"lockout,omitempty"`
 }
 
-// passowrd policy recover obj
+// Passowrd policy settings recover obj
 type Recovery struct {
 	Factors struct {
 		RecoveryQuestion struct {
@@ -226,7 +226,7 @@ type Recovery struct {
 	} `json:"factors,omitempty"`
 }
 
-// password policy delegation obj
+// password policy settings delegation obj
 type Delegation struct {
 	Options struct {
 		SkipUnlock bool `json:"skipUnlock,omitempty"`
@@ -264,7 +264,7 @@ type Network struct {
 	Exclude    *[]string `json:"exclude,omitempty"`
 }
 
-// policy & rule authProvider obj
+// policy & rule conditions authProvider obj
 type AuthProvider struct {
 	Provider string   `json:"provider,omitempty"`
 	Include  []string `json:"include,omitempty"`
@@ -424,7 +424,7 @@ type Rule struct {
 	Links `json:"_links,omitempty"`
 }
 
-// signon rule actions obj
+// signon rule actions signon obj
 type SignOn struct {
 	Access                  string `json:"access,omitempty"`
 	RequireFactor           bool   `json:"requireFactor,omitempty"`
@@ -579,7 +579,7 @@ func (p *MfaRule) PeopleCondition(condition string, clude string, values []strin
 	return nil
 }
 
-// Get a policy
+// GetPolicy: Get a policy
 // Requires Policy ID from Policy object
 func (p *PoliciesService) GetPolicy(id string) (*Policy, *Response, error) {
 	u := fmt.Sprintf("policies/%v", id)
@@ -597,7 +597,7 @@ func (p *PoliciesService) GetPolicy(id string) (*Policy, *Response, error) {
 	return policy, resp, err
 }
 
-// Get all policies by type
+// GetPolicesByType: Get all policies by type
 // Allowed types are OKTA_SIGN_ON, PASSWORD, MFA_ENROLL, or OAUTH_AUTHORIZATION_POLICY
 func (p *PoliciesService) GetPolicesByType(policyType string) (*policies, *Response, error) {
 	u := fmt.Sprintf("policies?type=%v", policyType)
@@ -622,7 +622,7 @@ func (p *PoliciesService) GetPolicesByType(policyType string) (*policies, *Respo
 	return nil, resp, err
 }
 
-// Delete a policy
+// DeletePolicy: Delete a policy
 // Requires Policy ID from Policy object
 func (p *PoliciesService) DeletePolicy(id string) (*Response, error) {
 	u := fmt.Sprintf("policies/%v", id)
@@ -638,8 +638,8 @@ func (p *PoliciesService) DeletePolicy(id string) (*Response, error) {
 	return resp, err
 }
 
-// Create a policy
-// You must pass in the Policy object created from Policies.InputPolicy()
+// CreatePolicy: Create a policy
+// You must pass in the Policy object created from the desired input policy
 func (p *PoliciesService) CreatePolicy(policy interface{}) (*Policy, *Response, error) {
 	u := fmt.Sprintf("policies")
 	req, err := p.client.NewRequest("POST", u, policy)
@@ -656,8 +656,8 @@ func (p *PoliciesService) CreatePolicy(policy interface{}) (*Policy, *Response, 
 	return newPolicy, resp, err
 }
 
-// Update a policy
-// Requires Policy ID from Policy object & Policy object from Policies.InputPolicy()
+// UpdatePolicy: Update a policy
+// Requires Policy ID from Policy object & Policy object from the desired input policy
 func (p *PoliciesService) UpdatePolicy(id string, policy interface{}) (*Policy, *Response, error) {
 	u := fmt.Sprintf("policies/%v", id)
 	req, err := p.client.NewRequest("PUT", u, policy)
@@ -674,7 +674,7 @@ func (p *PoliciesService) UpdatePolicy(id string, policy interface{}) (*Policy, 
 	return updatePolicy, resp, err
 }
 
-// Activate a policy
+// ActivatePolicy: Activate a policy
 // Requires Policy ID from Policy object
 func (p *PoliciesService) ActivatePolicy(id string) (*Response, error) {
 	u := fmt.Sprintf("policies/%v/lifecycle/activate", id)
@@ -690,7 +690,7 @@ func (p *PoliciesService) ActivatePolicy(id string) (*Response, error) {
 	return resp, err
 }
 
-// Deactivate a policy
+// DeactivatePolicy: Deactivate a policy
 // Requires Policy ID from Policy object
 func (p *PoliciesService) DeactivatePolicy(id string) (*Response, error) {
 	u := fmt.Sprintf("policies/%v/lifecycle/deactivate", id)
@@ -706,7 +706,7 @@ func (p *PoliciesService) DeactivatePolicy(id string) (*Response, error) {
 	return resp, err
 }
 
-// Get policy rules
+// GetPolicyRules: Get policy rules
 // Requires Policy ID from Policy object
 func (p *PoliciesService) GetPolicyRules(id string) (*rules, *Response, error) {
 	u := fmt.Sprintf("policies/%v/rules", id)
@@ -731,9 +731,9 @@ func (p *PoliciesService) GetPolicyRules(id string) (*rules, *Response, error) {
 	return nil, resp, err
 }
 
-// Create a rule
+// CreatePolicyRule: Create a policy rule
 // Requires Policy ID from Policy object
-// You must pass in the Rule object created from Policies.InputRule()
+// You must pass in the Rule object created from the desired input rule
 func (p *PoliciesService) CreatePolicyRule(id string, rule interface{}) (*Rule, *Response, error) {
 	u := fmt.Sprintf("policies/%v/rules", id)
 	req, err := p.client.NewRequest("POST", u, rule)
@@ -750,7 +750,7 @@ func (p *PoliciesService) CreatePolicyRule(id string, rule interface{}) (*Rule, 
 	return newRule, resp, err
 }
 
-// Delete a rule
+// DeletePolicyRule: Delete a rule
 // Requires Policy ID from Policy object and Rule ID from Rule object
 func (p *PoliciesService) DeletePolicyRule(policyId string, ruleId string) (*Response, error) {
 	u := fmt.Sprintf("policies/%v/rules/%v", policyId, ruleId)
@@ -766,7 +766,7 @@ func (p *PoliciesService) DeletePolicyRule(policyId string, ruleId string) (*Res
 	return resp, err
 }
 
-// Get a rule
+// GetPolicyRule: Get a policy rule
 // Requires Policy ID from Policy object and Rule ID from Rule object
 func (p *PoliciesService) GetPolicyRule(policyId string, ruleId string) (*Rule, *Response, error) {
 	u := fmt.Sprintf("policies/%v/rules/%v", policyId, ruleId)
@@ -784,9 +784,9 @@ func (p *PoliciesService) GetPolicyRule(policyId string, ruleId string) (*Rule, 
 	return rule, resp, err
 }
 
-// Update a rule
+// UpdatePolicyRule: Update a policy rule
 // Requires Policy ID from Policy object and Rule ID from Rule object
-// You must pass in the Rule object from Policies.InputRule()
+// You must pass in the Rule object from the desited input rule
 func (p *PoliciesService) UpdatePolicyRule(policyId string, ruleId string, rule interface{}) (*Rule, *Response, error) {
 	u := fmt.Sprintf("policies/%v/rules/%v", policyId, ruleId)
 	req, err := p.client.NewRequest("PUT", u, rule)
@@ -803,7 +803,7 @@ func (p *PoliciesService) UpdatePolicyRule(policyId string, ruleId string, rule 
 	return updateRule, resp, err
 }
 
-// Activate a rule
+// ActivatePolicyRule: Activate a policy rule
 // Requires Policy ID from Policy object and Rule ID from Rule object
 func (p *PoliciesService) ActivatePolicyRule(policyId string, ruleId string) (*Response, error) {
 	u := fmt.Sprintf("policies/%v/rules/%v/lifecycle/activate", policyId, ruleId)
@@ -819,7 +819,7 @@ func (p *PoliciesService) ActivatePolicyRule(policyId string, ruleId string) (*R
 	return resp, err
 }
 
-// Deactivate a rule
+// DeactivatePolicyRule: Deactivate a policy rule
 // Requires Policy ID from Policy object and Rule ID from Rule object
 func (p *PoliciesService) DeactivatePolicyRule(policyId string, ruleId string) (*Response, error) {
 	u := fmt.Sprintf("policies/%v/rules/%v/lifecycle/deactivate", policyId, ruleId)
