@@ -304,7 +304,7 @@ type Links struct {
 	} `json:"rules,omitempty"`
 }
 
-//RULES
+// RULES
 
 // Return the PasswordRule object. Used to create & update the password rule
 func (p *PoliciesService) PasswordRule() PasswordRule {
@@ -508,7 +508,7 @@ func PeopleCondition(condition string, clude string, values []string) (*People, 
 }
 
 // PasswordPolicy PeopleCondition updates the People condition for the input password policy
-// requires inputs string "users" or "grooups & "include" or "exclude"
+// requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *PasswordPolicy) PeopleCondition(condition string, clude string, values []string) error {
 	pop, err := PeopleCondition(condition, clude, values)
@@ -520,7 +520,7 @@ func (p *PasswordPolicy) PeopleCondition(condition string, clude string, values 
 }
 
 // SignOnPolicy PeopleCondition updates the People condition for the input signon policy
-// requires inputs string "users" or "grooups & "include" or "exclude"
+// requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *SignOnPolicy) PeopleCondition(condition string, clude string, values []string) error {
 	pop, err := PeopleCondition(condition, clude, values)
@@ -532,7 +532,7 @@ func (p *SignOnPolicy) PeopleCondition(condition string, clude string, values []
 }
 
 // MfaPolicy PeopleCondition updates the People condition for the input mfa policy
-// requires inputs string "users" or "grooups & "include" or "exclude"
+// requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *MfaPolicy) PeopleCondition(condition string, clude string, values []string) error {
 	pop, err := PeopleCondition(condition, clude, values)
@@ -544,7 +544,7 @@ func (p *MfaPolicy) PeopleCondition(condition string, clude string, values []str
 }
 
 // PasswordRule PeopleCondition updates the People condition for the input password rule
-// requires inputs string "users" or "grooups & "include" or "exclude"
+// requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *PasswordRule) PeopleCondition(condition string, clude string, values []string) error {
 	pop, err := PeopleCondition(condition, clude, values)
@@ -555,8 +555,8 @@ func (p *PasswordRule) PeopleCondition(condition string, clude string, values []
 	return nil
 }
 
-// SIgnOnRule PeopleCondition updates the People condition for the input signon rule
-// requires inputs string "users" or "grooups & "include" or "exclude"
+// SignOnRule PeopleCondition updates the People condition for the input signon rule
+// requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *SignOnRule) PeopleCondition(condition string, clude string, values []string) error {
 	pop, err := PeopleCondition(condition, clude, values)
@@ -568,7 +568,7 @@ func (p *SignOnRule) PeopleCondition(condition string, clude string, values []st
 }
 
 // MfaRule PeopleCondition updates the People condition for the input mfa rule
-// requires inputs string "users" or "grooups & "include" or "exclude"
+// requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *MfaRule) PeopleCondition(condition string, clude string, values []string) error {
 	pop, err := PeopleCondition(condition, clude, values)
