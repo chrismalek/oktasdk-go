@@ -273,7 +273,7 @@ type AuthProvider struct {
 // a slice of Policy objs
 // used by GetPolicesByType
 type policies struct {
-	Policies []Policy `json:",-"`
+	Policies []Policy `json:"-,omitempty"`
 }
 
 // Policy & Rule obj use the same links obj
@@ -446,7 +446,7 @@ type PasswordAction struct {
 // a slice of Rule objs
 // used by GetPolicyRules
 type rules struct {
-	Rules []Rule `json:",-"`
+	Rules []Rule `json:"-,omitempty"`
 }
 
 // API FUNCTIONS

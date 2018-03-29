@@ -10,7 +10,7 @@ import (
 )
 
 var testinputpasspolicy *PasswordPolicy
-var testinputsingonpolicy *SignOnPolicy
+var testinputsignonpolicy *SignOnPolicy
 var testpasspolicy *Policy
 var testsignonpolicy *Policy
 
@@ -18,7 +18,7 @@ var testpasspolicies *policies
 var testsignonpolicies *policies
 
 var testinputpassrule *PasswordRule
-var testinputsingonrule *SignOnRule
+var testinputsignonrule *SignOnRule
 var testpassrule *Rule
 var testsignonrule *Rule
 
@@ -26,6 +26,7 @@ func setupTestPolicies() {
 
 	hmm, _ := time.Parse("2006-01-02T15:04:05.000Z", "2018-02-16T19:59:05.000Z")
 
+	// password policy
 	testpasspolicy = &Policy{
 		ID:          "00pedv3qclXeC2aFH0h7",
 		Type:        "PASSWORD",
@@ -49,6 +50,7 @@ func setupTestPolicies() {
 	testpasspolicy.Links.Rules.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7/rules"
 	testpasspolicy.Links.Rules.Hints.Allow = []string{"GET POST"}
 
+	// signon policy
 	testsignonpolicy = &Policy{
 		ID:          "00pedv3qclXeC2aFH0h7",
 		Type:        "OKTA_SIGN_ON",
@@ -67,6 +69,7 @@ func setupTestPolicies() {
 	testsignonpolicy.Links.Rules.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7/rules"
 	testsignonpolicy.Links.Rules.Hints.Allow = []string{"GET POST"}
 
+	// input password policy
 	testinputpasspolicy = &PasswordPolicy{
 		Type:        "PASSWORD",
 		Name:        "PasswordPolicy",
@@ -77,14 +80,14 @@ func setupTestPolicies() {
 		Created:     hmm,
 		LastUpdated: hmm,
 	}
-	//testinputpasspolicy.Conditions.People.Groups.Include = []string{"00ge0t33mvT5q62O40h7"}
 	testinputpasspolicy.Conditions.AuthProvider.Provider = "OKTA"
 	testinputpasspolicy.Settings.Recovery.Factors.OktaEmail.Status = "ACTIVE"
 	testinputpasspolicy.Settings.Recovery.Factors.RecoveryQuestion.Status = "ACTIVE"
 	testinputpasspolicy.Settings.Password.Complexity.MinLength = 12
 	testinputpasspolicy.Settings.Password.Age.HistoryCount = 5
 
-	testinputsingonpolicy = &SignOnPolicy{
+	// input signon policy
+	testinputsignonpolicy = &SignOnPolicy{
 		Type:        "OKTA_SIGN_ON",
 		Name:        "SignOnPolicy",
 		System:      false,
@@ -94,11 +97,12 @@ func setupTestPolicies() {
 		Created:     hmm,
 		LastUpdated: hmm,
 	}
-	//testinputsingonpolicy.Conditions.People.Groups.Include = []string{"00ge0t33mvT5q62O40h7"}
 
+	// slice of password policies
 	testpasspolicies = new(policies)
 	testpasspolicies.Policies = append(testpasspolicies.Policies, *testpasspolicy)
 
+	// slice of signon policies
 	testsignonpolicies = new(policies)
 	testsignonpolicies.Policies = append(testsignonpolicies.Policies, *testsignonpolicy)
 
@@ -112,7 +116,7 @@ func TestPolicyGet(t *testing.T) {
 
 	temp, err := json.Marshal(testpasspolicy)
 	if err != nil {
-		t.Errorf("Polices.Get json Marshall returned error: %v", err)
+		t.Errorf("Polices.GetPolicy json Marshall returned error: %v", err)
 	}
 	policyTestJSONString := string(temp)
 
@@ -124,7 +128,7 @@ func TestPolicyGet(t *testing.T) {
 
 	outputpolicy, _, err := client.Policies.GetPolicy("00pedv3qclXeC2aFH0h7")
 	if err != nil {
-		t.Errorf("Policies.Get returned error: %v", err)
+		t.Errorf("Policies.GetPolicy returned error: %v", err)
 	}
 	if !reflect.DeepEqual(outputpolicy, testpasspolicy) {
 		t.Errorf("client.Policies.GetPolicy returned \n\t%+v, want \n\t%+v\n", outputpolicy, testpasspolicy)
@@ -179,7 +183,7 @@ func testPolicyCreate(t *testing.T, inputpolicy interface{}, policy *Policy) {
 
 	temp, err := json.Marshal(policy)
 	if err != nil {
-		t.Errorf("Policies.Create json Marshall returned error: %v", err)
+		t.Errorf("Policies.CreatePolicy json Marshall returned error: %v", err)
 	}
 	policyTestJSONString := string(temp)
 
@@ -191,10 +195,10 @@ func testPolicyCreate(t *testing.T, inputpolicy interface{}, policy *Policy) {
 
 	outputpolicy, _, err := client.Policies.CreatePolicy(inputpolicy)
 	if err != nil {
-		t.Errorf("Policies.Create returned error: %v", err)
+		t.Errorf("Policies.CreatePolicy returned error: %v", err)
 	}
 	if !reflect.DeepEqual(outputpolicy, policy) {
-		t.Errorf("client.Policies.Create returned \n\t%+v, want \n\t%+v\n", outputpolicy, policy)
+		t.Errorf("client.Policies.CreatePolicy returned \n\t%+v, want \n\t%+v\n", outputpolicy, policy)
 	}
 }
 
@@ -203,7 +207,7 @@ func TestPolicyCreate(t *testing.T) {
 		testPolicyCreate(t, testinputpasspolicy, testpasspolicy)
 	})
 	t.Run("SignOn", func(t *testing.T) {
-		testPolicyCreate(t, testinputsingonpolicy, testsignonpolicy)
+		testPolicyCreate(t, testinputsignonpolicy, testsignonpolicy)
 	})
 }
 
@@ -246,9 +250,6 @@ func TestPolicyUpdate(t *testing.T) {
 		Description: "Unit Test Password Policy Updated",
 		Status:      "ACTIVE",
 	}
-	testupdatepasspolicy.Conditions.AuthProvider.Provider = "OKTA"
-	testupdatepasspolicy.Settings.Recovery.Factors.OktaEmail.Status = "ACTIVE"
-	testupdatepasspolicy.Settings.Recovery.Factors.RecoveryQuestion.Status = "ACTIVE"
 	testupdatepasspolicy.Settings.Password.Complexity.MinLength = 14
 	testupdatepasspolicy.Settings.Password.Age.HistoryCount = 8
 
@@ -257,7 +258,7 @@ func TestPolicyUpdate(t *testing.T) {
 		before := output.Settings.Password.Complexity.MinLength
 		after := policy.Settings.Password.Complexity.MinLength
 		if !reflect.DeepEqual(before, after) {
-			t.Errorf("client.Users.Update returned \n\t%+v, want \n\t%+v\n", before, after)
+			t.Errorf("client.Policies.UpdatePolicy returned \n\t%+v, want \n\t%+v\n", before, after)
 		}
 	})
 
@@ -277,7 +278,33 @@ func TestPolicyUpdate(t *testing.T) {
 		before := output.Name
 		after := policy.Name
 		if !reflect.DeepEqual(before, after) {
-			t.Errorf("client.Users.Update returned \n\t%+v, want \n\t%+v\n", before, after)
+			t.Errorf("client.Policies.UpdatePolicy returned \n\t%+v, want \n\t%+v\n", before, after)
+		}
+	})
+}
+
+func TestPolicyUpdatePeopleCondition(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestPolicies()
+
+	t.Run("Password", func(t *testing.T) {
+		err := testinputpasspolicy.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
+		if err != nil {
+			t.Errorf("client.PasswordPolicyPeopleCondition returned error: %v", err)
+		}
+		if testinputpasspolicy.Conditions.People.Groups.Include == nil {
+			t.Errorf("client.PasswordPolicy.PeopleCondition returned a nil value")
+		}
+	})
+	t.Run("SignOn", func(t *testing.T) {
+		err := testinputsignonpolicy.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
+		if err != nil {
+			t.Errorf("client.SignOnPolicy.PeopleCondition returned error: %v", err)
+		}
+		if testinputpasspolicy.Conditions.People.Groups.Include == nil {
+			t.Errorf("client.SignOnPolicy.PeopleCondition returned a nil value")
 		}
 	})
 }
@@ -296,6 +323,42 @@ func TestPolicyDelete(t *testing.T) {
 
 	_, err := client.Policies.DeletePolicy("00pedv3qclXeC2aFH0h7")
 	if err != nil {
-		t.Errorf("Policies.Delete returned error: %v", err)
+		t.Errorf("Policies.DeletePolicy returned error: %v", err)
+	}
+}
+
+func TestActivatePolicy(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestPolicies()
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/lifecycle/activate", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, "")
+	})
+
+	_, err := client.Policies.ActivatePolicy("00pedv3qclXeC2aFH0h7")
+	if err != nil {
+		t.Errorf("Policies.ActivatePolicy returned error: %v", err)
+	}
+}
+
+func TestDeactivatePolicy(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestPolicies()
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/lifecycle/deactivate", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, "")
+	})
+
+	_, err := client.Policies.DeactivatePolicy("00pedv3qclXeC2aFH0h7")
+	if err != nil {
+		t.Errorf("Policies.DeactivatePolicy returned error: %v", err)
 	}
 }
