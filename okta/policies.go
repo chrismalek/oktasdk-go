@@ -271,7 +271,7 @@ type AuthProvider struct {
 }
 
 // a slice of Policy objs
-// used by GetPolicesByType
+// used by GetPoliciesByType
 type policies struct {
 	Policies []Policy `json:"-,omitempty"`
 }
@@ -597,15 +597,14 @@ func (p *PoliciesService) GetPolicy(id string) (*Policy, *Response, error) {
 	return policy, resp, err
 }
 
-// GetPolicesByType: Get all policies by type
+// GetPoliciesByType: Get all policies by type
 // Allowed types are OKTA_SIGN_ON, PASSWORD, MFA_ENROLL, or OAUTH_AUTHORIZATION_POLICY
-func (p *PoliciesService) GetPolicesByType(policyType string) (*policies, *Response, error) {
+func (p *PoliciesService) GetPoliciesByType(policyType string) (*policies, *Response, error) {
 	u := fmt.Sprintf("policies?type=%v", policyType)
 	req, err := p.client.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	policy := make([]Policy, 0)
 	resp, err := p.client.Do(req, &policy)
 	if err != nil {
