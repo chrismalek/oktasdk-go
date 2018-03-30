@@ -159,8 +159,9 @@ func testGetPoliciesByType(t *testing.T, policytype string, policies *policies) 
 	if err != nil {
 		t.Errorf("Policies.GetPoliciesByType returned error: %v", err)
 	}
+
 	if !reflect.DeepEqual(outputpolicies, policies) {
-		t.Errorf("client.Policies.GetPoliciesByType returned \n\t%+v, want \n\t%+v\n", outputpolicies, policies.Policies)
+		t.Errorf("client.Policies.GetPoliciesByType returned \n\t%+v, want \n\t%+v\n", outputpolicies, policies)
 	}
 }
 
