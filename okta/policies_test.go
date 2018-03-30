@@ -22,6 +22,9 @@ var testInputSignonRule *SignOnRule
 var testPassRule *Rule
 var testSignonRule *Rule
 
+var testPassRules *rules
+var testSignonRules *rules
+
 func setupTestPolicies() {
 
 	hmm, _ := time.Parse("2006-01-02T15:04:05.000Z", "2018-02-16T19:59:05.000Z")
@@ -108,6 +111,94 @@ func setupTestPolicies() {
 
 }
 
+func setupTestRules() {
+
+	hmm, _ := time.Parse("2006-01-02T15:04:05.000Z", "2018-02-16T19:59:05.000Z")
+
+	// password rule
+	testPassRule = &Rule{
+		ID:          "0predz80vvMTwva7T0h7",
+		Type:        "PASSWORD",
+		Status:      "ACTIVE",
+		Name:        "PasswordRule",
+		Priority:    2,
+		System:      false,
+		Created:     hmm,
+		LastUpdated: hmm,
+	}
+	testPassRule.Conditions.Network.Connection = "ANYWHERE"
+	testPassRule.Actions.PasswordChange.Access = "ALLOW"
+	testPassRule.Actions.SelfServicePasswordReset.Access = "ALLOW"
+	testPassRule.Actions.SelfServiceUnlock.Access = "ALLOW"
+	testPassRule.Links.Self.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7"
+	testPassRule.Links.Self.Hints.Allow = []string{"GET PUT DELETE"}
+	testPassRule.Links.Deactivate.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7/lifecycle/deactivate"
+	testPassRule.Links.Deactivate.Hints.Allow = []string{"POST"}
+	testPassRule.Links.Rules.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7/rules"
+	testPassRule.Links.Rules.Hints.Allow = []string{"GET POST"}
+
+	// input password rule
+	testInputPassRule = &PasswordRule{
+		ID:          "0predz80vvMTwva7T0h7",
+		Type:        "PASSWORD",
+		Status:      "ACTIVE",
+		Name:        "PasswordRule",
+		Priority:    2,
+		System:      false,
+		Created:     hmm,
+		LastUpdated: hmm,
+	}
+	testInputPassRule.Conditions.Network.Connection = "ANYWHERE"
+	testInputPassRule.Actions.PasswordChange.Access = "ALLOW"
+	testInputPassRule.Actions.SelfServicePasswordReset.Access = "ALLOW"
+	testInputPassRule.Actions.SelfServiceUnlock.Access = "ALLOW"
+
+	// signon rule
+	testSignonRule = &Rule{
+		ID:          "0predz80vvMTwva7T0h7",
+		Type:        "OKTA_SIGN_ON",
+		Status:      "ACTIVE",
+		Name:        "SignOnRule",
+		Priority:    2,
+		System:      false,
+		Created:     hmm,
+		LastUpdated: hmm,
+	}
+	testSignonRule.Conditions.Network.Connection = "ANYWHERE"
+	testSignonRule.Actions.SignOn.Access = "ALLOW"
+	testSignonRule.Actions.SignOn.Session.MaxSessionIdleMinutes = 120
+	testSignonRule.Links.Self.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7"
+	testSignonRule.Links.Self.Hints.Allow = []string{"GET PUT DELETE"}
+	testSignonRule.Links.Deactivate.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7/lifecycle/deactivate"
+	testSignonRule.Links.Deactivate.Hints.Allow = []string{"POST"}
+	testSignonRule.Links.Rules.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7/rules"
+	testSignonRule.Links.Rules.Hints.Allow = []string{"GET POST"}
+
+	// input signon rule
+	testInputSignonRule = &SignOnRule{
+		ID:          "0predz80vvMTwva7T0h7",
+		Type:        "OKTA_SIGN_ON",
+		Status:      "ACTIVE",
+		Name:        "SignOnRule",
+		Priority:    2,
+		System:      false,
+		Created:     hmm,
+		LastUpdated: hmm,
+	}
+	testInputSignonRule.Conditions.Network.Connection = "ANYWHERE"
+	testInputSignonRule.Actions.SignOn.Access = "ALLOW"
+	testInputSignonRule.Actions.SignOn.Session.MaxSessionIdleMinutes = 120
+
+	// slice of password rules
+	testPassRules = new(rules)
+	testPassRules.Rules = append(testPassRules.Rules, *testPassRule)
+
+	// slice of signon rules
+	testSignonRules = new(rules)
+	testSignonRules.Rules = append(testSignonRules.Rules, *testSignonRule)
+
+}
+
 func TestPolicyGet(t *testing.T) {
 
 	setup()
@@ -135,11 +226,37 @@ func TestPolicyGet(t *testing.T) {
 	}
 }
 
+func TestiGetPolicyRule(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestRules()
+
+	temp, err := json.Marshal(testPassRule)
+	if err != nil {
+		t.Errorf("Polices.GetPolicyRule json Marshall returned error: %v", err)
+	}
+	ruleTestJSONString := string(temp)
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7rules/0predz80vvMTwva7T0h7", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, ruleTestJSONString)
+	})
+
+	outputrule, _, err := client.Policies.GetPolicyRule("00pedv3qclXeC2aFH0h7", "0predz80vvMTwva7T0h7")
+	if err != nil {
+		t.Errorf("Policies.GetPolicyRule returned error: %v", err)
+	}
+	if !reflect.DeepEqual(outputrule, testPassRule) {
+		t.Errorf("client.Policies.GetPolicy returned \n\t%+v, want \n\t%+v\n", outputrule, testPassRule)
+	}
+}
+
 func testGetPoliciesByType(t *testing.T, policytype string, policies *policies) {
 
 	setup()
 	defer teardown()
-	setupTestPolicies()
 
 	temp, err := json.Marshal(policies.Policies)
 	if err != nil {
@@ -166,6 +283,8 @@ func testGetPoliciesByType(t *testing.T, policytype string, policies *policies) 
 }
 
 func TestGetPoliciesByType(t *testing.T) {
+	setupTestPolicies()
+
 	t.Run("Password", func(t *testing.T) {
 		testGetPoliciesByType(t, "PASSWORD", testPassPolicies)
 	})
@@ -174,11 +293,47 @@ func TestGetPoliciesByType(t *testing.T) {
 	})
 }
 
+func testGetPolicyRules(t *testing.T, rules *rules) {
+
+	setup()
+	defer teardown()
+
+	temp, err := json.Marshal(rules.Rules)
+	if err != nil {
+		t.Errorf("Policies.GetPolicyRules json Marshall returned error: %v", err)
+	}
+	ruleTestJSONString := string(temp)
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/rules", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, ruleTestJSONString)
+	})
+
+	outputrules, _, err := client.Policies.GetPolicyRules("00pedv3qclXeC2aFH0h7")
+	if err != nil {
+		t.Errorf("Policies.GetPolicyRules returned error: %v", err)
+	}
+	if !reflect.DeepEqual(outputrules, rules) {
+		t.Errorf("client.Policies.GetPolicyRules returned \n\t%+v, want \n\t%+v\n", outputrules, rules)
+	}
+}
+
+func TestGetPolicyRules(t *testing.T) {
+	setupTestRules()
+
+	t.Run("Password", func(t *testing.T) {
+		testGetPolicyRules(t, testPassRules)
+	})
+	t.Run("SignOn", func(t *testing.T) {
+		testGetPolicyRules(t, testSignonRules)
+	})
+}
+
 func testPolicyCreate(t *testing.T, inputpolicy interface{}, policy *Policy) {
 
 	setup()
 	defer teardown()
-	setupTestPolicies()
 
 	temp, err := json.Marshal(policy)
 	if err != nil {
@@ -202,6 +357,8 @@ func testPolicyCreate(t *testing.T, inputpolicy interface{}, policy *Policy) {
 }
 
 func TestPolicyCreate(t *testing.T) {
+	setupTestPolicies()
+
 	t.Run("Password", func(t *testing.T) {
 		testPolicyCreate(t, testInputPassPolicy, testPassPolicy)
 	})
@@ -210,12 +367,49 @@ func TestPolicyCreate(t *testing.T) {
 	})
 }
 
-func testPolicyUpdate(t *testing.T, updatepolicy interface{}, policy *Policy) (*Policy, *Policy) {
+func testPolicyRuleCreate(t *testing.T, inputrule interface{}, rule *Rule) {
 
 	setup()
 	defer teardown()
 
-	temp, err := json.Marshal(updatepolicy)
+	temp, err := json.Marshal(rule)
+	if err != nil {
+		t.Errorf("Policies.CreateiPolicyRule json Marshall returned error: %v", err)
+	}
+	ruleTestJSONString := string(temp)
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/rules", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, ruleTestJSONString)
+	})
+
+	outputrule, _, err := client.Policies.CreatePolicyRule("00pedv3qclXeC2aFH0h7", inputrule)
+	if err != nil {
+		t.Errorf("Policies.CreatePolicyRule returned error: %v", err)
+	}
+	if !reflect.DeepEqual(outputrule, rule) {
+		t.Errorf("client.Policies.CreatePolicy returned \n\t%+v, want \n\t%+v\n", outputrule, rule)
+	}
+}
+
+func TestPolicyRuleCreate(t *testing.T) {
+	setupTestRules()
+
+	t.Run("Password", func(t *testing.T) {
+		testPolicyRuleCreate(t, testInputPassRule, testPassRule)
+	})
+	t.Run("SignOn", func(t *testing.T) {
+		testPolicyRuleCreate(t, testInputSignonRule, testSignonRule)
+	})
+}
+
+func testPolicyUpdate(t *testing.T, updatepolicy interface{}, policy *Policy) {
+
+	setup()
+	defer teardown()
+
+	temp, err := json.Marshal(policy)
 	if err != nil {
 		t.Errorf("Policies.UpdatePolicy json Marshall returned error: %v", err)
 	}
@@ -231,57 +425,56 @@ func testPolicyUpdate(t *testing.T, updatepolicy interface{}, policy *Policy) (*
 	if err != nil {
 		t.Errorf("Policies.UpdatePolicy returned error: %v", err)
 	}
-	return outputpolicy, policy
+	if !reflect.DeepEqual(outputpolicy.Name, policy.Name) {
+		t.Errorf("client.Policies.UpdatePolicy returned \n\t%+v, want \n\t%+v\n", outputpolicy.Name, policy.Name)
+	}
 }
 
 func TestPolicyUpdate(t *testing.T) {
-
 	setupTestPolicies()
-
-	testTempPassPolicy := testPassPolicy
-	testTempPassPolicy.Name = "PasswordPolicyUpdated"
-	testTempPassPolicy.Description = "Unit Test Password Policy Updated"
-	testTempPassPolicy.Settings.Password.Complexity.MinLength = 14
-	testTempPassPolicy.Settings.Password.Age.HistoryCount = 8
-
-	testUpdatePassPolicy := &PasswordPolicy{
-		Type:        "PASSWORD",
-		Name:        "PasswordPolicyUpdated",
-		Description: "Unit Test Password Policy Updated",
-		Status:      "ACTIVE",
-	}
-	testUpdatePassPolicy.Settings.Password.Complexity.MinLength = 14
-	testUpdatePassPolicy.Settings.Password.Age.HistoryCount = 8
 
 	t.Run("Password", func(t *testing.T) {
-		output, policy := testPolicyUpdate(t, testUpdatePassPolicy, testTempPassPolicy)
-		before := output.Settings.Password.Complexity.MinLength
-		after := policy.Settings.Password.Complexity.MinLength
-		if !reflect.DeepEqual(before, after) {
-			t.Errorf("client.Policies.UpdatePolicy returned \n\t%+v, want \n\t%+v\n", before, after)
-		}
+		testPolicyUpdate(t, testInputPassPolicy, testPassPolicy)
 	})
-
-	setupTestPolicies()
-
-	testTempSignonPolicy := testSignonPolicy
-	testTempSignonPolicy.Name = "SignOnPolicyUpdated"
-	testTempSignonPolicy.Description = "Unit Test SignOn Policy Updated"
-
-	testUpdateSignonPolicy := &PasswordPolicy{
-		Type:        "OKTA_SIGN_ON",
-		Name:        "SignOnPolicyUpdated",
-		Description: "Unit Test SignOn Policy Updated",
-		Status:      "ACTIVE",
-	}
-
 	t.Run("SignOn", func(t *testing.T) {
-		output, policy := testPolicyUpdate(t, testUpdateSignonPolicy, testTempSignonPolicy)
-		before := output.Name
-		after := policy.Name
-		if !reflect.DeepEqual(before, after) {
-			t.Errorf("client.Policies.UpdatePolicy returned \n\t%+v, want \n\t%+v\n", before, after)
-		}
+		testPolicyUpdate(t, testInputSignonPolicy, testSignonPolicy)
+	})
+}
+
+func testPolicyUpdateRule(t *testing.T, updaterule interface{}, rule *Rule) {
+
+	setup()
+	defer teardown()
+
+	temp, err := json.Marshal(rule)
+	if err != nil {
+		t.Errorf("Policies.UpdatePolicyRule json Marshall returned error: %v", err)
+	}
+	updateTestJSONString := string(temp)
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7rules/0predz80vvMTwva7T0h7", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "PUT")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, updateTestJSONString)
+	})
+	outputrule, _, err := client.Policies.UpdatePolicyRule("00pedv3qclXeC2aFH0h7", "0predz80vvMTwva7T0h7", updaterule)
+	if err != nil {
+		t.Errorf("Policies.UpdatePolicyRule returned error: %v", err)
+	}
+	t.Errorf("%+v", outputrule)
+	//if !reflect.DeepEqual(outputrule.Name, rule.Name) {
+	//	t.Errorf("client.Policies.UpdatePolicyRule returned \n\t%+v, want \n\t%+v\n", outputrule.Name, rule.Name)
+	//}
+}
+
+func TestPolicyUpdateRule(t *testing.T) {
+	setupTestRules()
+
+	t.Run("Password", func(t *testing.T) {
+		testPolicyUpdateRule(t, testInputPassRule, testPassRule)
+	})
+	t.Run("SignOn", func(t *testing.T) {
+		testPolicyUpdateRule(t, testInputSignonRule, testSignonRule)
 	})
 }
 
