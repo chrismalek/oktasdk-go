@@ -451,9 +451,10 @@ type rules struct {
 
 // API FUNCTIONS
 
-// UsersCondition updates the People Users condition for the input policy or rule
+// usersCondition updates the People Users condition for the input policy or rule
 // requires inputs string "include" or "exclude" & a string slice of Okta user IDs
-func UsersCondition(clude string, values []string) (*Users, error) {
+// unexported: used by the PeopleCondition method on an input policy or rule struct
+func usersCondition(clude string, values []string) (*Users, error) {
 	var pop *Users
 	switch {
 	case clude == "include":
@@ -466,9 +467,10 @@ func UsersCondition(clude string, values []string) (*Users, error) {
 	return pop, nil
 }
 
-// GroupsCondition updates the People Groups condition for the input policy or rule
+// groupsCondition updates the People Groups condition for the input policy or rule
 // requires inputs string "include" or "exclude" & a string slice of Okta group IDs
-func GroupsCondition(clude string, values []string) (*Groups, error) {
+// unexported: used by the PeopleCondition method on an input policy or rule struct
+func groupsCondition(clude string, values []string) (*Groups, error) {
 	var pop *Groups
 	switch {
 	case clude == "include":
@@ -481,22 +483,23 @@ func GroupsCondition(clude string, values []string) (*Groups, error) {
 	return pop, nil
 }
 
-// PeopleCondition updates the People condition for the input policy or rule
+// peopleCondition updates the People condition for the input policy or rule
 // requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
-func PeopleCondition(condition string, clude string, values []string) (*People, error) {
+// unexported: used by the PeopleCondition method on an input policy or rule struct
+func peopleCondition(condition string, clude string, values []string) (*People, error) {
 	var pop *People
 	switch {
 	case condition == "users":
 		var users *Users
-		users, err := UsersCondition(clude, values)
+		users, err := usersCondition(clude, values)
 		if err != nil {
 			return nil, err
 		}
 		pop = &People{Users: users}
 	case condition == "groups":
 		var groups *Groups
-		groups, err := GroupsCondition(clude, values)
+		groups, err := groupsCondition(clude, values)
 		if err != nil {
 			return nil, err
 		}
@@ -511,7 +514,7 @@ func PeopleCondition(condition string, clude string, values []string) (*People, 
 // requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *PasswordPolicy) PeopleCondition(condition string, clude string, values []string) error {
-	pop, err := PeopleCondition(condition, clude, values)
+	pop, err := peopleCondition(condition, clude, values)
 	if err != nil {
 		return err
 	}
@@ -523,7 +526,7 @@ func (p *PasswordPolicy) PeopleCondition(condition string, clude string, values 
 // requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *SignOnPolicy) PeopleCondition(condition string, clude string, values []string) error {
-	pop, err := PeopleCondition(condition, clude, values)
+	pop, err := peopleCondition(condition, clude, values)
 	if err != nil {
 		return err
 	}
@@ -535,7 +538,7 @@ func (p *SignOnPolicy) PeopleCondition(condition string, clude string, values []
 // requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *MfaPolicy) PeopleCondition(condition string, clude string, values []string) error {
-	pop, err := PeopleCondition(condition, clude, values)
+	pop, err := peopleCondition(condition, clude, values)
 	if err != nil {
 		return err
 	}
@@ -547,7 +550,7 @@ func (p *MfaPolicy) PeopleCondition(condition string, clude string, values []str
 // requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *PasswordRule) PeopleCondition(condition string, clude string, values []string) error {
-	pop, err := PeopleCondition(condition, clude, values)
+	pop, err := peopleCondition(condition, clude, values)
 	if err != nil {
 		return err
 	}
@@ -559,7 +562,7 @@ func (p *PasswordRule) PeopleCondition(condition string, clude string, values []
 // requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *SignOnRule) PeopleCondition(condition string, clude string, values []string) error {
-	pop, err := PeopleCondition(condition, clude, values)
+	pop, err := peopleCondition(condition, clude, values)
 	if err != nil {
 		return err
 	}
@@ -571,7 +574,7 @@ func (p *SignOnRule) PeopleCondition(condition string, clude string, values []st
 // requires inputs string "users" or "groups & "include" or "exclude"
 // plus a string slice of Okta group or user IDs
 func (p *MfaRule) PeopleCondition(condition string, clude string, values []string) error {
-	pop, err := PeopleCondition(condition, clude, values)
+	pop, err := peopleCondition(condition, clude, values)
 	if err != nil {
 		return err
 	}
