@@ -199,7 +199,7 @@ func setupTestRules() {
 
 }
 
-func TestPolicyGet(t *testing.T) {
+func TestGetPolicy(t *testing.T) {
 
 	setup()
 	defer teardown()
@@ -226,7 +226,7 @@ func TestPolicyGet(t *testing.T) {
 	}
 }
 
-func TestiGetPolicyRule(t *testing.T) {
+func TestiGetRule(t *testing.T) {
 
 	setup()
 	defer teardown()
@@ -367,7 +367,7 @@ func TestPolicyCreate(t *testing.T) {
 	})
 }
 
-func testPolicyRuleCreate(t *testing.T, inputrule interface{}, rule *Rule) {
+func testRuleCreate(t *testing.T, inputrule interface{}, rule *Rule) {
 
 	setup()
 	defer teardown()
@@ -393,14 +393,14 @@ func testPolicyRuleCreate(t *testing.T, inputrule interface{}, rule *Rule) {
 	}
 }
 
-func TestPolicyRuleCreate(t *testing.T) {
+func TestRuleCreate(t *testing.T) {
 	setupTestRules()
 
 	t.Run("Password", func(t *testing.T) {
-		testPolicyRuleCreate(t, testInputPassRule, testPassRule)
+		testRuleCreate(t, testInputPassRule, testPassRule)
 	})
 	t.Run("SignOn", func(t *testing.T) {
-		testPolicyRuleCreate(t, testInputSignonRule, testSignonRule)
+		testRuleCreate(t, testInputSignonRule, testSignonRule)
 	})
 }
 
@@ -441,7 +441,7 @@ func TestPolicyUpdate(t *testing.T) {
 	})
 }
 
-func testPolicyUpdateRule(t *testing.T, updaterule interface{}, rule *Rule) {
+func testRuleUpdate(t *testing.T, updaterule interface{}, rule *Rule) {
 
 	setup()
 	defer teardown()
@@ -452,7 +452,7 @@ func testPolicyUpdateRule(t *testing.T, updaterule interface{}, rule *Rule) {
 	}
 	updateTestJSONString := string(temp)
 
-	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7rules/0predz80vvMTwva7T0h7", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/rules/0predz80vvMTwva7T0h7", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "PUT")
 		testAuthHeader(t, r)
 		fmt.Fprint(w, updateTestJSONString)
@@ -461,20 +461,19 @@ func testPolicyUpdateRule(t *testing.T, updaterule interface{}, rule *Rule) {
 	if err != nil {
 		t.Errorf("Policies.UpdatePolicyRule returned error: %v", err)
 	}
-	t.Errorf("%+v", outputrule)
-	//if !reflect.DeepEqual(outputrule.Name, rule.Name) {
-	//	t.Errorf("client.Policies.UpdatePolicyRule returned \n\t%+v, want \n\t%+v\n", outputrule.Name, rule.Name)
-	//}
+	if !reflect.DeepEqual(outputrule.Name, rule.Name) {
+		t.Errorf("client.Policies.UpdatePolicyRule returned \n\t%+v, want \n\t%+v\n", outputrule.Name, rule.Name)
+	}
 }
 
-func TestPolicyUpdateRule(t *testing.T) {
+func TestRuleUpdate(t *testing.T) {
 	setupTestRules()
 
 	t.Run("Password", func(t *testing.T) {
-		testPolicyUpdateRule(t, testInputPassRule, testPassRule)
+		testRuleUpdate(t, testInputPassRule, testPassRule)
 	})
 	t.Run("SignOn", func(t *testing.T) {
-		testPolicyUpdateRule(t, testInputSignonRule, testSignonRule)
+		testRuleUpdate(t, testInputSignonRule, testSignonRule)
 	})
 }
 
@@ -506,6 +505,34 @@ func TestPolicyUpdatePeopleCondition(t *testing.T) {
 	})
 }
 
+func TestRuleUpdatePeopleCondition(t *testing.T) {
+
+	setup()
+	defer teardown()
+
+	setupTestRules()
+	t.Run("Password", func(t *testing.T) {
+		err := testInputPassRule.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
+		if err != nil {
+			t.Errorf("client.PasswordRulePeopleCondition returned error: %v", err)
+		}
+		if testInputPassRule.Conditions.People.Groups.Include == nil {
+			t.Errorf("client.PasswordRule.PeopleCondition returned a nil value")
+		}
+	})
+
+	setupTestRules()
+	t.Run("SignOn", func(t *testing.T) {
+		err := testInputSignonRule.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
+		if err != nil {
+			t.Errorf("client.SignOnRule.PeopleCondition returned error: %v", err)
+		}
+		if testInputSignonRule.Conditions.People.Groups.Include == nil {
+			t.Errorf("client.SignOnRule.PeopleCondition returned a nil value")
+		}
+	})
+}
+
 func TestPolicyDelete(t *testing.T) {
 
 	setup()
@@ -521,6 +548,24 @@ func TestPolicyDelete(t *testing.T) {
 	_, err := client.Policies.DeletePolicy("00pedv3qclXeC2aFH0h7")
 	if err != nil {
 		t.Errorf("Policies.DeletePolicy returned error: %v", err)
+	}
+}
+
+func TestRuleDelete(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestRules()
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/rules/0predz80vvMTwva7T0h7", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "DELETE")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, "")
+	})
+
+	_, err := client.Policies.DeletePolicyRule("00pedv3qclXeC2aFH0h7", "0predz80vvMTwva7T0h7")
+	if err != nil {
+		t.Errorf("Policies.DeletePolicyRule returned error: %v", err)
 	}
 }
 
@@ -542,6 +587,24 @@ func TestActivatePolicy(t *testing.T) {
 	}
 }
 
+func TestActivateRule(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestRules()
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/rules/0predz80vvMTwva7T0h7/lifecycle/activate", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, "")
+	})
+
+	_, err := client.Policies.ActivatePolicyRule("00pedv3qclXeC2aFH0h7", "0predz80vvMTwva7T0h7")
+	if err != nil {
+		t.Errorf("Policies.ActivatePolicyRule returned error: %v", err)
+	}
+}
+
 func TestDeactivatePolicy(t *testing.T) {
 
 	setup()
@@ -557,5 +620,23 @@ func TestDeactivatePolicy(t *testing.T) {
 	_, err := client.Policies.DeactivatePolicy("00pedv3qclXeC2aFH0h7")
 	if err != nil {
 		t.Errorf("Policies.DeactivatePolicy returned error: %v", err)
+	}
+}
+
+func TestDeactivatePolicyRule(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestRules()
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/rules/0predz80vvMTwva7T0h7/lifecycle/deactivate", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, "")
+	})
+
+	_, err := client.Policies.DeactivatePolicyRule("00pedv3qclXeC2aFH0h7", "0predz80vvMTwva7T0h7")
+	if err != nil {
+		t.Errorf("Policies.DeactivatePolicyRule returned error: %v", err)
 	}
 }
