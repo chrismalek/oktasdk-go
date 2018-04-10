@@ -41,7 +41,8 @@ func setupTestPolicies() {
 		Created:     hmm,
 		LastUpdated: hmm,
 	}
-	testPassPolicy.Conditions.AuthProvider.Provider = "OKTA"
+	testPassPolicy.Conditions.People.Groups.Include = []string{"00ge0t33mvT5q62O40h7"}
+	//testPassPolicy.Conditions.AuthProvider.Provider = "OKTA"
 	testPassPolicy.Settings.Recovery.Factors.OktaEmail.Status = "ACTIVE"
 	testPassPolicy.Settings.Recovery.Factors.RecoveryQuestion.Status = "ACTIVE"
 	testPassPolicy.Settings.Password.Complexity.MinLength = 12
@@ -65,6 +66,7 @@ func setupTestPolicies() {
 		Created:     hmm,
 		LastUpdated: hmm,
 	}
+	testSignonPolicy.Conditions.People.Groups.Include = []string{"00ge0t33mvT5q62O40h7"}
 	testSignonPolicy.Links.Self.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7"
 	testSignonPolicy.Links.Self.Hints.Allow = []string{"GET PUT DELETE"}
 	testSignonPolicy.Links.Deactivate.Href = "https://your-domain.okta.com/api/v1/policies/00pedv3qclXeC2aFH0h7/lifecycle/deactivate"
@@ -76,14 +78,12 @@ func setupTestPolicies() {
 	testInputPassPolicy = &PasswordPolicy{
 		Type:        "PASSWORD",
 		Name:        "PasswordPolicy",
-		System:      false,
 		Description: "Unit Test Password Policy",
 		Priority:    2,
 		Status:      "ACTIVE",
-		Created:     hmm,
-		LastUpdated: hmm,
 	}
-	testInputPassPolicy.Conditions.AuthProvider.Provider = "OKTA"
+	testInputPassPolicy.Conditions.People.Groups.Include = []string{"00ge0t33mvT5q62O40h7"}
+	//testInputPassPolicy.Conditions.AuthProvider.Provider = "OKTA"
 	testInputPassPolicy.Settings.Recovery.Factors.OktaEmail.Status = "ACTIVE"
 	testInputPassPolicy.Settings.Recovery.Factors.RecoveryQuestion.Status = "ACTIVE"
 	testInputPassPolicy.Settings.Password.Complexity.MinLength = 12
@@ -93,13 +93,11 @@ func setupTestPolicies() {
 	testInputSignonPolicy = &SignOnPolicy{
 		Type:        "OKTA_SIGN_ON",
 		Name:        "SignOnPolicy",
-		System:      false,
 		Description: "Unit Test SignOn Policy",
 		Priority:    2,
 		Status:      "ACTIVE",
-		Created:     hmm,
-		LastUpdated: hmm,
 	}
+	testInputSignonPolicy.Conditions.People.Groups.Include = []string{"00ge0t33mvT5q62O40h7"}
 
 	// slice of password policies
 	testPassPolicies = new(policies)
@@ -474,34 +472,6 @@ func TestRuleUpdate(t *testing.T) {
 	})
 	t.Run("SignOn", func(t *testing.T) {
 		testRuleUpdate(t, testInputSignonRule, testSignonRule)
-	})
-}
-
-func TestPolicyUpdatePeopleCondition(t *testing.T) {
-
-	setup()
-	defer teardown()
-
-	setupTestPolicies()
-	t.Run("Password", func(t *testing.T) {
-		err := testInputPassPolicy.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
-		if err != nil {
-			t.Errorf("client.PasswordPolicyPeopleCondition returned error: %v", err)
-		}
-		if testInputPassPolicy.Conditions.People.Groups.Include == nil {
-			t.Errorf("client.PasswordPolicy.PeopleCondition returned a nil value")
-		}
-	})
-
-	setupTestPolicies()
-	t.Run("SignOn", func(t *testing.T) {
-		err := testInputSignonPolicy.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
-		if err != nil {
-			t.Errorf("client.SignOnPolicy.PeopleCondition returned error: %v", err)
-		}
-		if testInputSignonPolicy.Conditions.People.Groups.Include == nil {
-			t.Errorf("client.SignOnPolicy.PeopleCondition returned a nil value")
-		}
 	})
 }
 

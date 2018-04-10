@@ -29,18 +29,18 @@ func (p *PoliciesService) MfaPolicy() MfaPolicy {
 // PasswordPolicy represents the Policy Object from the OKTA API
 // used to create or update a password policy
 type PasswordPolicy struct {
-	ID          string    `json:"id,omitempty"`
-	Type        string    `json:"type,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	System      bool      `json:"system,omitempty"`
-	Description string    `json:"description,omitempty"`
-	Priority    int       `json:"priority,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Created     time.Time `json:"created,omitempty"`
-	LastUpdated time.Time `json:"lastUpdated,omitempty"`
+	Type        string `json:"type,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Priority    int    `json:"priority,omitempty"`
+	Status      string `json:"status,omitempty"`
 	Conditions  struct {
-		People       `json:"people,omitempty"`
-		AuthProvider `json:"authProvider,omitempty"`
+		People struct {
+			Groups struct {
+				Include []string `json:"include,omitempty"`
+			} `json:"groups,omitempty"`
+		} `json:"people,omitempty"`
+		*AuthProvider `json:"authProvider,omitempty"`
 	} `json:"conditions,omitempty"`
 	Settings struct {
 		Password   `json:"password,omitempty"`
@@ -52,34 +52,34 @@ type PasswordPolicy struct {
 // SignOnPolicy represents the Policy Object from the OKTA API
 // used to create or update a signon policy
 type SignOnPolicy struct {
-	ID          string    `json:"id,omitempty"`
-	Type        string    `json:"type,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	System      bool      `json:"system,omitempty"`
-	Description string    `json:"description,omitempty"`
-	Priority    int       `json:"priority,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Created     time.Time `json:"created,omitempty"`
-	LastUpdated time.Time `json:"lastUpdated,omitempty"`
+	Type        string `json:"type,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Priority    int    `json:"priority,omitempty"`
+	Status      string `json:"status,omitempty"`
 	Conditions  struct {
-		People `json:"people,omitempty"`
+		People struct {
+			Groups struct {
+				Include []string `json:"include,omitempty"`
+			} `json:"groups,omitempty"`
+		} `json:"people,omitempty"`
 	} `json:"conditions,omitempty"`
 }
 
 // MfaPolicy represents the Policy Object from the OKTA API
 // used to create or update a mfa policy
 type MfaPolicy struct {
-	ID          string    `json:"id,omitempty"`
-	Type        string    `json:"type,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	System      bool      `json:"system,omitempty"`
-	Description string    `json:"description,omitempty"`
-	Priority    int       `json:"priority,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Created     time.Time `json:"created,omitempty"`
-	LastUpdated time.Time `json:"lastUpdated,omitempty"`
+	Type        string `json:"type,omitempty"`
+	Name        string `json:"name,omitempty"`
+	Description string `json:"description,omitempty"`
+	Priority    int    `json:"priority,omitempty"`
+	Status      string `json:"status,omitempty"`
 	Conditions  struct {
-		People `json:"people,omitempty"`
+		People struct {
+			Groups struct {
+				Include []string `json:"include,omitempty"`
+			} `json:"groups,omitempty"`
+		} `json:"people,omitempty"`
 	} `json:"conditions,omitempty"`
 	Settings struct {
 		Factors `json:"factors,omitempty"`
@@ -508,42 +508,6 @@ func peopleCondition(condition string, clude string, values []string) (*People, 
 		return nil, fmt.Errorf("[ERROR] PeopleCondition input string var supports values \"users\" or \"groups\"")
 	}
 	return pop, nil
-}
-
-// PasswordPolicy PeopleCondition updates the People condition for the input password policy
-// requires inputs string "users" or "groups & "include" or "exclude"
-// plus a string slice of Okta group or user IDs
-func (p *PasswordPolicy) PeopleCondition(condition string, clude string, values []string) error {
-	pop, err := peopleCondition(condition, clude, values)
-	if err != nil {
-		return err
-	}
-	p.Conditions.People = *pop
-	return nil
-}
-
-// SignOnPolicy PeopleCondition updates the People condition for the input signon policy
-// requires inputs string "users" or "groups & "include" or "exclude"
-// plus a string slice of Okta group or user IDs
-func (p *SignOnPolicy) PeopleCondition(condition string, clude string, values []string) error {
-	pop, err := peopleCondition(condition, clude, values)
-	if err != nil {
-		return err
-	}
-	p.Conditions.People = *pop
-	return nil
-}
-
-// MfaPolicy PeopleCondition updates the People condition for the input mfa policy
-// requires inputs string "users" or "groups & "include" or "exclude"
-// plus a string slice of Okta group or user IDs
-func (p *MfaPolicy) PeopleCondition(condition string, clude string, values []string) error {
-	pop, err := peopleCondition(condition, clude, values)
-	if err != nil {
-		return err
-	}
-	p.Conditions.People = *pop
-	return nil
 }
 
 // PasswordRule PeopleCondition updates the People condition for the input password rule

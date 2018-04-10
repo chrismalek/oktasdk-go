@@ -56,6 +56,10 @@ type Group struct {
 	} `json:"_links"`
 }
 
+type groups struct {
+	Groups []Group `json:"-,omitempty"`
+}
+
 // GroupFilterOptions is used to generate a "Filter" to search for different groups
 // The values here coorelate to API Search paramgters on the group API
 type GroupFilterOptions struct {
@@ -73,10 +77,11 @@ type GroupFilterOptions struct {
 	LastMembershipUpdated dateFilter `url:"-"`
 }
 
-func (g Group) String() string {
-	// return Stringify(g)
-	return fmt.Sprintf("Group:(ID: {%v} - Type: {%v} - Group Name: {%v})\n", g.ID, g.Type, g.Profile.Name)
-}
+// Namespace clobbering of Groups struct above. Commenting out for now.
+//func (g Group) String() string {
+//	// return Stringify(g)
+//	return fmt.Sprintf("Group:(ID: {%v} - Type: {%v} - Group Name: {%v})\n", g.ID, g.Type, g.Profile.Name)
+//}
 
 // ListWithFilter - Method to list groups with different filter options.
 //  Pass in a GroupFilterOptions to specify filters. Values in that struct will turn into Query parameters
@@ -172,6 +177,29 @@ func (g *GroupsService) GetByID(groupID string) (*Group, *Response, error) {
 	}
 
 	return group, resp, err
+}
+
+func (s *GroupsService) ListGroups(filter string) (*groups, *Response, error) {
+	u := fmt.Sprintf("groups?%v", filter)
+
+	req, err := s.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	group := make([]Group, 0)
+	resp, err := s.client.Do(req, &group)
+	if err != nil {
+		return nil, resp, err
+	}
+	if len(group) > 0 {
+		myGroups := new(groups)
+		for _, v := range group {
+			myGroups.Groups = append(myGroups.Groups, v)
+		}
+		return myGroups, resp, err
+	}
+
+	return nil, resp, err
 }
 
 // GetUsers returns the members in a group
