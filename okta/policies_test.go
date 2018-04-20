@@ -124,6 +124,7 @@ func setupTestRules() {
 		Created:     hmm,
 		LastUpdated: hmm,
 	}
+	testPassPolicy.Conditions.People.Users.Exclude = []string{"00ge0t33mvT5q62O40h7"}
 	testPassRule.Conditions.Network.Connection = "ANYWHERE"
 	testPassRule.Actions.PasswordChange.Access = "ALLOW"
 	testPassRule.Actions.SelfServicePasswordReset.Access = "ALLOW"
@@ -137,15 +138,12 @@ func setupTestRules() {
 
 	// input password rule
 	testInputPassRule = &PasswordRule{
-		ID:          "0predz80vvMTwva7T0h7",
-		Type:        "PASSWORD",
-		Status:      "ACTIVE",
-		Name:        "PasswordRule",
-		Priority:    2,
-		System:      false,
-		Created:     hmm,
-		LastUpdated: hmm,
+		Type:     "PASSWORD",
+		Status:   "ACTIVE",
+		Name:     "PasswordRule",
+		Priority: 2,
 	}
+	testPassPolicy.Conditions.People.Users.Exclude = []string{"00ge0t33mvT5q62O40h7"}
 	testInputPassRule.Conditions.Network.Connection = "ANYWHERE"
 	testInputPassRule.Actions.PasswordChange.Access = "ALLOW"
 	testInputPassRule.Actions.SelfServicePasswordReset.Access = "ALLOW"
@@ -162,6 +160,7 @@ func setupTestRules() {
 		Created:     hmm,
 		LastUpdated: hmm,
 	}
+	testPassPolicy.Conditions.People.Users.Exclude = []string{"00ge0t33mvT5q62O40h7"}
 	testSignonRule.Conditions.Network.Connection = "ANYWHERE"
 	testSignonRule.Actions.SignOn.Access = "ALLOW"
 	testSignonRule.Actions.SignOn.Session.MaxSessionIdleMinutes = 120
@@ -174,15 +173,12 @@ func setupTestRules() {
 
 	// input signon rule
 	testInputSignonRule = &SignOnRule{
-		ID:          "0predz80vvMTwva7T0h7",
-		Type:        "OKTA_SIGN_ON",
-		Status:      "ACTIVE",
-		Name:        "SignOnRule",
-		Priority:    2,
-		System:      false,
-		Created:     hmm,
-		LastUpdated: hmm,
+		Type:     "OKTA_SIGN_ON",
+		Status:   "ACTIVE",
+		Name:     "SignOnRule",
+		Priority: 2,
 	}
+	testPassPolicy.Conditions.People.Users.Exclude = []string{"00ge0t33mvT5q62O40h7"}
 	testInputSignonRule.Conditions.Network.Connection = "ANYWHERE"
 	testInputSignonRule.Actions.SignOn.Access = "ALLOW"
 	testInputSignonRule.Actions.SignOn.Session.MaxSessionIdleMinutes = 120
@@ -475,33 +471,33 @@ func TestRuleUpdate(t *testing.T) {
 	})
 }
 
-func TestRuleUpdatePeopleCondition(t *testing.T) {
-
-	setup()
-	defer teardown()
-
-	setupTestRules()
-	t.Run("Password", func(t *testing.T) {
-		err := testInputPassRule.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
-		if err != nil {
-			t.Errorf("client.PasswordRulePeopleCondition returned error: %v", err)
-		}
-		if testInputPassRule.Conditions.People.Groups.Include == nil {
-			t.Errorf("client.PasswordRule.PeopleCondition returned a nil value")
-		}
-	})
-
-	setupTestRules()
-	t.Run("SignOn", func(t *testing.T) {
-		err := testInputSignonRule.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
-		if err != nil {
-			t.Errorf("client.SignOnRule.PeopleCondition returned error: %v", err)
-		}
-		if testInputSignonRule.Conditions.People.Groups.Include == nil {
-			t.Errorf("client.SignOnRule.PeopleCondition returned a nil value")
-		}
-	})
-}
+//func TestRuleUpdatePeopleCondition(t *testing.T) {
+//
+//	setup()
+//	defer teardown()
+//
+//	setupTestRules()
+//	t.Run("Password", func(t *testing.T) {
+//		err := testInputPassRule.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
+//		if err != nil {
+//			t.Errorf("client.PasswordRulePeopleCondition returned error: %v", err)
+//		}
+//		if testInputPassRule.Conditions.People.Groups.Include == nil {
+//			t.Errorf("client.PasswordRule.PeopleCondition returned a nil value")
+//		}
+//	})
+//
+//	setupTestRules()
+//	t.Run("SignOn", func(t *testing.T) {
+//		err := testInputSignonRule.PeopleCondition("groups", "include", []string{"00ge0t33mvT5q62O40h7"})
+//		if err != nil {
+//			t.Errorf("client.SignOnRule.PeopleCondition returned error: %v", err)
+//		}
+//		if testInputSignonRule.Conditions.People.Groups.Include == nil {
+//			t.Errorf("client.SignOnRule.PeopleCondition returned a nil value")
+//		}
+//	})
+//}
 
 func TestPolicyDelete(t *testing.T) {
 

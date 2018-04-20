@@ -324,11 +324,11 @@ func (p *PoliciesService) MfaRule() MfaRule {
 // PasswordRule represents the Rule Object from the OKTA API
 // used to create or update a password rule
 type PasswordRule struct {
-	Type        string    `json:"type,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	Priority    int       `json:"priority,omitempty"`
-	Conditions  struct {
+	Type       string `json:"type,omitempty"`
+	Status     string `json:"status,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Priority   int    `json:"priority,omitempty"`
+	Conditions struct {
 		People struct {
 			Users struct {
 				Exclude []string `json:"include,omitempty"`
@@ -346,11 +346,11 @@ type PasswordRule struct {
 // SignOnRule represents the Rule Object from the OKTA API
 // used to create or update a signon rule
 type SignOnRule struct {
-	Type        string    `json:"type,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	Priority    int       `json:"priority,omitempty"`
-	Conditions  struct {
+	Type       string `json:"type,omitempty"`
+	Status     string `json:"status,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Priority   int    `json:"priority,omitempty"`
+	Conditions struct {
 		People struct {
 			Users struct {
 				Exclude []string `json:"include,omitempty"`
@@ -367,11 +367,11 @@ type SignOnRule struct {
 // MfaRule represents the Rule Object from the OKTA API
 // used to create or update a mfa rule
 type MfaRule struct {
-	Type        string    `json:"type,omitempty"`
-	Status      string    `json:"status,omitempty"`
-	Name        string    `json:"name,omitempty"`
-	Priority    int       `json:"priority,omitempty"`
-	Conditions  struct {
+	Type       string `json:"type,omitempty"`
+	Status     string `json:"status,omitempty"`
+	Name       string `json:"name,omitempty"`
+	Priority   int    `json:"priority,omitempty"`
+	Conditions struct {
 		People  `json:"people,omitempty"`
 		Network `json:"network,omitempty"`
 	} `json:"conditions,omitempty"`
