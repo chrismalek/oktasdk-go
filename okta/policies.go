@@ -40,7 +40,7 @@ type PasswordPolicy struct {
 				Include []string `json:"include,omitempty"`
 			} `json:"groups,omitempty"`
 		} `json:"people,omitempty"`
-		*AuthProvider `json:"authProvider,omitempty"`
+		AuthProvider `json:"authProvider,omitempty"`
 	} `json:"conditions,omitempty"`
 	Settings struct {
 		Password   `json:"password,omitempty"`
