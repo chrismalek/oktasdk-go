@@ -436,7 +436,7 @@ type SignOn struct {
 	Session                 struct {
 		MaxSessionIdleMinutes     int  `json:"maxSessionIdleMinutes,omitempty"`
 		MaxSessionLifetimeMinutes int  `json:"maxSessionLifetimeMinutes,omitempty"`
-		UsePersistentCookie       bool `json:"usePersistentCookie,omitempty"`
+		UsePersistentCookie       bool `json:"usePersistentCookie"` // field must have a value
 	} `json:"session,omitempty"`
 }
 
