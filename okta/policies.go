@@ -112,7 +112,7 @@ type Policy struct {
 		AuthContext struct {
 			AuthType string `json:"authType,omitempty"`
 		} `json:"authContext,omitempty"`
-		Network  struct {
+		Network struct {
 			Connection string   `json:"connection,omitempty"`
 			Include    []string `json:"include,omitempty"`
 			Exclude    []string `json:"exclude,omitempty"`
@@ -358,10 +358,10 @@ type SignOnRule struct {
 				Exclude []string `json:"include,omitempty"`
 			} `json:"groups,omitempty"`
 		} `json:"people,omitempty"`
-		Network  `json:"network,omitempty"`
-                AuthContext struct {
-                        AuthType string `json:"authType,omitempty"`
-                } `json:"authContext,omitempty"`
+		Network     `json:"network,omitempty"`
+		AuthContext struct {
+			AuthType string `json:"authType,omitempty"`
+		} `json:"authContext,omitempty"`
 	} `json:"conditions,omitempty"`
 	Actions struct {
 		SignOn `json:"signon,omitempty"`
@@ -406,10 +406,10 @@ type Rule struct {
 				Exclude []string `json:"exclude,omitempty"`
 			} `json:"users,omitempty"`
 		} `json:"people,omitempty"`
-                AuthContext struct {
-                        AuthType string `json:"authType,omitempty"`
-                } `json:"authContext,omitempty"`
-		Network  struct {
+		AuthContext struct {
+			AuthType string `json:"authType,omitempty"`
+		} `json:"authContext,omitempty"`
+		Network struct {
 			Connection string   `json:"connection,omitempty"`
 			Include    []string `json:"include,omitempty"`
 			Exclude    []string `json:"exclude,omitempty"`
