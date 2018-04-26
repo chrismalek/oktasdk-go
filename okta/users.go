@@ -64,31 +64,38 @@ type credentials struct {
 }
 
 type userProfile struct {
-	Email       string `json:"email"`
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
 	Login       string `json:"login"`
-	MobilePhone string `json:"mobilePhone,omitempty"`
+	Email       string `json:"email"`
 	SecondEmail string `json:"secondEmail,omitempty"`
-	PsEmplid    string `json:"psEmplid,omitempty"`
-	NickName    string `json:"nickname,omitempty"`
+	FirstName   string `json:"firstName"`
+	MiddleName  string `json:"middleName,omitempty"`
+	LastName    string `json:"lastName"`
+	HonPrefix   string `json:"honorificPrefix,omitempty"`
+	HonSuffix   string `json:"honorificSuffix,omitempty"`
+	Title       string `json:"title,omitempty"`
 	DisplayName string `json:"displayName,omitempty"`
+	NickName    string `json:"nickName,omitempty"`
 
 	ProfileURL        string `json:"profileUrl,omitempty"`
-	PreferredLanguage string `json:"preferredLanguage,omitempty"`
-	UserType          string `json:"userType,omitempty"`
-	Organization      string `json:"organization,omitempty"`
-	Title             string `json:"title,omitempty"`
-	Division          string `json:"division,omitempty"`
-	Department        string `json:"department,omitempty"`
-	CostCenter        string `json:"costCenter,omitempty"`
-	EmployeeNumber    string `json:"employeeNumber,omitempty"`
 	PrimaryPhone      string `json:"primaryPhone,omitempty"`
+	MobilePhone       string `json:"mobilePhone,omitempty"`
 	StreetAddress     string `json:"streetAddress,omitempty"`
 	City              string `json:"city,omitempty"`
 	State             string `json:"state,omitempty"`
 	ZipCode           string `json:"zipCode,omitempty"`
 	CountryCode       string `json:"countryCode,omitempty"`
+	PostalAddress     string `json:"postalAddress,omitempty"`
+	PreferredLanguage string `json:"preferredLanguage,omitempty"`
+	Locale            string `json:"locale,omitempty"`
+	Timezone          string `json:"timezone,omitempty"`
+	UserType          string `json:"userType,omitempty"`
+	EmployeeNumber    string `json:"employeeNumber,omitempty"`
+	CostCenter        string `json:"costCenter,omitempty"`
+	Organization      string `json:"organization,omitempty"`
+	Division          string `json:"division,omitempty"`
+	Department        string `json:"department,omitempty"`
+	ManagerID         string `json:"managerId,omitempty"`
+	Manager           string `json:"manager,omitempty"`
 }
 
 type userLinks struct {
