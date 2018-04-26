@@ -243,6 +243,11 @@ func (s *UsersService) GetByID(id string) (*User, *Response, error) {
 	return user, resp, err
 }
 
+// UserListFilterOptions - Returns the filter options object. This is used by ListWithFilter to search for users in OKTA
+func (s *UsersService) UserListFilterOptions() UserListFilterOptions {
+	return UserListFilterOptions{}
+}
+
 // UserListFilterOptions is a struct that you can populate which will "filter" user searches
 // the exported struct fields should allow you to do different filters based on what is allowed in the OKTA API.
 //  The filter OKTA API is limited in the fields it can search
