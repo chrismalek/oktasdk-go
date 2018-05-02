@@ -135,8 +135,8 @@ func (s *SchemasService) GetUserBaseSubSchema(title string) (*BaseSubSchema, *Re
 	list, resp, err := s.client.Schemas.GetUserSchemaIndex("base")
 	for _, key := range list {
 		if key == title {
-			subSchema.Base.ID = "#base"
-			subSchema.Base.Type = "object"
+			subSchema.Base.ID = schema.Definitions.Base.ID
+			subSchema.Base.Type = schema.Definitions.Base.Type
 			subSchema.Base.Required = schema.Definitions.Base.Required
 			temp := schema.Definitions.Base.Properties[title]
 			for k, v := range temp.(map[string]interface{}) {
@@ -175,6 +175,69 @@ func (s *SchemasService) GetUserBaseSubSchema(title string) (*BaseSubSchema, *Re
 						switch {
 						case g == "type":
 							subSchema.Base.Properties.Master.Type = z.(string)
+						}
+					}
+				}
+			}
+			break
+		}
+	}
+	return subSchema, resp, err
+}
+
+func (s *SchemasService) GetUserCustomSubSchema(title string) (*CustomSubSchema, *Response, error) {
+	subSchema := new(CustomSubSchema)
+	schema, resp, err := s.client.Schemas.GetUserSchema()
+	list, resp, err := s.client.Schemas.GetUserSchemaIndex("custom")
+	for _, key := range list {
+		if key == title {
+			subSchema.Custom.ID = schema.Definitions.Custom.ID
+			subSchema.Custom.Type = schema.Definitions.Custom.Type
+			subSchema.Custom.Required = schema.Definitions.Custom.Required
+			temp := schema.Definitions.Custom.Properties[title]
+			for k, v := range temp.(map[string]interface{}) {
+				switch {
+				case k == "title":
+					subSchema.Custom.Properties.Title = v.(string)
+				case k == "type":
+					subSchema.Custom.Properties.Type = v.(string)
+				case k == "description":
+					subSchema.Custom.Properties.Description = v.(string)
+				case k == "format":
+					subSchema.Custom.Properties.Format = v.(string)
+				case k == "required":
+					subSchema.Custom.Properties.Required = v.(bool)
+				case k == "mutability":
+					subSchema.Custom.Properties.Mutability = v.(string)
+				case k == "scope":
+					subSchema.Custom.Properties.Scope = v.(string)
+				case k == "minLength":
+					subSchema.Custom.Properties.MinLength = int(v.(float64))
+				case k == "maxLength":
+					subSchema.Custom.Properties.MaxLength = int(v.(float64))
+				case k == "items":
+				case k == "union":
+					subSchema.Custom.Properties.Union = v.(string)
+				case k == "enum":
+				case k == "oneOf":
+				case k == "permissions":
+					perms := new(Permissions)
+					for _, j := range v.([]interface{}) {
+						for h, x := range j.(map[string]interface{}) {
+							switch {
+							case h == "principal":
+								perms.Principal = x.(string)
+							case h == "action":
+								perms.Action = x.(string)
+							}
+						}
+					}
+					subSchema.Custom.Properties.Permissions = append(subSchema.Custom.Properties.Permissions, *perms)
+				case k == "master":
+					for g, z := range v.(map[string]interface{}) {
+						switch {
+						case g == "type":
+							subSchema.Custom.Properties.Master.Type = z.(string)
 						}
 					}
 				}
