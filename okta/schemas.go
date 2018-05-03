@@ -65,16 +65,18 @@ type CustomSubSchema struct {
 		ID         string `json:"id"`
 		Type       string `json:"type"`
 		Properties struct {
-			Title       string        `json:"title"`
-			Type        string        `json:"type"`
-			Description string        `json:"description,omitempty"`
-			Format      string        `json:"format,omitempty"`
-			Required    bool          `json:"required,omitempty"`
-			Mutability  string        `json:"mutablity,omitempty"`
-			Scope       string        `json:"scope,omitempty"`
-			MinLength   int           `json:"minLength,omitempty"`
-			MaxLength   int           `json:"maxLength,omitempty"`
-			Items       []interface{} `json:"items,omitempty"`
+			Title       string `json:"title"`
+			Type        string `json:"type"`
+			Description string `json:"description,omitempty"`
+			Format      string `json:"format,omitempty"`
+			Required    bool   `json:"required,omitempty"`
+			Mutability  string `json:"mutablity,omitempty"`
+			Scope       string `json:"scope,omitempty"`
+			MinLength   int    `json:"minLength,omitempty"`
+			MaxLength   int    `json:"maxLength,omitempty"`
+			Items       struct {
+				Type string `json:"type"`
+			} `json:"items"`
 			Union       string        `json:"union,omitempty"`
 			Enum        []string      `json:"enum,omitempty"`
 			OneOf       []OneOf       `json:"oneOf,omitempty"`
@@ -221,9 +223,16 @@ func (s *SchemasService) GetUserCustomSubSchema(title string) (*CustomSubSchema,
 				case "maxLength":
 					subSchema.Custom.Properties.MaxLength = int(v.(float64))
 				case "items":
+					for g, z := range v.(map[string]interface{}) {
+						switch g {
+						case "type":
+							subSchema.Custom.Properties.Items.Type = z.(string)
+						}
+					}
 				case "union":
 					subSchema.Custom.Properties.Union = v.(string)
 				case "enum":
+					// assuming here all enum values are strings, I hope i'm right
 					subSchema.Custom.Properties.Enum = v.([]string)
 				case "oneOf":
 					oneof := make([]OneOf, len(v.([]interface{})))
