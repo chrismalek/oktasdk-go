@@ -18,23 +18,23 @@ type Schema struct {
 	LastUpdated time.Time
 	Definitions struct {
 		Base struct {
-			ID   string
-			Type string
+			ID         string
+			Type       string
 			Properties []BaseSubSchema
-			Required []string
+			Required   []string
 		}
 		Custom struct {
-			ID   string
-			Type string
+			ID         string
+			Type       string
 			Properties []CustomSubSchema
-			Required []string
+			Required   []string
 		}
 	}
 	Type string
 }
 
 type BaseSubSchema struct {
-	Index       string
+	Index       string        // json do not export
 	Title       string        `json:"title"`
 	Type        string        `json:"type"`
 	Format      string        `json:"format,omitempty"`
@@ -50,7 +50,7 @@ type BaseSubSchema struct {
 }
 
 type CustomSubSchema struct {
-	Index       string
+	Index       string // json do not export
 	Title       string `json:"title"`
 	Type        string `json:"type"`
 	Description string `json:"description,omitempty"`
@@ -102,7 +102,6 @@ func (s *SchemasService) GetUserSchema() (*Schema, *Response, error) {
 	if err != nil {
 		return nil, resp, err
 	}
-
 	layout := "2006-01-02T15:04:05.000Z"
 	create, err := time.Parse(layout, temp["created"].(string))
 	if err != nil {
@@ -112,7 +111,6 @@ func (s *SchemasService) GetUserSchema() (*Schema, *Response, error) {
 	if err != nil {
 		return nil, resp, err
 	}
-
 	schema := new(Schema)
 	schema.ID = temp["id"].(string)
 	schema.Schema = temp["$schema"].(string)
@@ -124,21 +122,21 @@ func (s *SchemasService) GetUserSchema() (*Schema, *Response, error) {
 	for k, v := range temp["definitions"].(map[string]interface{}) {
 		switch k {
 		case "base":
-			for j, c := range v.(map[string]interface{}) {
-				switch j {
+			for k2, v2 := range v.(map[string]interface{}) {
+				switch k2 {
 				case "id":
-					schema.Definitions.Base.ID = c.(string)
+					schema.Definitions.Base.ID = v2.(string)
 				case "type":
-					schema.Definitions.Base.Type = c.(string)
+					schema.Definitions.Base.Type = v2.(string)
 				case "required":
 					var req []string
-					for _, j := range c.([]interface{}) {
-						req = append(req, j.(string))
+					for _, v3 := range v2.([]interface{}) {
+						req = append(req, v3.(string))
 					}
 					schema.Definitions.Base.Required = req
 				case "properties":
-					for g, _ := range c.(map[string]interface{}) {
-						sub, resp, err := s.client.Schemas.GetUserBaseSubSchema(g)
+					for k3, v3 := range v2.(map[string]interface{}) {
+						sub, err := s.client.Schemas.GetUserBaseSubSchema(k3, v3.(map[string]interface{}))
 						if err != nil {
 							return nil, resp, err
 						}
@@ -147,21 +145,21 @@ func (s *SchemasService) GetUserSchema() (*Schema, *Response, error) {
 				}
 			}
 		case "custom":
-			for j, c := range v.(map[string]interface{}) {
-				switch j {
+			for k2, v2 := range v.(map[string]interface{}) {
+				switch k2 {
 				case "id":
-					schema.Definitions.Custom.ID = c.(string)
+					schema.Definitions.Custom.ID = v2.(string)
 				case "type":
-					schema.Definitions.Custom.Type = c.(string)
+					schema.Definitions.Custom.Type = v2.(string)
 				case "required":
 					var req []string
-					for _, j := range c.([]interface{}) {
-						req = append(req, j.(string))
+					for _, v3 := range v2.([]interface{}) {
+						req = append(req, v3.(string))
 					}
 					schema.Definitions.Custom.Required = req
 				case "properties":
-					for g, _ := range c.(map[string]interface{}) {
-						sub, resp, err := s.client.Schemas.GetUserCustomSubSchema(g)
+					for k3, v3 := range v2.(map[string]interface{}) {
+						sub, err := s.client.Schemas.GetUserCustomSubSchema(k3, v3.(map[string]interface{}))
 						if err != nil {
 							return nil, resp, err
 						}
@@ -174,7 +172,7 @@ func (s *SchemasService) GetUserSchema() (*Schema, *Response, error) {
 	return schema, resp, err
 }
 
-func (s *SchemasService) GetPropertiesMap(scope string) (map[string]interface{}, *Response, error) {
+func (s *SchemasService) userSubSchemaPropMap(scope string) (map[string]interface{}, *Response, error) {
 	if scope != "base" && scope != "custom" {
 		return nil, nil, fmt.Errorf("[ERROR] SubSchema Properties Map input string var supports values \"base\" or \"custom\"")
 	}
@@ -184,9 +182,9 @@ func (s *SchemasService) GetPropertiesMap(scope string) (map[string]interface{},
 	}
 	for k, v := range temp["definitions"].(map[string]interface{}) {
 		if k == scope {
-			for j, c := range v.(map[string]interface{}) {
-				if j == "properties" {
-					return c.(map[string]interface{}) , nil, nil
+			for k2, v2 := range v.(map[string]interface{}) {
+				if k2 == "properties" {
+					return v2.(map[string]interface{}), nil, nil
 				}
 			}
 		}
@@ -194,9 +192,23 @@ func (s *SchemasService) GetPropertiesMap(scope string) (map[string]interface{},
 	return nil, nil, nil
 }
 
-func (s *SchemasService) GetUserSchemaIndex(scope string) ([]string, *Response, error) {
+func (s *SchemasService) GetUserSubSchemaPropMap(scope string, title string) (map[string]interface{}, *Response, error) {
+	prop, resp, err := s.client.Schemas.userSubSchemaPropMap(scope)
+	if err != nil {
+		return nil, resp, err
+	}
+	if v, ok := prop[title]; ok {
+		return v.(map[string]interface{}), resp, err
+	} else {
+		return nil, resp, fmt.Errorf("[ERROR] GetUserSubSchemaPropMap subschema %v not found", title)
+	}
+
+	return nil, resp, err
+}
+
+func (s *SchemasService) GetUserSubSchemaIndex(scope string) ([]string, *Response, error) {
 	var index []string
-	prop, resp, err := s.client.Schemas.GetPropertiesMap(scope)
+	prop, resp, err := s.client.Schemas.userSubSchemaPropMap(scope)
 	if err != nil {
 		return nil, resp, err
 	}
@@ -206,157 +218,144 @@ func (s *SchemasService) GetUserSchemaIndex(scope string) ([]string, *Response, 
 	return index, resp, err
 }
 
-func (s *SchemasService) GetUserBaseSubSchema(title string) (*BaseSubSchema, *Response, error) {
-	exists := false
-	schema, resp, err := s.client.Schemas.GetPropertiesMap("base")
-	if err != nil {
-		return nil, resp, err
-	}
-	index, resp, err := s.client.Schemas.GetUserSchemaIndex("base")
-	if err != nil {
-		return nil, resp, err
-	}
-	for _, field := range index {
-		if title == field {
-			exists = true
-			break
-		}
-	}
-	if exists == false {
-		return nil, nil, fmt.Errorf("[ERROR] GetUserBaseSubSchema subschema %v does not exist in Okta", title)
-	}
+func (s *SchemasService) GetUserBaseSubSchema(title string, obj map[string]interface{}) (*BaseSubSchema, error) {
 	subSchema := new(BaseSubSchema)
 	subSchema.Index = title
-	for k, v := range schema[title].(map[string]interface{}) {
-		switch k {
-		case "title":
-			subSchema.Title = v.(string)
-		case "type":
-			subSchema.Type = v.(string)
-		case "format":
-			subSchema.Format = v.(string)
-		case "required":
-			subSchema.Required = v.(bool)
-		case "mutability":
-			subSchema.Mutability = v.(string)
-		case "scope":
-			subSchema.Scope = v.(string)
-		case "minLength":
-			subSchema.MinLength = int(v.(float64))
-		case "maxLength":
-			subSchema.MaxLength = int(v.(float64))
-		case "permissions":
-			perms := make([]Permissions, len(v.([]interface{})))
-			for c, j := range v.([]interface{}) {
-				for h, x := range j.(map[string]interface{}) {
-					switch h {
-					case "principal":
-						perms[c].Principal = x.(string)
-					case "action":
-						perms[c].Action = x.(string)
-					}
-				}
-			}
-			subSchema.Permissions = perms
-		case "master":
-			for g, z := range v.(map[string]interface{}) {
-				switch g {
-				case "type":
-					subSchema.Master.Type = z.(string)
+	if v, ok := obj["title"]; ok {
+		subSchema.Title = v.(string)
+	} else {
+		// if we cant find a title field, we'll assume this obj map is not correct
+		return nil, fmt.Errorf("[ERROR] GetUserBaseSubSchema interface map parsing error")
+	}
+	if v, ok := obj["type"]; ok {
+		subSchema.Type = v.(string)
+	}
+	if v, ok := obj["format"]; ok {
+		subSchema.Format = v.(string)
+	}
+	if v, ok := obj["required"]; ok {
+		subSchema.Required = v.(bool)
+	}
+	if v, ok := obj["mutability"]; ok {
+		subSchema.Mutability = v.(string)
+	}
+	if v, ok := obj["scope"]; ok {
+		subSchema.Scope = v.(string)
+	}
+	if v, ok := obj["minLength"]; ok {
+		subSchema.MinLength = int(v.(float64))
+	}
+	if v, ok := obj["maxLength"]; ok {
+		subSchema.MaxLength = int(v.(float64))
+	}
+	if v, ok := obj["permissions"]; ok {
+		perms := make([]Permissions, len(v.([]interface{})))
+		for k2, v2 := range v.([]interface{}) {
+			for k3, v3 := range v2.(map[string]interface{}) {
+				switch k3 {
+				case "principal":
+					perms[k2].Principal = v3.(string)
+				case "action":
+					perms[k2].Action = v3.(string)
 				}
 			}
 		}
+		subSchema.Permissions = perms
 	}
-	return subSchema, resp, err
+	if v, ok := obj["master"]; ok {
+		for k2, v2 := range v.(map[string]interface{}) {
+			switch k2 {
+			case "type":
+				subSchema.Master.Type = v2.(string)
+			}
+		}
+	}
+	return subSchema, nil
 }
 
-func (s *SchemasService) GetUserCustomSubSchema(title string) (*CustomSubSchema, *Response, error) {
-	exists := false
-	schema, resp, err := s.client.Schemas.GetPropertiesMap("custom")
-	if err != nil {
-		return nil, resp, err
-	}
-	index, resp, err := s.client.Schemas.GetUserSchemaIndex("custom")
-	if err != nil {
-		return nil, resp, err
-	}
-	for _, field := range index {
-		if title == field {
-			exists = true
-			break
-		}
-	}
-	if exists == false {
-		return nil, nil, fmt.Errorf("[ERROR] GetUserCustomSubSchema subschema %v does not exist in Okta", title)
-	}
+func (s *SchemasService) GetUserCustomSubSchema(title string, obj map[string]interface{}) (*CustomSubSchema, error) {
 	subSchema := new(CustomSubSchema)
 	subSchema.Index = title
-	for k, v := range schema[title].(map[string]interface{}) {
-		switch k {
-		case "title":
-			subSchema.Title = v.(string)
-		case "type":
-			subSchema.Type = v.(string)
-		case "description":
-			subSchema.Description = v.(string)
-		case "format":
-			subSchema.Format = v.(string)
-		case "required":
-			subSchema.Required = v.(bool)
-		case "mutability":
-			subSchema.Mutability = v.(string)
-		case "scope":
-			subSchema.Scope = v.(string)
-		case "minLength":
-			subSchema.MinLength = int(v.(float64))
-		case "maxLength":
-			subSchema.MaxLength = int(v.(float64))
-		case "items":
-			for g, z := range v.(map[string]interface{}) {
-				switch g {
-				case "type":
-					subSchema.Items.Type = z.(string)
-				}
-			}
-		case "union":
-			subSchema.Union = v.(string)
-		case "enum":
-			// assuming here all enum values are strings, I hope i'm right
-			subSchema.Enum = v.([]string)
-		case "oneOf":
-			oneof := make([]OneOf, len(v.([]interface{})))
-			for c, j := range v.([]interface{}) {
-				for h, x := range j.(map[string]interface{}) {
-					switch h {
-					case "const":
-						oneof[c].Const = x.(string)
-					case "title":
-						oneof[c].Title = x.(string)
-					}
-				}
-			}
-			subSchema.OneOf = oneof
-		case "permissions":
-			perms := make([]Permissions, len(v.([]interface{})))
-			for c, j := range v.([]interface{}) {
-				for h, x := range j.(map[string]interface{}) {
-					switch h {
-					case "principal":
-						perms[c].Principal = x.(string)
-					case "action":
-						perms[c].Action = x.(string)
-					}
-				}
-			}
-			subSchema.Permissions = perms
-		case "master":
-			for g, z := range v.(map[string]interface{}) {
-				switch g {
-				case "type":
-					subSchema.Master.Type = z.(string)
-				}
+	if v, ok := obj["title"]; ok {
+		subSchema.Title = v.(string)
+	} else {
+		// if we cant find a title field, we'll assume this obj map is not correct
+		return nil, fmt.Errorf("[ERROR] GetUserCustomSubSchema interface map parsing error")
+	}
+	if v, ok := obj["type"]; ok {
+		subSchema.Type = v.(string)
+	}
+	if v, ok := obj["description"]; ok {
+		subSchema.Description = v.(string)
+	}
+	if v, ok := obj["format"]; ok {
+		subSchema.Format = v.(string)
+	}
+	if v, ok := obj["required"]; ok {
+		subSchema.Required = v.(bool)
+	}
+	if v, ok := obj["mutability"]; ok {
+		subSchema.Mutability = v.(string)
+	}
+	if v, ok := obj["scope"]; ok {
+		subSchema.Scope = v.(string)
+	}
+	if v, ok := obj["minLength"]; ok {
+		subSchema.MinLength = int(v.(float64))
+	}
+	if v, ok := obj["maxLength"]; ok {
+		subSchema.MaxLength = int(v.(float64))
+	}
+	if v, ok := obj["items"]; ok {
+		for k2, v2 := range v.(map[string]interface{}) {
+			switch k2 {
+			case "type":
+				subSchema.Items.Type = v2.(string)
 			}
 		}
 	}
-	return subSchema, resp, err
+	if v, ok := obj["union"]; ok {
+		subSchema.Union = v.(string)
+	}
+	if v, ok := obj["enum"]; ok {
+		// assuming here all enum values are strings, I hope i'm right
+		subSchema.Enum = v.([]string)
+	}
+	if v, ok := obj["oneOf"]; ok {
+		oneof := make([]OneOf, len(v.([]interface{})))
+		for k2, v2 := range v.([]interface{}) {
+			for k3, v3 := range v2.(map[string]interface{}) {
+				switch k3 {
+				case "const":
+					oneof[k2].Const = v3.(string)
+				case "title":
+					oneof[k2].Title = v3.(string)
+				}
+			}
+		}
+		subSchema.OneOf = oneof
+	}
+	if v, ok := obj["permissions"]; ok {
+		perms := make([]Permissions, len(v.([]interface{})))
+		for k2, v2 := range v.([]interface{}) {
+			for k3, v3 := range v2.(map[string]interface{}) {
+				switch k3 {
+				case "principal":
+					perms[k2].Principal = v3.(string)
+				case "action":
+					perms[k2].Action = v3.(string)
+				}
+			}
+		}
+		subSchema.Permissions = perms
+	}
+	if v, ok := obj["master"]; ok {
+		for k2, v2 := range v.(map[string]interface{}) {
+			switch k2 {
+			case "type":
+				subSchema.Master.Type = v2.(string)
+			}
+		}
+	}
+	return subSchema, nil
 }
