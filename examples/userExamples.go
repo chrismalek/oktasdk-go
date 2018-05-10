@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/chrismalek/oktasdk-go/okta"
+	"github.com/intello-io/oktasdk-go/okta"
 )
 
 func nameSearchExample() {
