@@ -1,40 +1,81 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
+	"reflect"
+	"runtime"
+	"strings"
 
-	"github.com/chrismalek/oktasdk-go/okta"
+	"github.com/intello-io/oktasdk-go/okta"
 )
 
-var orgName = os.Getenv("OKTA_API_TEST_ORG")
-var apiToken = os.Getenv("OKTA_API_TEST_TOKEN")
+var orgName = ""
+var apiToken = ""
+var ex = ""
+var args = "00u5wb3ybyXqakBDa0h7"
 var isProductionOKTAORG = false
 
+type fn func()
+
 func main() {
-	fmt.Printf("\n\n%%%%%% User Examples\n\n\n")
-	nameSearchExample()
-	getActiveUsersExampleOnePageAtATime()
-	getActiveUsersExampleAllPages()
-	getActiveUserUpdatedInLastMonthAllPages()
-	getFirstActiveUserRoles()
-	createUserNoPassword()
-	createUserWithPassword()
-	createUserWithRecoveryAndPassword()
-	CreateUserThenActivate()
-	SetUserPassword()
-	deactivateUser()
-	getUser("00u5wb3ybyXqakBDa0h7")
-	getUserMFAFactor("00u5wb3ybyXqakBDa0h7")
+	flag.StringVar(&ex, "example", "all", "strng of the example we want to run")
+	flag.StringVar(&orgName, "org_name", "", "org name to submit a request against. The logs command expects a url")
+	flag.StringVar(&apiToken, "api_token", "", "the api token to submit a reuqest against")
+	flag.Parse()
+	fns := []fn{
+		nameSearchExample,
+		getActiveUsersExampleOnePageAtATime,
+		getActiveUsersExampleAllPages,
+		getActiveUserUpdatedInLastMonthAllPages,
+		getFirstActiveUserRoles,
+		createUserNoPassword,
+		createUserWithPassword,
+		createUserWithRecoveryAndPassword,
+		CreateUserThenActivate,
+		SetUserPassword,
+		deactivateUser,
+		// NOTE: we need to handle passing args here
+		// getUser,
+		// getUserMFAFactor,
+		searchForGroupByName,
+		getFirst3PageOfOKTAGroupsUpdatedRecently,
+		getGroupByID,
+		getRandomOKTAGroupUser,
+		groupAddAndDelete,
+		logListEventType,
+		logListQuery,
+	}
+	fmt.Println(ex)
+	for _, fn := range fns {
+		fnName := strings.Replace(runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name(), "main.", "", 1)
+		if ex == fnName || ex == "all" {
+			fmt.Printf("Running %s\n", fnName)
+			fn()
+		}
 
-	fmt.Printf("\n\n%%%%%% Group Examples\n\n\n")
+	}
+}
 
-	searchForGroupByName()
-	getFirst3PageOfOKTAGroupsUpdatedRecently()
-	getGroupByID()
-	getRandomOKTAGroupUser()
-	groupAddAndDelete()
+func printLogArray(logs []okta.Log) {
+	for _, l := range logs {
+		printLog(l)
+	}
+}
 
+func printLog(log okta.Log) {
+	fmt.Printf("\t LogID: %s. Event type: %s. Display Message: %s. Published At: %s\n", log.UUID, log.EventType, log.DisplayMessage, log.Published)
+
+	var dataToLog []string
+	// log the actor
+	dataToLog = append(dataToLog, fmt.Sprintf("Actor: %s", log.Actor.String()))
+	for _, t := range log.Targets {
+		dataToLog = append(dataToLog, fmt.Sprintf("Target: %s", t.String()))
+	}
+
+	for _, l := range dataToLog {
+		fmt.Printf("\t\t %s\n", l)
+	}
 }
 
 func printUserArray(users []okta.User) {
