@@ -120,17 +120,18 @@ type Log struct {
 
 // LogListFilterOptions is a struct that you can populate which will "filter" log searches. the exported field should allow you to do different filters based on what is allowed in the OKTA API.
 type LogListFilterOptions struct {
-	NextURL   *url.URL `url:"-"`
-	Limit     int      `url:"limit,omitempty"`
-	SortOrder string   `url:"sortOrder,omitempty"`
-	Query     string   `url:"q,omitempty"`
+	NextURL   *url.URL  `url:"-"`
+	Limit     int       `url:"limit,omitempty"`
+	Since     time.Time `url:"since,omitempty"`
+	SortOrder string    `url:"sortOrder,omitempty"`
+	Query     string    `url:"q,omitempty"`
 
 	EventType string `url:"-"`
 
 	FilterString string `url:"filter,omitempty"`
 }
 
-// LogService handles communication with the log methods of the OKTA API
+// LogsService handles communication with the log methods of the OKTA API
 type LogsService service
 
 // ListWithFilters will use the input list with filters to find logs return all log results that match that query. ListWithFilter doesn't support getting all logs at once bec it can be a ton of data
