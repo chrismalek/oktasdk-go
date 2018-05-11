@@ -45,8 +45,8 @@ func main() {
 		groupAddAndDelete,
 		logListEventType,
 		logListQuery,
+		logSince,
 	}
-	fmt.Println(ex)
 	for _, fn := range fns {
 		fnName := strings.Replace(runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name(), "main.", "", 1)
 		if ex == fnName || ex == "all" {
