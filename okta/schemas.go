@@ -20,6 +20,15 @@ func (p *SchemasService) CustomSubSchema() CustomSubSchema {
 	return CustomSubSchema{}
 }
 
+// Return the Permissions object. Used to create & update User SubSchemas Permissions
+func (p *SchemasService) Permissions() Permissions {
+	return Permissions{}
+}
+// Return the OneOf object. Used to create & update Custom User SubSchema OneOf
+func (p *SchemasService) OneOf() OneOf {
+	return OneOf{}
+}
+
 // User Profiles Schema obj
 type Schema struct {
 	ID          string
@@ -86,13 +95,13 @@ type CustomSubSchema struct {
 	} `json:"master"`
 }
 
-// Permissions obj for User Profiles Subscemas
+// Permissions obj for User Profiles SubSchemas
 type Permissions struct {
 	Principal string `json:"principal"`
 	Action    string `json:"action"`
 }
 
-// OneOf obj for User Profiles Custom Subscema
+// OneOf obj for User Profiles Custom SubSchema
 type OneOf struct {
 	Const string `json:"const"`
 	Title string `json:"title"`
@@ -105,7 +114,6 @@ func (s *SchemasService) GetRawUserSchema() (map[string]interface{}, *Response, 
 	if err != nil {
 		return nil, nil, err
 	}
-
 	var obj map[string]interface{}
 	resp, err := s.client.Do(req, &obj)
 	if err != nil {
@@ -224,15 +232,15 @@ func (s *SchemasService) userSubSchemaPropMap(scope string) (map[string]interfac
 
 // GetUserSubSchemaPropMap returns the User Profile SubSchema as a map[string]interface{}
 // inputs are a string subschema scope "base" or "custom" & the index key for the User Profile SubSchema
-func (s *SchemasService) GetUserSubSchemaPropMap(scope string, title string) (map[string]interface{}, *Response, error) {
+func (s *SchemasService) GetUserSubSchemaPropMap(scope string, index string) (map[string]interface{}, *Response, error) {
 	prop, resp, err := s.client.Schemas.userSubSchemaPropMap(scope)
 	if err != nil {
 		return nil, resp, err
 	}
-	if v, ok := prop[title]; ok {
+	if v, ok := prop[index]; ok {
 		return v.(map[string]interface{}), resp, err
 	} else {
-		return nil, resp, fmt.Errorf("[ERROR] GetUserSubSchemaPropMap subschema %v not found in Okta", title)
+		return nil, resp, fmt.Errorf("[ERROR] GetUserSubSchemaPropMap subschema %v not found in Okta", index)
 	}
 
 	return nil, resp, err
@@ -255,9 +263,9 @@ func (s *SchemasService) GetUserSubSchemaIndex(scope string) ([]string, *Respons
 // GetUserBaseSubSchema returns the User Base Profile SubSchema as a BaseSubSchema struct
 // inputs are a string index key for the SubSchema & a map[string]interface{} for the
 // User Profile SubSchema, such as from GetUserSubSchemaPropMap()
-func (s *SchemasService) GetUserBaseSubSchema(title string, obj map[string]interface{}) (*BaseSubSchema, error) {
+func (s *SchemasService) GetUserBaseSubSchema(index string, obj map[string]interface{}) (*BaseSubSchema, error) {
 	subSchema := new(BaseSubSchema)
-	subSchema.Index = title
+	subSchema.Index = index
 	if v, ok := obj["title"]; ok {
 		subSchema.Title = v.(string)
 	} else {
@@ -313,9 +321,9 @@ func (s *SchemasService) GetUserBaseSubSchema(title string, obj map[string]inter
 // GetUserCustomSubSchema returns the User Custom Profile SubSchema as a CustomSubSchema struct
 // inputs are a string index key for the SubSchema & a map[string]interface{} for the
 // User Profile SubSchema, such as from GetUserSubSchemaPropMap()
-func (s *SchemasService) GetUserCustomSubSchema(title string, obj map[string]interface{}) (*CustomSubSchema, error) {
+func (s *SchemasService) GetUserCustomSubSchema(index string, obj map[string]interface{}) (*CustomSubSchema, error) {
 	subSchema := new(CustomSubSchema)
-	subSchema.Index = title
+	subSchema.Index = index
 	if v, ok := obj["title"]; ok {
 		subSchema.Title = v.(string)
 	} else {
@@ -400,10 +408,9 @@ func (s *SchemasService) GetUserCustomSubSchema(title string, obj map[string]int
 	return subSchema, nil
 }
 
-// UpdateUserCustomSubSchema Adds or Updates a Custom Subschema
+// UpdateUserCustomSubSchema Adds or Updates a Custom SubSchema
 // input is a CustomSubSchema struct
 func (s *SchemasService) UpdateUserCustomSubSchema(update CustomSubSchema) (*Schema, *Response, error) {
-
 	index := update.Index
 	subschema, err := json.Marshal(update)
 	if err != nil {
@@ -412,13 +419,11 @@ func (s *SchemasService) UpdateUserCustomSubSchema(update CustomSubSchema) (*Sch
 	raw := fmt.Sprintf(`{ "definitions": { "custom": { "id": "#custom", "type": "object", "properties": { "%s": %s }, "required": [] } } }`, index, string(subschema))
 	// remove the escaped double quotes during NewRequest Marshal serialization
 	ser := json.RawMessage(raw)
-
 	u := fmt.Sprintf("meta/schemas/user/default")
 	req, err := s.client.NewRequest("POST", u, ser)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	var obj map[string]interface{}
 	resp, err := s.client.Do(req, &obj)
 	if err != nil {
@@ -428,19 +433,17 @@ func (s *SchemasService) UpdateUserCustomSubSchema(update CustomSubSchema) (*Sch
 	return schema, resp, err
 }
 
-// DeleteUserCustomSubSchema deletes a Custom Subschema
+// DeleteUserCustomSubSchema deletes a Custom SubSchema
 // input is a string of the custom subschema index key
 func (s *SchemasService) DeleteUserCustomSubSchema(index string) (*Schema, *Response, error) {
 	raw := fmt.Sprintf(`{ "definitions": { "custom": { "id": "#custom", "type": "object", "properties": { "%s": null }, "required": [] } } }`, index)
 	// remove the escaped double quotes during NewRequest Marshal serialization
 	ser := json.RawMessage(raw)
-
 	u := fmt.Sprintf("meta/schemas/user/default")
 	req, err := s.client.NewRequest("POST", u, ser)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	var obj map[string]interface{}
 	resp, err := s.client.Do(req, &obj)
 	if err != nil {
@@ -450,11 +453,10 @@ func (s *SchemasService) DeleteUserCustomSubSchema(index string) (*Schema, *Resp
 	return schema, resp, err
 }
 
-// UpdateUserCustomSubSchema Updates a Base Subschema
-// can only update subschema permissions & the nullability of the firstName and lastName subshemas
+// UpdateUserCustomSubSchema Updates a Base SubSchema
+// can only update subschema permissions & the nullability of the firstName and lastName subschemas
 // input is a BaseSubSchema struct
 func (s *SchemasService) UpdateUserBaseSubSchema(update BaseSubSchema) (*Schema, *Response, error) {
-
 	index := update.Index
 	subschema, err := json.Marshal(update)
 	if err != nil {
@@ -463,13 +465,11 @@ func (s *SchemasService) UpdateUserBaseSubSchema(update BaseSubSchema) (*Schema,
 	raw := fmt.Sprintf(`{ "definitions": { "base": { "id": "#base", "type": "object", "properties": { "%s": %s }, "required": [] } } }`, index, string(subschema))
 	// remove the escaped double quotes during NewRequest Marshal serialization
 	ser := json.RawMessage(raw)
-
 	u := fmt.Sprintf("meta/schemas/user/default")
 	req, err := s.client.NewRequest("POST", u, ser)
 	if err != nil {
 		return nil, nil, err
 	}
-
 	var obj map[string]interface{}
 	resp, err := s.client.Do(req, &obj)
 	if err != nil {
