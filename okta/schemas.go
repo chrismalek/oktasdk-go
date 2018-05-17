@@ -24,6 +24,7 @@ func (p *SchemasService) CustomSubSchema() CustomSubSchema {
 func (p *SchemasService) Permissions() Permissions {
 	return Permissions{}
 }
+
 // Return the OneOf object. Used to create & update Custom User SubSchema OneOf
 func (p *SchemasService) OneOf() OneOf {
 	return OneOf{}
@@ -453,7 +454,7 @@ func (s *SchemasService) DeleteUserCustomSubSchema(index string) (*Schema, *Resp
 	return schema, resp, err
 }
 
-// UpdateUserCustomSubSchema Updates a Base SubSchema
+// UpdateUserBaseSubSchema Updates a Base SubSchema
 // can only update subschema permissions & the nullability of the firstName and lastName subschemas
 // input is a BaseSubSchema struct
 func (s *SchemasService) UpdateUserBaseSubSchema(update BaseSubSchema) (*Schema, *Response, error) {
