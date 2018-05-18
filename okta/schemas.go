@@ -32,27 +32,27 @@ func (p *SchemasService) OneOf() OneOf {
 
 // User Profiles Schema obj
 type Schema struct {
-	ID          string
-	Schema      string
-	Name        string
-	Title       string
-	Created     time.Time
-	LastUpdated time.Time
+	ID          string    `json:"id"`
+	Schema      string    `json:"$schema"`
+	Name        string    `json:"name"`
+	Title       string    `json:"title"`
+	Created     time.Time `json:"created"`
+	LastUpdated time.Time `json:"lastUpdated"`
 	Definitions struct {
 		Base struct {
-			ID         string
-			Type       string
-			Properties []BaseSubSchema
-			Required   []string
+			ID         string          `json:"id"`
+			Type       string          `json:"type"`
+			Properties []BaseSubSchema `json:"properties"`
+			Required   []string        `json:"required"`
 		}
 		Custom struct {
-			ID         string
-			Type       string
-			Properties []CustomSubSchema
-			Required   []string
-		}
-	}
-	Type string
+			ID         string            `json:"id"`
+			Type       string            `json:"type"`
+			Properties []CustomSubSchema `json:"properties"`
+			Required   []string          `json:"required"`
+		} `json:"custom"`
+	} `json:"definitions"`
+	Type string `json:"type"`
 }
 
 // User Profiles Base SubSchema
@@ -368,7 +368,11 @@ func (s *SchemasService) GetUserCustomSubSchema(index string, obj map[string]int
 	}
 	if v, ok := obj["enum"]; ok {
 		// assuming here all enum values are strings, I hope i'm right
-		subSchema.Enum = v.([]string)
+		enum := make([]string, 0)
+		for _, v2 := range v.([]interface{}) {
+			enum = append(enum, v2.(string))
+		}
+		subSchema.Enum = enum
 	}
 	if v, ok := obj["oneOf"]; ok {
 		oneof := make([]OneOf, len(v.([]interface{})))
