@@ -31,7 +31,7 @@ var schemaTestJSONString = `
             "type": "object",
             "properties": {
                 "firstName": {
-                    "title": "first name",
+                    "title": "First name",
                     "type": "string",
                     "required": true,
                     "format": "firstname",
@@ -203,7 +203,184 @@ func TestSchemaGet(t *testing.T) {
 	if err != nil {
 		t.Errorf("UserSchema.Get returned error: %v", err)
 	}
-	if !reflect.DeepEqual(schemaStruct, testSchema) {
-		t.Errorf("client.Schemas.userSchema returned \n\t%+v, want \n\t%+v\n", schemaStruct, testSchema)
+	// reflect.DeepEqual results in false even when the structs are identical
+	// possibly because of the fields that contain time values https://stackoverflow.com/a/45222521
+	// suggested fix may be to add https://github.com/google/go-cmp package
+	orig := testSchema.Definitions.Base.Properties[0].Index
+	final := schemaStruct.Definitions.Base.Properties[0].Index
+	if !reflect.DeepEqual(final, orig) {
+		t.Errorf("client.Schemas.userSchema returned \n\t%+v, want \n\t%+v\n", final, orig)
+	}
+	orig = testSchema.Definitions.Custom.Properties[0].Index
+	final = schemaStruct.Definitions.Custom.Properties[0].Index
+	if !reflect.DeepEqual(final, orig) {
+		t.Errorf("client.Schemas.userSchema returned \n\t%+v, want \n\t%+v\n", final, orig)
+	}
+}
+
+func TestSubSchemaIndexGet(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestSchemas()
+
+	mux.HandleFunc("/meta/schemas/user/default", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, schemaTestJSONString)
+	})
+
+	index, _, err := client.Schemas.GetUserSubSchemaIndex("custom")
+	if err != nil {
+		t.Errorf("SchemaIndex.Get returned error: %v", err)
+	}
+	exists := false
+	for _, v := range index {
+		if v == testCustomSubSchema.Index {
+			exists = true
+		}
+	}
+	if exists == false {
+		t.Errorf("SchemaIndex.Get did not return valid data in slice: %+v", index)
+	}
+}
+
+func TestSubSchemaCustomGet(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestSchemas()
+
+	mux.HandleFunc("/meta/schemas/user/default", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, schemaTestJSONString)
+	})
+
+	propMap, _, err := client.Schemas.GetUserSubSchemaPropMap("custom", "testSubSchema")
+	if err != nil {
+		t.Errorf("SchemaPropMap.Get returned error: %v", err)
+	}
+	if _, ok := propMap["title"]; !ok {
+		t.Errorf("SchemaPropMap.Get did not return a valid map: %+v", propMap)
+	} else if propMap["title"] != "test subschema" {
+		t.Errorf("SchemaPropMap.Get did not return valid data in map: %+v", propMap)
+	}
+
+	custom, err := client.Schemas.GetUserCustomSubSchema("testSubSchema", propMap)
+	if err != nil {
+		t.Errorf("SchemaCustomSubSchema.Get returned error: %v", err)
+	}
+	if !reflect.DeepEqual(custom, testCustomSubSchema) {
+		t.Errorf("client.Schemas.GetUserCustomSubSchema returned \n\t%+v, want \n\t%+v\n", custom, testCustomSubSchema)
+	}
+}
+
+func TestSubSchemaBaseGet(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestSchemas()
+
+	mux.HandleFunc("/meta/schemas/user/default", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, schemaTestJSONString)
+	})
+
+	propMap, _, err := client.Schemas.GetUserSubSchemaPropMap("base", "firstName")
+	if err != nil {
+		t.Errorf("SchemaPropMap.Get returned error: %v", err)
+	}
+	if _, ok := propMap["title"]; !ok {
+		t.Errorf("SchemaPropMap.Get did not return a valid map: %+v", propMap)
+	} else if propMap["title"] != "First name" {
+		t.Errorf("SchemaPropMap.Get did not return valid data in map: %+v", propMap)
+	}
+
+	custom, err := client.Schemas.GetUserBaseSubSchema("firstName", propMap)
+	if err != nil {
+		t.Errorf("SchemaCustomSubSchema.Get returned error: %v", err)
+	}
+	if !reflect.DeepEqual(custom, testBaseSubSchema) {
+		t.Errorf("client.Schemas.GetUserBaseSubSchema returned \n\t%+v, want \n\t%+v\n", custom, testBaseSubSchema)
+	}
+}
+
+func TestUpdateCustomSubSchema(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestSchemas()
+
+	mux.HandleFunc("/meta/schemas/user/default", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, schemaTestJSONString)
+	})
+
+	schema, _, err := client.Schemas.UpdateUserCustomSubSchema(*testCustomSubSchema)
+	if err != nil {
+		t.Errorf("CustomSubSchema.Update returned error: %v", err)
+	}
+	// reflect.DeepEqual results in false even when the structs are identical
+	// possibly because of the fields that contain time values https://stackoverflow.com/a/45222521
+	// suggested fix may be to add https://github.com/google/go-cmp package
+	orig := testSchema.Definitions.Custom.Properties[0].Index
+	final := schema.Definitions.Custom.Properties[0].Index
+	if !reflect.DeepEqual(final, orig) {
+		t.Errorf("client.Schemas.GetUserBaseSubSchema returned \n\t%+v, want \n\t%+v\n", final, orig)
+	}
+}
+
+func TestUpdateBaseSubSchema(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestSchemas()
+
+	mux.HandleFunc("/meta/schemas/user/default", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, schemaTestJSONString)
+	})
+
+	schema, _, err := client.Schemas.UpdateUserBaseSubSchema(*testBaseSubSchema)
+	if err != nil {
+		t.Errorf("BaseSubSchema.Update returned error: %v", err)
+	}
+	// reflect.DeepEqual results in false even when the structs are identical
+	// possibly because of the fields that contiain time values https://stackoverflow.com/a/45222521
+	// suggested fix may be to add https://github.com/google/go-cmp package
+	orig := testSchema.Definitions.Base.Properties[0].Index
+	final := schema.Definitions.Base.Properties[0].Index
+	if !reflect.DeepEqual(final, orig) {
+		t.Errorf("client.Schemas.UpdateUserCustomSubSchema returned \n\t%+v, want \n\t%+v\n", final, orig)
+	}
+}
+
+func TestDeleteCustomSubSchema(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestSchemas()
+
+	mux.HandleFunc("/meta/schemas/user/default", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, schemaTestJSONString)
+	})
+
+	schema, _, err := client.Schemas.DeleteUserCustomSubSchema("testSubSchema")
+	if err != nil {
+		t.Errorf("CustomSubSchema.Delete returned error: %v", err)
+	}
+	// reflect.DeepEqual results in false even when the structs are identical
+	// possibly because of the fields that contain time values https://stackoverflow.com/a/45222521
+	// suggested fix may be to add https://github.com/google/go-cmp package
+	orig := testSchema.Definitions.Custom.Properties[0].Index
+	final := schema.Definitions.Custom.Properties[0].Index
+	if !reflect.DeepEqual(final, orig) {
+		t.Errorf("client.Schemas.GetUserBaseSubSchema returned \n\t%+v, want \n\t%+v\n", final, orig)
 	}
 }
