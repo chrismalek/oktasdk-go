@@ -93,6 +93,9 @@ type Client struct {
 
 	// Service for Working with Policies
 	Policies *PoliciesService
+
+	// Service for Working with Schemas
+	Schemas *SchemasService
 }
 
 type service struct {
@@ -145,6 +148,7 @@ func NewClientWithBaseURL(httpClient *http.Client, baseURL *url.URL, apiToken st
 	c.Groups = (*GroupsService)(&c.common)
 	c.Apps = (*AppsService)(&c.common)
 	c.Policies = (*PoliciesService)(&c.common)
+	c.Schemas = (*SchemasService)(&c.common)
 	return c
 }
 
