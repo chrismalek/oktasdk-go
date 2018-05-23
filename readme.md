@@ -60,7 +60,7 @@ The current state of the this SDK is in development. There is still much work to
     - Update Group (NOT Implemented) &#9785;
     - Delete Group (Implemented Groups.Delete) &#9745;
     - Group Members (Implemented with Groups.GetUsers)
-    - Add User To Group (NOT Implemented) &#9785;
+    - Add User To Group (implemented in Groups.AddUserToGroup) &#9745;
     - Remove User From Group (NOT Implemented) &#9785;
     - List Apps (NOT Implemented) &#9785;
 * Factors (NOT Implemented)
