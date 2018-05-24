@@ -61,7 +61,7 @@ The current state of the this SDK is in development. There is still much work to
     - Delete Group (Implemented Groups.Delete) &#9745;
     - Group Members (Implemented with Groups.GetUsers)
     - Add User To Group (implemented in Groups.AddUserToGroup) &#9745;
-    - Remove User From Group (NOT Implemented) &#9785;
+    - Remove User From Group (Implemented in RemoveUserFromGroup) &#9745;
     - List Apps (NOT Implemented) &#9785;
 * Factors (NOT Implemented)
     - Get user FActor(s) (NOT Implemented) &#9785;
@@ -73,6 +73,8 @@ The current state of the this SDK is in development. There is still much work to
 * Apps (Barely Implemented)
     - get App (Apps.GetByID) &#9745;
     - get App Users (Apps.GetUsers)  &#9745;
+    - Get APP Groups (Implemented in Apps.GetGroups) &#9745;
+    - Get App User (Implemented in Apps.GetUser) &#9745;
     - Many more API Interactions to go &#9785;
 
 

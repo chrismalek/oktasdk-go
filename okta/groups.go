@@ -315,6 +315,33 @@ func (g *GroupsService) AddUserToGroup(groupID string, userID string) (*Response
 	return resp, err
 }
 
+// RemoveUserFromGroup - Removes a user to a group.
+func (g *GroupsService) RemoveUserFromGroup(groupID string, userID string) (*Response, error) {
+
+	if groupID == "" {
+		return nil, errors.New("groupID parameter is required for Delete")
+	}
+	if userID == "" {
+		return nil, errors.New("groupID parameter is required for Delete")
+	}
+
+	u := fmt.Sprintf("groups/%v/users/%v", groupID, userID)
+
+	req, err := g.client.NewRequest("DELETE", u, nil)
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := g.client.Do(req, nil)
+
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
 // GroupUserFilterOptions is a struct that you populate which will limit or control group fetches and searches
 //  The values here will coorelate to the search filtering allowed in the OKTA API. These values are turned into Query Parameters
 type GroupUserFilterOptions struct {
