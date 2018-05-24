@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// AppsService - Service for App methods
 type AppsService service
 
 // AppFilterOptions is used to generate a "Filter" to search for different Apps
@@ -17,6 +18,7 @@ type AppFilterOptions struct {
 	Limit         int      `url:"limit,omitempty"`
 }
 
+// App - Model for App data model
 type App struct {
 	ID            string    `json:"id"`
 	Name          string    `json:"name"`
@@ -138,6 +140,7 @@ func (a *AppsService) GetByID(appID string) (*App, *Response, error) {
 	return app, resp, err
 }
 
+// AppUser - Model for an Application User
 type AppUser struct {
 	ID              string     `json:"id"`
 	ExternalID      string     `json:"externalId"`
@@ -196,13 +199,13 @@ func (a *AppsService) GetUsers(appID string, opt *AppFilterOptions) (appUsers []
 	req, err := a.client.NewRequest("GET", u, nil)
 
 	if err != nil {
-		fmt.Printf("____ERROR HERE\n")
+		// fmt.Printf("____ERROR HERE\n")
 		return nil, nil, err
 	}
 	resp, err = a.client.Do(req, &appUsers)
 
 	if err != nil {
-		fmt.Printf("____ERROR HERE 2\n")
+		// fmt.Printf("____ERROR HERE 2\n")
 		return nil, resp, err
 	}
 
@@ -239,4 +242,75 @@ func (a *AppsService) GetUsers(appID string, opt *AppFilterOptions) (appUsers []
 	}
 
 	return appUsers, resp, err
+}
+
+// AppGroups - Groups assigned to Application
+type AppGroups struct {
+	ID          string    `json:"id"`
+	LastUpdated time.Time `json:"lastUpdated"`
+	Priority    int       `json:"priority"`
+	Links       struct {
+		User struct {
+			Href string `json:"href"`
+		} `json:"user"`
+	} `json:"_links"`
+}
+
+// GetGroups returns groups assigned to the application - Input appID is the Application GUID
+func (a *AppsService) GetGroups(appID string) (appGroups []AppGroups, resp *Response, err error) {
+
+	var u string
+	u = fmt.Sprintf("apps/%v/groups", appID)
+
+	req, err := a.client.NewRequest("GET", u, nil)
+
+	if err != nil {
+		return nil, nil, err
+	}
+	resp, err = a.client.Do(req, &appGroups)
+
+	if err != nil {
+		return nil, resp, err
+	}
+
+	for {
+
+		if resp.NextURL != nil {
+
+			var appGroupPage []AppGroups
+
+			appGroupPage, resp, err = a.GetGroups(appID)
+
+			if err != nil {
+				return appGroups, resp, err
+			} else {
+				appGroups = append(appGroups, appGroupPage...)
+
+			}
+		} else {
+			break
+		}
+
+	}
+
+	return appGroups, resp, err
+}
+
+// GetUser returns the AppUser model for one app users
+func (a *AppsService) GetUser(appID string, userID string) (appUser AppUser, resp *Response, err error) {
+
+	var u string
+	u = fmt.Sprintf("apps/%v/users/%v", appID, userID)
+
+	req, err := a.client.NewRequest("GET", u, nil)
+
+	if err != nil {
+		return appUser, nil, err
+	}
+	resp, err = a.client.Do(req, &appUser)
+
+	if err != nil {
+		return appUser, resp, err
+	}
+	return appUser, resp, nil
 }
