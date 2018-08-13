@@ -1,46 +1,43 @@
 package okta
 
 import (
-	"fmt"
-	"net/url"
 	"time"
 )
-
 
 type IdentityProvidersService service
 
 type IdentityProvider struct {
-	ID      string	  `json:"id"`
-	Type    string	  `json:"type"`
-	Status  string	  `json:"status"`
-	Name    string	  `json:"name"`
-	Created time.Time `json:"created"`
+	ID          string    `json:"id"`
+	Type        string    `json:"type"`
+	Status      string    `json:"status"`
+	Name        string    `json:"name"`
+	Created     time.Time `json:"created"`
 	LastUpdated time.Time `json:"lastUpdated"`
-	Protocol struct {
-		Type string `json:"type"`
+	Protocol    struct {
+		Type      string `json:"type"`
 		Endpoints struct {
 			Authorization struct {
-				Url string `json:"url"`
+				Url     string `json:"url"`
 				Binding string `json:"binding"`
 			} `json:"authorization"`
 			Token struct {
-				Url string `json:"url"`
+				Url     string `json:"url"`
 				Binding string `json:"binding"`
 			}
 		} `json:"endpoints"`
-		Scopes []interface{} `json:"scopes"`
+		Scopes      []interface{} `json:"scopes"`
 		Credentials struct {
 			Client struct {
-				ClientID string `json:"client_id"`
+				ClientID     string `json:"client_id"`
 				ClientSecret string `json:"client_secret"`
 			} `json:"client"`
 		} `json:"credentials"`
 	} `json:"protocol"`
 	Policy struct {
 		Provisioning struct {
-			Action string `json:"action"`
-			ProfileMaster bool `json:"profileMaster"`
-			Groups struct {
+			Action        string `json:"action"`
+			ProfileMaster bool   `json:"profileMaster"`
+			Groups        struct {
 				Action string `json:"action"`
 			} `json:"groups"`
 			Conditions struct {
@@ -48,33 +45,33 @@ type IdentityProvider struct {
 					Action string `json:"action"`
 				} `json:"deprovisioned"`
 				Suspended struct {
-					Action string  `json:"action"`
+					Action string `json:"action"`
 				} `json:"suspended"`
 			} `json:"conditions"`
 		} `json:"provisioning"`
 		AccountLink struct {
-			filter string  `json:"filter"`
-			action string  `json:"action"`
+			filter string `json:"filter"`
+			action string `json:"action"`
 		} `json:"accountLink"`
 		Subject struct {
 			UserNameTemplate struct {
-					Template "string"  `json:"template"`
-				} `json:"userNameTemplate"`
-			Filter string  `json:"filter"`
-			MatchType string  `json:"matchType"`
+				Template string `json:"template"`
+			} `json:"userNameTemplate"`
+			Filter    string `json:"filter"`
+			MatchType string `json:"matchType"`
 		} `json:"subject"`
-		MaxClockSkew int  `json:"maxClockSkew"`
+		MaxClockSkew int `json:"maxClockSkew"`
 	} `json:"policy"`
 	Links struct {
 		Authorize struct {
-			Href string  `json:"href"`
-			Templated bool  `json:"templated"`
-			Hints struct {
+			Href      string `json:"href"`
+			Templated bool   `json:"templated"`
+			Hints     struct {
 				Allow []interface{} `json:"allow"`
 			} `json:"hints"`
 		} `json:"authorize"`
 		ClientRedirectUri struct {
-			Href string `json:"href"`
+			Href  string `json:"href"`
 			Hints struct {
 				Allow []interface{} `json:"allow"`
 			} `json:"hints"`
