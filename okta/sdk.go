@@ -96,6 +96,9 @@ type Client struct {
 
 	// Service for Working with Schemas
 	Schemas *SchemasService
+
+	// Service for Working with Identity Providers
+	IdentityProviders *IdentityProvidersService
 }
 
 type service struct {
