@@ -25,7 +25,7 @@ type IdentityProvider struct {
 				Binding string `json:"binding"`
 			}
 		} `json:"endpoints"`
-		Scopes      []interface{} `json:"scopes"`
+		Scopes      []string `json:"scopes"`
 		Credentials struct {
 			Client struct {
 				ClientID     string `json:"client_id"`
@@ -50,8 +50,8 @@ type IdentityProvider struct {
 			} `json:"conditions"`
 		} `json:"provisioning"`
 		AccountLink struct {
-			filter string `json:"filter"`
-			action string `json:"action"`
+			Filter string `json:"filter"`
+			Action string `json:"action"`
 		} `json:"accountLink"`
 		Subject struct {
 			UserNameTemplate struct {
@@ -67,13 +67,13 @@ type IdentityProvider struct {
 			Href      string `json:"href"`
 			Templated bool   `json:"templated"`
 			Hints     struct {
-				Allow []interface{} `json:"allow"`
+				Allow []string `json:"allow"`
 			} `json:"hints"`
 		} `json:"authorize"`
 		ClientRedirectUri struct {
 			Href  string `json:"href"`
 			Hints struct {
-				Allow []interface{} `json:"allow"`
+				Allow []string `json:"allow"`
 			} `json:"hints"`
 		} `json:"clientRedirectUri"`
 	} `json:"_links"`
