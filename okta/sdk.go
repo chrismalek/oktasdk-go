@@ -63,6 +63,10 @@ type Client struct {
 	authorizationHeaderValue string
 	PauseOnRateLimit         bool
 
+	// From the http response, populate this var with the okta error code, if applicable
+	// https://developer.okta.com/reference/error_codes/
+	OktaErrorCode string
+
 	// RateRemainingFloor - If the API returns a "X-Rate-Limit-Remaining" header less than this the SDK will either pause
 	//  Or throw  RateLimitError depending on the client.PauseOnRateLimit value. It defaults to 30
 	// One client doing too much work can lock out all API Access for every other client
@@ -86,6 +90,15 @@ type Client struct {
 
 	// Service for Working with Apps
 	Apps *AppsService
+
+	// Service for Working with Policies
+	Policies *PoliciesService
+
+	// Service for Working with Schemas
+	Schemas *SchemasService
+
+	// Service for Working with Identity Providers
+	IdentityProviders *IdentityProvidersService
 }
 
 type service struct {
@@ -137,6 +150,9 @@ func NewClientWithBaseURL(httpClient *http.Client, baseURL *url.URL, apiToken st
 	c.Users = (*UsersService)(&c.common)
 	c.Groups = (*GroupsService)(&c.common)
 	c.Apps = (*AppsService)(&c.common)
+	c.Policies = (*PoliciesService)(&c.common)
+	c.Schemas = (*SchemasService)(&c.common)
+	c.IdentityProviders = (*IdentityProvidersService)(&c.common)
 	return c
 }
 
@@ -264,7 +280,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 	c.mostRecentRate.ResetTime = response.Rate.ResetTime
 	c.rateMu.Unlock()
 
-	err = CheckResponse(resp)
+	err = CheckResponse(c, resp)
 	if err != nil {
 		// even though there was an error, we still return the response
 		// in case the caller wants to inspect it further
@@ -327,8 +343,8 @@ func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 // The error type will be *RateLimitError for rate limit exceeded errors,
 // and *TwoFactorAuthError for two-factor authentication errors.
 // TODO - check un-authorized
-func CheckResponse(r *http.Response) error {
-	if c := r.StatusCode; 200 <= c && c <= 299 {
+func CheckResponse(c *Client, r *http.Response) error {
+	if s := r.StatusCode; 200 <= s && s <= 299 {
 		return nil
 	}
 
@@ -337,9 +353,10 @@ func CheckResponse(r *http.Response) error {
 	if err == nil && data != nil {
 		json.Unmarshal(data, &errorResp.ErrorDetail)
 	}
+	c.OktaErrorCode = errorResp.ErrorDetail.ErrorCode
+
 	switch {
 	case r.StatusCode == http.StatusTooManyRequests:
-
 		return &RateLimitError{
 			Rate:        parseRate(r),
 			Response:    r,

@@ -64,31 +64,38 @@ type credentials struct {
 }
 
 type userProfile struct {
-	Email       string `json:"email"`
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
 	Login       string `json:"login"`
-	MobilePhone string `json:"mobilePhone,omitempty"`
+	Email       string `json:"email"`
 	SecondEmail string `json:"secondEmail,omitempty"`
-	PsEmplid    string `json:"psEmplid,omitempty"`
-	NickName    string `json:"nickname,omitempty"`
+	FirstName   string `json:"firstName"`
+	MiddleName  string `json:"middleName,omitempty"`
+	LastName    string `json:"lastName"`
+	HonPrefix   string `json:"honorificPrefix,omitempty"`
+	HonSuffix   string `json:"honorificSuffix,omitempty"`
+	Title       string `json:"title,omitempty"`
 	DisplayName string `json:"displayName,omitempty"`
+	NickName    string `json:"nickName,omitempty"`
 
 	ProfileURL        string `json:"profileUrl,omitempty"`
-	PreferredLanguage string `json:"preferredLanguage,omitempty"`
-	UserType          string `json:"userType,omitempty"`
-	Organization      string `json:"organization,omitempty"`
-	Title             string `json:"title,omitempty"`
-	Division          string `json:"division,omitempty"`
-	Department        string `json:"department,omitempty"`
-	CostCenter        string `json:"costCenter,omitempty"`
-	EmployeeNumber    string `json:"employeeNumber,omitempty"`
 	PrimaryPhone      string `json:"primaryPhone,omitempty"`
+	MobilePhone       string `json:"mobilePhone,omitempty"`
 	StreetAddress     string `json:"streetAddress,omitempty"`
 	City              string `json:"city,omitempty"`
 	State             string `json:"state,omitempty"`
 	ZipCode           string `json:"zipCode,omitempty"`
 	CountryCode       string `json:"countryCode,omitempty"`
+	PostalAddress     string `json:"postalAddress,omitempty"`
+	PreferredLanguage string `json:"preferredLanguage,omitempty"`
+	Locale            string `json:"locale,omitempty"`
+	Timezone          string `json:"timezone,omitempty"`
+	UserType          string `json:"userType,omitempty"`
+	EmployeeNumber    string `json:"employeeNumber,omitempty"`
+	CostCenter        string `json:"costCenter,omitempty"`
+	Organization      string `json:"organization,omitempty"`
+	Division          string `json:"division,omitempty"`
+	Department        string `json:"department,omitempty"`
+	ManagerID         string `json:"managerId,omitempty"`
+	Manager           string `json:"manager,omitempty"`
 }
 
 type userLinks struct {
@@ -160,6 +167,19 @@ type ResetPasswordResponse struct {
 	ResetPasswordURL string `json:"resetPasswordUrl"`
 }
 
+type userRoles struct {
+	Role []userRole `json:"-,omitempty"`
+}
+
+type userRole struct {
+	ID          string    `json:"id,omitempty"`
+	Label       string    `json:"label,omitempty"`
+	Type        string    `json:"type,omitempty"`
+	Status      string    `json:"status,omitempty"`
+	Created     time.Time `json:"created,omitempty"`
+	LastUpdated time.Time `json:"lastUpdated,omitempty"`
+}
+
 // NewUser - Returns a new user object. This is used to create users in OKTA. It only has the properties that
 // OKTA will take as input. The "User" object has more feilds that are OKTA returned like the ID, etc
 func (s *UsersService) NewUser() NewUser {
@@ -229,6 +249,11 @@ func (s *UsersService) GetByID(id string) (*User, *Response, error) {
 	}
 
 	return user, resp, err
+}
+
+// UserListFilterOptions - Returns the filter options object. This is used by ListWithFilter to search for users in OKTA
+func (s *UsersService) UserListFilterOptions() UserListFilterOptions {
+	return UserListFilterOptions{}
 }
 
 // UserListFilterOptions is a struct that you can populate which will "filter" user searches
@@ -462,6 +487,26 @@ func (s *UsersService) Create(userIn NewUser, createAsActive bool) (*User, *Resp
 	return newUser, resp, err
 }
 
+// Update - Update an existing user. We use the same "newUser" object as we do to create a user since the update api endpopint requires the same data structure (profile & credentials) in its body. The request uses POST and not PUT because POST supports partial updates.
+func (s *UsersService) Update(userIn NewUser, id string) (*User, *Response, error) {
+
+	u := fmt.Sprintf("users/%v", id)
+
+	req, err := s.client.NewRequest("POST", u, userIn)
+
+	if err != nil {
+		return nil, nil, err
+	}
+
+	updateUser := new(User)
+	resp, err := s.client.Do(req, updateUser)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return updateUser, resp, err
+}
+
 // Activate Activates a user. You can have OKTA send an email by including a "sendEmail=true"
 // If you pass in sendEmail=false, then activationResponse.ActivationURL will have a string URL that
 // can be sent to the end user. You can discard response if sendEmail=true
@@ -488,6 +533,23 @@ func (s *UsersService) Deactivate(id string) (*Response, error) {
 	u := fmt.Sprintf("users/%v/lifecycle/deactivate", id)
 
 	req, err := s.client.NewRequest("POST", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.client.Do(req, nil)
+
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Delete - Delete a user. Does not check for user status DEPROVISIONED.
+func (s *UsersService) Delete(id string) (*Response, error) {
+	u := fmt.Sprintf("users/%v", id)
+
+	req, err := s.client.NewRequest("DELETE", u, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -546,7 +608,87 @@ func (s *UsersService) Unlock(id string) (*Response, error) {
 		return nil, err
 	}
 	resp, err := s.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
 
+	return resp, err
+}
+
+// List User Roles. id must be User.ID
+// will return a struct containing a slice for each role assigned to the user
+// if the user has no roles, return nil
+func (s *UsersService) ListRoles(id string) (*userRoles, *Response, error) {
+	u := fmt.Sprintf("users/%v/roles", id)
+
+	req, err := s.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	role := make([]userRole, 0)
+	resp, err := s.client.Do(req, &role)
+	if err != nil {
+		return nil, resp, err
+	}
+	if len(role) > 0 {
+		myRoles := new(userRoles)
+		for _, v := range role {
+			myRoles.Role = append(myRoles.Role, v)
+		}
+		return myRoles, resp, err
+	}
+
+	return nil, resp, err
+}
+
+// Assign Role to User. id must be User.ID
+func (s *UsersService) AssignRole(id string, role string) (*Response, error) {
+
+	// verify the role is a valid Okta role
+	// https://help.okta.com/en/prod/Content/Topics/Security/Administrators.htm?cshid=Security_Administrators#Security_Administrators
+	allowedRoles := map[string]bool{
+		"SUPER_ADMIN":                 true,
+		"ORG_ADMIN":                   true,
+		"API_ACCESS_MANAGEMENT_ADMIN": true,
+		"APP_ADMIN":                   true,
+		"USER_ADMIN":                  true,
+		"MOBILE_ADMIN":                true,
+		"READ_ONLY_ADMIN":             true,
+		"HELP_DESK_ADMIN":             true,
+	}
+	if !allowedRoles[role] {
+		return nil, fmt.Errorf("Role %v is not a valid Okta role. Please review https://help.okta.com/en/prod/Content/Topics/Security/Administrators.htm?cshid=Security_Administrators#Security_Administrators", role)
+	}
+
+	type roleType struct {
+		Type string `json:"type"`
+	}
+
+	u := fmt.Sprintf("users/%v/roles", id)
+	body := roleType{
+		Type: role,
+	}
+	req, err := s.client.NewRequest("POST", u, body)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.client.Do(req, nil)
+	if err != nil {
+		return resp, err
+	}
+
+	return resp, err
+}
+
+// Unassign Role from User. id must be User.ID, role must be []userRole.ID from ListRoles
+func (s *UsersService) UnAssignRole(id string, role string) (*Response, error) {
+	u := fmt.Sprintf("users/%v/roles/%v", id, role)
+
+	req, err := s.client.NewRequest("DELETE", u, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := s.client.Do(req, nil)
 	if err != nil {
 		return resp, err
 	}
