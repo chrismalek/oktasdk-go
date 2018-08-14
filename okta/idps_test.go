@@ -102,3 +102,32 @@ func TestIdentityProviderCreate(t *testing.T) {
 		t.Errorf("client.IdentityProviders.CreateIdentityProvider returned \n\t%+v, want \n\t%+v\n", outputIdentityProvider, testIdentityProvider)
 	}
 }
+
+func TestIdentityProviderUpdate(t *testing.T) {
+
+	setup()
+	defer teardown()
+	setupTestIdentityProvider()
+	testIdentityProvider.ID = "0oa62bfdiumsUndnZ0h7"
+
+	testIdentityProvider.Name = "Something Completely Different"
+	temp, err := json.Marshal(testIdentityProvider)
+	if err != nil {
+		t.Errorf("IdentityProviders.UpdateIdentityProvider json Marshall returned error: %v", err)
+	}
+	updateTestJSONString := string(temp)
+
+	mux.HandleFunc("/idps/0oa62bfdiumsUndnZ0h7", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "PUT")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, updateTestJSONString)
+	})
+
+	outputIdentityProvider, _, err := client.IdentityProviders.UpdateIdentityProvider("0oa62bfdiumsUndnZ0h7", testIdentityProvider)
+	if err != nil {
+		t.Errorf("IdentityProviders.UpdateIdentityProvider returned error: %v", err)
+	}
+	if !reflect.DeepEqual(outputIdentityProvider.Name, testIdentityProvider.Name) {
+		t.Errorf("client.IdentityProviders.UpdateIdentityProvider returned \n\t%+v, want \n\t%+v\n", outputIdentityProvider.Name, testIdentityProvider.Name)
+	}
+}

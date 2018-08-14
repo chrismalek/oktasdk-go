@@ -115,3 +115,21 @@ func (p *IdentityProvidersService) CreateIdentityProvider(idp interface{}) (*Ide
 
 	return newIdp, resp, err
 }
+
+// UpdateIdentityProvider: Update a policy
+// Requires IdentityProvider ID from IdentityProvider object & IdentityProvider object from the desired input policy
+func (p *IdentityProvidersService) UpdateIdentityProvider(id string, idp interface{}) (*IdentityProvider, *Response, error) {
+	u := fmt.Sprintf("idps/%v", id)
+	req, err := p.client.NewRequest("PUT", u, idp)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	updateIdentityProvider := new(IdentityProvider)
+	resp, err := p.client.Do(req, updateIdentityProvider)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return updateIdentityProvider, resp, err
+}
