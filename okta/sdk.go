@@ -152,6 +152,7 @@ func NewClientWithBaseURL(httpClient *http.Client, baseURL *url.URL, apiToken st
 	c.Apps = (*AppsService)(&c.common)
 	c.Policies = (*PoliciesService)(&c.common)
 	c.Schemas = (*SchemasService)(&c.common)
+	c.IdentityProviders = (*IdentityProvidersService)(&c.common)
 	return c
 }
 

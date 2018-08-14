@@ -1,6 +1,10 @@
 package okta
 
 import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -44,8 +48,28 @@ func setupTestIdentityProvider() {
 	testIdentityProvider.Links.ClientRedirectUri.Hints.Allow = []string{"POST"}
 }
 
-func TestIdentityProvider(t *testing.T) {
+func TestGetIdentityProvider(t *testing.T) {
 	setup()
 	defer teardown()
 	setupTestIdentityProvider()
+
+	temp, err := json.Marshal(testIdentityProvider)
+	if err != nil {
+		t.Errorf("IdentityProviders.GetIdentityProvider json Marshall returned error: %v", err)
+	}
+	IdentityProviderTestJSONString := string(temp)
+
+	mux.HandleFunc("/idps/0oa62bfdiumsUndnZ0h7", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "GET")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, IdentityProviderTestJSONString)
+	})
+
+	outputIdentityProvider, _, err := client.IdentityProviders.GetIdentityProvider("0oa62bfdiumsUndnZ0h7")
+	if err != nil {
+		t.Errorf("IdentityProviders.GetIdentityProvider returned error: %v", err)
+	}
+	if !reflect.DeepEqual(outputIdentityProvider, testIdentityProvider) {
+		t.Errorf("client.IdentityProviders.GetIdentityProvider returned \n\t%+v, want \n\t%+v\n", outputIdentityProvider, testIdentityProvider)
+	}
 }

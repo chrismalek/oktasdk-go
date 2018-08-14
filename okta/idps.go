@@ -1,6 +1,7 @@
 package okta
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -77,4 +78,22 @@ type IdentityProvider struct {
 			} `json:"hints"`
 		} `json:"clientRedirectUri"`
 	} `json:"_links"`
+}
+
+// GetIdentityProvider: Get an IdP
+// Requires IdentityProvider ID from IdentityProvider object
+func (p *IdentityProvidersService) GetIdentityProvider(id string) (*IdentityProvider, *Response, error) {
+	u := fmt.Sprintf("idps/%v", id)
+	req, err := p.client.NewRequest("GET", u, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	idp := new(IdentityProvider)
+	resp, err := p.client.Do(req, idp)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return idp, resp, err
 }
