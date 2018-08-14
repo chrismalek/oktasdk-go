@@ -15,7 +15,6 @@ func setupTestIdentityProvider() {
 	hmm, _ := time.Parse("2006-01-02T15:04:05.000Z", "2018-02-16T19:59:05.000Z")
 
 	testIdentityProvider = &IdentityProvider{
-		ID:          "0oa62bfdiumsUndnZ0h7",
 		Type:        "GOOGLE",
 		Status:      "ACTIVE",
 		Name:        "Google",
@@ -52,6 +51,7 @@ func TestGetIdentityProvider(t *testing.T) {
 	setup()
 	defer teardown()
 	setupTestIdentityProvider()
+	testIdentityProvider.ID = "0oa62bfdiumsUndnZ0h7"
 
 	temp, err := json.Marshal(testIdentityProvider)
 	if err != nil {
@@ -74,50 +74,31 @@ func TestGetIdentityProvider(t *testing.T) {
 	}
 }
 
-func TestPolicyCreate(t *testing.T) {
-	setupTestIdentityProvider()
-
-	t.Run("Password", func(t *testing.T) {
-		testPolicyCreate(t, testInputPassPolicy, testPassPolicy)
-	})
-	t.Run("SignOn", func(t *testing.T) {
-		testPolicyCreate(t, testInputSignonPolicy, testSignonPolicy)
-	})
-}
-
-func testRuleCreate(t *testing.T, inputrule interface{}, rule *Rule) {
+func TestIdentityProviderCreate(t *testing.T) {
 
 	setup()
 	defer teardown()
+	setupTestIdentityProvider()
 
-	temp, err := json.Marshal(rule)
+	temp, err := json.Marshal(testIdentityProvider)
+
 	if err != nil {
-		t.Errorf("Policies.CreateiPolicyRule json Marshall returned error: %v", err)
+		t.Errorf("IdentityProviders.CreateIdentityProvider json Marshall returned error: %v", err)
 	}
-	ruleTestJSONString := string(temp)
 
-	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/rules", func(w http.ResponseWriter, r *http.Request) {
+	IdentityProviderTestJSONString := string(temp)
+
+	mux.HandleFunc("/idps", func(w http.ResponseWriter, r *http.Request) {
 		testMethod(t, r, "POST")
 		testAuthHeader(t, r)
-		fmt.Fprint(w, ruleTestJSONString)
+		fmt.Fprint(w, IdentityProviderTestJSONString)
 	})
 
-	outputrule, _, err := client.Policies.CreatePolicyRule("00pedv3qclXeC2aFH0h7", inputrule)
+	outputIdentityProvider, _, err := client.IdentityProviders.CreateIdentityProvider(testIdentityProvider)
 	if err != nil {
-		t.Errorf("Policies.CreatePolicyRule returned error: %v", err)
+		t.Errorf("IdentityProvider.CreateIdentityProvider returned error: %v", err)
 	}
-	if !reflect.DeepEqual(outputrule, rule) {
-		t.Errorf("client.Policies.CreatePolicy returned \n\t%+v, want \n\t%+v\n", outputrule, rule)
+	if !reflect.DeepEqual(outputIdentityProvider, testIdentityProvider) {
+		t.Errorf("client.IdentityProviders.CreateIdentityProvider returned \n\t%+v, want \n\t%+v\n", outputIdentityProvider, testIdentityProvider)
 	}
-}
-
-func TestRuleCreate(t *testing.T) {
-	setupTestRules()
-
-	t.Run("Password", func(t *testing.T) {
-		testRuleCreate(t, testInputPassRule, testPassRule)
-	})
-	t.Run("SignOn", func(t *testing.T) {
-		testRuleCreate(t, testInputSignonRule, testSignonRule)
-	})
 }
