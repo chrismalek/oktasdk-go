@@ -73,3 +73,51 @@ func TestGetIdentityProvider(t *testing.T) {
 		t.Errorf("client.IdentityProviders.GetIdentityProvider returned \n\t%+v, want \n\t%+v\n", outputIdentityProvider, testIdentityProvider)
 	}
 }
+
+func TestPolicyCreate(t *testing.T) {
+	setupTestIdentityProvider()
+
+	t.Run("Password", func(t *testing.T) {
+		testPolicyCreate(t, testInputPassPolicy, testPassPolicy)
+	})
+	t.Run("SignOn", func(t *testing.T) {
+		testPolicyCreate(t, testInputSignonPolicy, testSignonPolicy)
+	})
+}
+
+func testRuleCreate(t *testing.T, inputrule interface{}, rule *Rule) {
+
+	setup()
+	defer teardown()
+
+	temp, err := json.Marshal(rule)
+	if err != nil {
+		t.Errorf("Policies.CreateiPolicyRule json Marshall returned error: %v", err)
+	}
+	ruleTestJSONString := string(temp)
+
+	mux.HandleFunc("/policies/00pedv3qclXeC2aFH0h7/rules", func(w http.ResponseWriter, r *http.Request) {
+		testMethod(t, r, "POST")
+		testAuthHeader(t, r)
+		fmt.Fprint(w, ruleTestJSONString)
+	})
+
+	outputrule, _, err := client.Policies.CreatePolicyRule("00pedv3qclXeC2aFH0h7", inputrule)
+	if err != nil {
+		t.Errorf("Policies.CreatePolicyRule returned error: %v", err)
+	}
+	if !reflect.DeepEqual(outputrule, rule) {
+		t.Errorf("client.Policies.CreatePolicy returned \n\t%+v, want \n\t%+v\n", outputrule, rule)
+	}
+}
+
+func TestRuleCreate(t *testing.T) {
+	setupTestRules()
+
+	t.Run("Password", func(t *testing.T) {
+		testRuleCreate(t, testInputPassRule, testPassRule)
+	})
+	t.Run("SignOn", func(t *testing.T) {
+		testRuleCreate(t, testInputSignonRule, testSignonRule)
+	})
+}

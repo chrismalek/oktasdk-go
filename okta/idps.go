@@ -97,3 +97,21 @@ func (p *IdentityProvidersService) GetIdentityProvider(id string) (*IdentityProv
 
 	return idp, resp, err
 }
+
+// CreateIdentityprovider: Create a identityprovider
+// You must pass in the Identityprovider object created from the desired input identityprovider
+func (p *IdentityProvidersService) CreateIdentityProvider(idp interface{}) (*IdentityProvider, *Response, error) {
+	u := fmt.Sprintf("idps")
+	req, err := p.client.NewRequest("POST", u, idp)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	newIdp := new(IdentityProvider)
+	resp, err := p.client.Do(req, newIdp)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return newIdp, resp, err
+}
