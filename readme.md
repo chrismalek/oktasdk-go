@@ -1,10 +1,11 @@
 # OKTA SDK for GoLang (Unofficial)
 
+
+**NOTE:** There is an Official GO SDK under developement [okta/okta-sdk-golang](https://github.com/okta/okta-sdk-golang)
+
 An SDK to integrate with the [OKTA SDK](http://developer.okta.com/documentation/) for Golang.
 
 Much credits has to be given to the [go-github](https://github.com/google/go-github) library for which this package mimics. I stole a huge amount of code and ideas from that project. 
-
-
 
 
 *Warnings* (There are many)
