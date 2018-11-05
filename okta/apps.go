@@ -242,3 +242,52 @@ func (a *AppsService) GetUsers(appID string, opt *AppFilterOptions) (appUsers []
 
 	return appUsers, resp, err
 }
+
+// GetAllApps returns all of the apps in the organization
+func (a *AppsService) GetAllApps(opt *AppFilterOptions) ([]App, *Response, error) {
+	return a.getApps(nil, opt)
+}
+
+// GetAppsForUser returns the apps for one user
+func (a *AppsService) GetAppsForUser(userID string, opt *AppFilterOptions) ([]App, *Response, error) {
+	vals := url.Values{}
+	vals.Add("filter", fmt.Sprintf(`user.id eq "%s"`, userID))
+	return a.getApps(vals, opt)
+}
+
+func (a *AppsService) getApps(query url.Values, opt *AppFilterOptions) ([]App, *Response, error) {
+	// Defaulting to defaultLimit just so that there's a value there even if the consumer doesn't pass it in
+	if opt.Limit == 0 {
+		opt.Limit = defaultLimit
+	}
+	u, err := url.Parse("apps")
+	if err != nil {
+		return nil, nil, err
+	}
+	if query != nil {
+		u.RawQuery = query.Encode()
+	}
+
+	var reqURL string
+	// If we don't have a NextURL, generate a new one using opts and the current u variable above
+	if opt.NextURL == nil {
+		reqURL, err = addOptions(u.String(), opt)
+		if err != nil {
+			return nil, nil, err
+		}
+	// Otherwise, we have a cursor for nextPage so that will be the request URL.
+	} else {
+		reqURL = opt.NextURL.String()
+	}
+
+	req, err := a.client.NewRequest("GET", reqURL, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	var fetchedApps []App
+	res, err := a.client.Do(req, &fetchedApps)
+	if err != nil {
+		return nil, res, fmt.Errorf("a.client.Do %v", err)
+	}
+	return fetchedApps, res, nil
+}
