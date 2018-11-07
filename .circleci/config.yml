@@ -1,6 +1,6 @@
-# Javascript Node CircleCI 2.0 configuration file
+# Golang Node CircleCI 2.0 configuration file
 #
-# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+# Check https://circleci.com/docs/2.0/language-go/ for more details
 #
 version: 2
 jobs:
@@ -12,7 +12,7 @@ jobs:
           DATABASE_URL: postgres://circleci:@localhost:5432/circle_test
           POSTGRES_USER: circleci
 
-    working_directory: ~/project
+    working_directory: /go/src/github.com/intello-io/oktasdk-go
     steps:
       - checkout
 
