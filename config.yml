@@ -1,0 +1,22 @@
+# Javascript Node CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-javascript/ for more details
+#
+version: 2
+jobs:
+  build:
+    docker:
+      - image: intelloio/go:1.10
+        environment:
+          DATABASE_NAME: circle_test
+          DATABASE_URL: postgres://circleci:@localhost:5432/circle_test
+          POSTGRES_USER: circleci
+
+    working_directory: ~/project
+    steps:
+      - checkout
+
+      # we were having an issue where our snapshot would attempt to run after dockerize reported that it could connect to the db, but when we ran restore snapshot it would fail randomlly because the postgres container wasn't fully ready. we're not 100% sure what's happening there and don't have time to dig in exactly. so this sleep is here as a way to ensure we give postgres enough to be fully setup after dockerize is able to connect to the pq container
+      - run: sleep 2
+
+      - run: make test
