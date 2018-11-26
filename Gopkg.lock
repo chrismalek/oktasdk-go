@@ -2,14 +2,16 @@
 
 
 [[projects]]
+  branch = "master"
+  digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
   name = "github.com/google/go-querystring"
   packages = ["query"]
+  pruneopts = "UT"
   revision = "44c6ddd0a2342c386950e880b658017258da92fc"
-  version = "v1.0.0"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "474d6037d87345f4adb080bfecb4ccebfce8e715066b87285ffc5dc813212e3b"
+  input-imports = ["github.com/google/go-querystring/query"]
   solver-name = "gps-cdcl"
   solver-version = 1
