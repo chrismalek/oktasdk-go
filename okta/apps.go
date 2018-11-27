@@ -177,17 +177,27 @@ type AppUser struct {
 	} `json:"_links"`
 }
 
+// GetUsers returns all users for a given appID
+func (a *AppsService) GetUsers(appID string, opt *AppFilterOptions) (appUsers []AppUser, resp *Response, err error) {
+	return a.getUsers(appID, "users", opt)
+}
+
+// GetUsersWithPath fetches users with the specified path
+func (a *AppsService) GetUsersWithPath(appID string, opt *AppFilterOptions, userPath string) (appUsers []AppUser, resp *Response, err error) {
+	return a.getUsers(appID, userPath, opt)
+}
+
 // GetUsers returns the members in an App
 //   Pass in an optional AppFilterOptions struct to filter the results
 //   The Users in the app are returned
-func (a *AppsService) GetUsers(appID string, opt *AppFilterOptions) (appUsers []AppUser, resp *Response, err error) {
+func (a *AppsService) getUsers(appID string, userPath string, opt *AppFilterOptions) (appUsers []AppUser, resp *Response, err error) {
 
 	pagesRetreived := 0
 	var u string
 	if opt.NextURL != nil {
 		u = opt.NextURL.String()
 	} else {
-		u = fmt.Sprintf("apps/%v/users", appID)
+		u = fmt.Sprintf("apps/%v/%v", appID, userPath)
 
 		if opt.Limit == 0 {
 			opt.Limit = defaultLimit
