@@ -46,7 +46,7 @@ type LogSecContext struct {
 	AsOrg   string `json:"asOrg"`    // Optional
 	ISP     string `json:"isp"`      // Optional
 	Domain  string `json:"domain"`   // Optional
-	IsProxy string `json:"isProxy"`  // Optional
+	IsProxy bool   `json:"isProxy"`  // Optional
 }
 
 // LogIP represents ip info of the log
