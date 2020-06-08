@@ -355,7 +355,8 @@ func CheckResponse(r *http.Response) error {
 
 }
 
-type apiError struct {
+// ApiError is the  Okta API error type
+type ApiError struct {
 	ErrorCode    string `json:"errorCode"`
 	ErrorSummary string `json:"errorSummary"`
 	ErrorLink    string `json:"errorLink"`
@@ -368,7 +369,7 @@ type apiError struct {
 // ErrorResponse is the Okta error response type
 type ErrorResponse struct {
 	Response    *http.Response //
-	ErrorDetail apiError
+	ErrorDetail ApiError
 }
 
 func (r *ErrorResponse) Error() string {
@@ -380,7 +381,7 @@ func (r *ErrorResponse) Error() string {
 // remaining value of 0, and error message starts with "API rate limit exceeded for ".
 type RateLimitError struct {
 	Rate        Rate // Rate specifies last known rate limit for the client
-	ErrorDetail apiError
+	ErrorDetail ApiError
 	Response    *http.Response //
 }
 
