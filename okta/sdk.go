@@ -336,7 +336,7 @@ func CheckResponse(r *http.Response) error {
 		return nil
 	}
 
-	errorResp := &errorResponse{Response: r}
+	errorResp := &ErrorResponse{Response: r}
 	data, err := ioutil.ReadAll(r.Body)
 	if err == nil && data != nil {
 		json.Unmarshal(data, &errorResp.ErrorDetail)
@@ -355,7 +355,8 @@ func CheckResponse(r *http.Response) error {
 
 }
 
-type apiError struct {
+// ApiError is the  Okta API error type
+type ApiError struct {
 	ErrorCode    string `json:"errorCode"`
 	ErrorSummary string `json:"errorSummary"`
 	ErrorLink    string `json:"errorLink"`
@@ -365,12 +366,13 @@ type apiError struct {
 	} `json:"errorCauses"`
 }
 
-type errorResponse struct {
+// ErrorResponse is the Okta error response type
+type ErrorResponse struct {
 	Response    *http.Response //
-	ErrorDetail apiError
+	ErrorDetail ApiError
 }
 
-func (r *errorResponse) Error() string {
+func (r *ErrorResponse) Error() string {
 	return fmt.Sprintf("HTTP Method: %v - URL: %v: - HTTP Status Code: %d, OKTA Error Code: %v, OKTA Error Summary: %v, OKTA Error Causes: %v",
 		r.Response.Request.Method, r.Response.Request.URL, r.Response.StatusCode, r.ErrorDetail.ErrorCode, r.ErrorDetail.ErrorSummary, r.ErrorDetail.ErrorCauses)
 }
@@ -379,7 +381,7 @@ func (r *errorResponse) Error() string {
 // remaining value of 0, and error message starts with "API rate limit exceeded for ".
 type RateLimitError struct {
 	Rate        Rate // Rate specifies last known rate limit for the client
-	ErrorDetail apiError
+	ErrorDetail ApiError
 	Response    *http.Response //
 }
 
