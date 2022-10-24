@@ -43,7 +43,7 @@ const (
 
 	// If the API returns a "X-Rate-Limit-Remaining" header less than this the SDK will either pause
 	//  Or throw  RateLimitError depending on the client.PauseOnRateLimit value
-	defaultRateRemainingFloor = 100
+	defaultRateRemainingFloor = 40
 )
 
 // A Client manages communication with the API.
@@ -308,7 +308,7 @@ func (c *Client) checkRateLimitBeforeDo(req *http.Request) error {
 			// If rate limit is hitting threshold then pause until the rate limit resets
 			//   This behavior is controlled by the client PauseOnRateLimit value
 			// fmt.Printf("checkRateLimitBeforeDo: \t ***pause**** \t Time Now = %s \tPause After = %s\n", time.Now().String(), mostRecentRate.ResetTime.Sub(time.Now().Add(2*time.Second)).String())
-			<-time.After(mostRecentRate.ResetTime.Sub(time.Now().Add(2 * time.Second)))
+			<-time.After(mostRecentRate.ResetTime.Sub(time.Now()))
 		} else {
 			// fmt.Printf("checkRateLimitBeforeDo: \t ***error****\n")
 
