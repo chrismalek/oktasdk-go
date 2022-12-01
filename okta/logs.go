@@ -123,6 +123,7 @@ type LogListFilterOptions struct {
 	NextURL   *url.URL  `url:"-"`
 	Limit     int       `url:"limit,omitempty"`
 	Since     time.Time `url:"since,omitempty"`
+	Until     time.Time `url:"until,omitempty"`
 	SortOrder string    `url:"sortOrder,omitempty"`
 	Query     string    `url:"q,omitempty"`
 
